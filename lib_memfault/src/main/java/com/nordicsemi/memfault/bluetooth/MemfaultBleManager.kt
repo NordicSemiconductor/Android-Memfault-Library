@@ -3,16 +3,11 @@ package com.nordicsemi.memfault.bluetooth
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
-import com.nordicsemi.memfault.bluetooth.responses.AuthorisationResponse
-import com.nordicsemi.memfault.bluetooth.responses.DataUriResponse
-import com.nordicsemi.memfault.bluetooth.responses.DeviceIdReadResponse
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.ble.BleManager
-import no.nordicsemi.android.ble.common.callback.battery.BatteryLevelResponse
 import no.nordicsemi.android.ble.ktx.asValidResponseFlow
 import no.nordicsemi.android.ble.ktx.suspendForValidResponse
 import java.util.*
@@ -35,15 +30,11 @@ internal class MemfaultBleManager(
     private var mdsAuthorisationCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsDataExportCharacteristic: BluetoothGattCharacteristic? = null
 
-    private val data = MutableStateFlow(CSCData())
-    val dataHolder = ConnectionObserverAdapter<CSCData>()
+    val dataHolder = ConnectionObserverAdapter<MemfaultEntity>()
 
     init {
         connectionObserver = dataHolder
-
-        data.onEach {
-            dataHolder.setValue(it)
-        }.launchIn(scope)
+        dataHolder.setValue(MemfaultDataNotAvailableEntity)
     }
 
     override fun getGattCallback(): BleManagerGattCallback {
@@ -57,22 +48,22 @@ internal class MemfaultBleManager(
             scope.launch {
                 //TODO error handling
                 val deviceId = readCharacteristic(mdsDeviceIdCharacteristic)
-                    .suspendForValidResponse<DeviceIdReadResponse>()
-                    .authorisation!!
-                val uri = readCharacteristic(mdsDataUriCharacteristic)
-                    .suspendForValidResponse<DataUriResponse>()
-                    .uri!!
+                    .suspendForValidResponse<StringReadResponse>()
+                    .value!!
+                val url = readCharacteristic(mdsDataUriCharacteristic)
+                    .suspendForValidResponse<StringReadResponse>()
+                    .value!!
                 val authorisation = readCharacteristic(mdsAuthorisationCharacteristic)
-                    .suspendForValidResponse<AuthorisationResponse>()
-                    .authorisation!!
+                    .suspendForValidResponse<StringReadResponse>()
+                    .value!!
 
-                val config = ConfigData(deviceId, uri, authorisation)
+                val config = ConfigData(AuthorisationHeader(authorisation), deviceId, url)
+
+                setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<StringReadResponse>().onEach {
+                    dataHolder.setValue(MemfaultDataEntity(config, it.value!!))
+                }.launchIn(scope)
+                enableNotifications(mdsDataExportCharacteristic).enqueue()
             }
-
-            setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<BatteryLevelResponse>().onEach {
-                data.value = data.value.copy(batteryLevel = it.batteryLevel)
-            }.launchIn(scope)
-            enableNotifications(mdsDataExportCharacteristic).enqueue()
         }
 
         public override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {

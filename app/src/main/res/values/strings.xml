@@ -9,4 +9,12 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+
+    <string name="close_app">Close the application.</string>
+    <string name="back_screen">Close the current screen.</string>
+    <string name="open_logger">Open logger application.</string>
+
+    <string name="disconnect">Disconnect</string>
+
+    <string name="app_bar_title">Memfault</string>
 </resources>

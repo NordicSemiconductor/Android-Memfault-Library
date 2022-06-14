@@ -1,10 +1,13 @@
 package com.nordicsemi.memfault.network
 
-import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface NetworkApi {
 
-    @POST("users/new") //TODO change API
-    suspend fun createUser(@Body user: String)
+    @Headers("Content-Type: application/octet-stream")
+    @POST
+    suspend fun sendLog(
+        @Url url: String,
+        @Body user: String
+    )
 }

@@ -1,16 +1,16 @@
-package com.nordicsemi.memfault.bluetooth.responses
+package com.nordicsemi.memfault.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import no.nordicsemi.android.ble.callback.profile.ProfileReadResponse
 import no.nordicsemi.android.ble.data.Data
 
-class DeviceIdReadResponse : ProfileReadResponse() {
+class StringReadResponse : ProfileReadResponse() {
 
-    var authorisation: String? = null
+    var value: String? = null
 
     override fun onDataReceived(device: BluetoothDevice, data: Data) {
         super.onDataReceived(device, data)
 
-        authorisation = data.getStringValue(0)
+        value = data.getStringValue(0)
     }
 }

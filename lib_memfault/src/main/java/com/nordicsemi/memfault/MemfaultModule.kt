@@ -15,7 +15,6 @@ class MemfaultModule {
     @Provides
     fun provideNetworkApi(): NetworkApi {
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.github.com/")
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
 
