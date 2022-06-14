@@ -1,22 +1,38 @@
 package com.nordicsemi.memfault.home
 
+import android.bluetooth.BluetoothDevice
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nordicsemi.memfault.bluetooth.BleManagerResult
+import com.nordicsemi.memfault.bluetooth.IdleResult
 import com.nordicsemi.memfault.bluetooth.MDS_SERVICE_UUID
+import com.nordicsemi.memfault.bluetooth.MemfaultEntity
+import com.nordicsemi.memfault.repository.MemfaultManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.logger.LoggerAppRunner
+import kotlinx.coroutines.launch
 import no.nordicsemi.android.navigation.*
 import no.nordicsemi.ui.scanner.ScannerDestinationId
 import no.nordicsemi.ui.scanner.ui.exhaustive
+import no.nordicsemi.ui.scanner.ui.getDevice
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val navigationManager: NavigationManager
+    @ApplicationContext
+    private val context: Context,
+    private val navigationManager: NavigationManager,
+    private val memfaultManager: MemfaultManager
 ) : ViewModel() {
+
+    private val _status = MutableStateFlow<BleManagerResult<MemfaultEntity>>(IdleResult())
+    val status = _status.asStateFlow()
 
     init {
         requestBluetoothDevice()
@@ -35,8 +51,18 @@ class HomeViewModel @Inject constructor(
     private fun handleArgs(args: DestinationResult) {
         when (args) {
             is CancelDestinationResult -> navigationManager.navigateUp()
-            is SuccessDestinationResult -> {}
+            is SuccessDestinationResult -> installBluetoothDevice(args.getDevice().device)
         }.exhaustive
+    }
+
+    private fun installBluetoothDevice(device: BluetoothDevice) {
+        viewModelScope.launch {
+            memfaultManager.install(context, device)
+
+            memfaultManager.status?.onEach {
+                _status.value = it
+            }?.launchIn(viewModelScope)
+        }
     }
 }
 

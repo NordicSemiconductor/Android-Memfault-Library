@@ -3,6 +3,7 @@ package com.nordicsemi.memfault.bluetooth
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -24,6 +25,8 @@ internal class MemfaultBleManager(
     private val scope: CoroutineScope
 ) : BleManager(context) {
 
+    private val LOG = "MEMFAULT"
+
     private var mdsSupportedFeaturesCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsDeviceIdCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsDataUriCharacteristic: BluetoothGattCharacteristic? = null
@@ -35,6 +38,14 @@ internal class MemfaultBleManager(
     init {
         connectionObserver = dataHolder
         dataHolder.setValue(MemfaultDataNotAvailableEntity)
+    }
+
+    override fun log(priority: Int, message: String) {
+        Log.d(LOG, message)
+    }
+
+    override fun getMinLogPriority(): Int {
+        return Log.VERBOSE
     }
 
     override fun getGattCallback(): BleManagerGattCallback {
