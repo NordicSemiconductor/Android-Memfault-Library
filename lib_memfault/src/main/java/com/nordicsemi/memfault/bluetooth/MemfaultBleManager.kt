@@ -1,5 +1,6 @@
 package com.nordicsemi.memfault.bluetooth
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.ble.BleManager
 import no.nordicsemi.android.ble.ktx.asValidResponseFlow
+import no.nordicsemi.android.ble.ktx.suspend
 import no.nordicsemi.android.ble.ktx.suspendForValidResponse
 import java.util.*
 
@@ -72,6 +74,7 @@ internal class MemfaultBleManager(
 
                 setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<StringReadResponse>().onEach {
                     dataHolder.setValue(MemfaultDataEntity(config, it.value!!))
+                    //TODO cancel
                 }.launchIn(scope)
                 enableNotifications(mdsDataExportCharacteristic).enqueue()
             }
@@ -99,6 +102,17 @@ internal class MemfaultBleManager(
             mdsDataUriCharacteristic = null
             mdsAuthorisationCharacteristic = null
             mdsDataExportCharacteristic = null
+        }
+    }
+
+    suspend fun start(device: BluetoothDevice) {
+        try {
+            connect(device)
+                .useAutoConnect(false)
+                .retry(3, 100)
+                .suspend()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

@@ -17,4 +17,8 @@
     <string name="disconnect">Disconnect</string>
 
     <string name="app_bar_title">Memfault</string>
+
+    <string name="start">Start</string>
+
+    <string name="app_info">Memfault is used to gather logs and memory dumps from a DK when fatal exception occurs.</string>
 </resources>

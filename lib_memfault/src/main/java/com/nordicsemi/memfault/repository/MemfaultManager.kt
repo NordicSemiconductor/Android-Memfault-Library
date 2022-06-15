@@ -4,13 +4,11 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.util.Log
 import com.nordicsemi.memfault.bluetooth.*
-import com.nordicsemi.memfault.bluetooth.MemfaultBleManager
 import com.nordicsemi.memfault.network.NetworkApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.ble.ktx.suspend
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -34,17 +32,6 @@ class MemfaultManager @Inject constructor() {
         }.launchIn(GlobalScope)
 
         bleManager.start(device)
-    }
-
-    private suspend fun MemfaultBleManager.start(device: BluetoothDevice) {
-        try {
-            connect(device)
-                .useAutoConnect(false)
-                .retry(3, 100)
-                .suspend()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
     }
 
     private fun createNetwork(header: AuthorisationHeader): NetworkApi {
