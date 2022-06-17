@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace 'com.nordicsemi.lib_memfault'
+    namespace 'com.nordicsemi.memfault'
     compileSdk 32
 
     defaultConfig {
