@@ -105,9 +105,10 @@ internal class MemfaultBleManager(
 
                 setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<StringReadResponse>().onEach {
                     dataHolder.setValue(MemfaultDataEntity(config, it.value!!))
-                    //TODO cancel
                 }.launchIn(scope)
-                enableNotifications(mdsDataExportCharacteristic).enqueue()
+                enableNotifications(mdsDataExportCharacteristic).suspend()
+
+                writeCharacteristic(mdsDataExportCharacteristic, byteArrayOf(0x01), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT).suspend()
             }
         }
 

@@ -33,7 +33,6 @@ package com.nordicsemi.memfault.repository
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.util.Log
 import com.nordicsemi.memfault.bluetooth.*
 import com.nordicsemi.memfault.network.NetworkApi
 import kotlinx.coroutines.GlobalScope
@@ -41,6 +40,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Inject
@@ -52,7 +52,6 @@ class MemfaultManager @Inject constructor() {
         get() = manager?.dataHolder?.status
 
     suspend fun install(context: Context, device: BluetoothDevice) {
-        Log.d("AAATESTAAA", "install()")
         val bleManager = MemfaultBleManager(context, GlobalScope)
         manager = bleManager
         bleManager.dataHolder.status.onEach {
@@ -75,9 +74,11 @@ class MemfaultManager @Inject constructor() {
 
                 chain.proceed(request)
             }
+            addInterceptor(HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) })
         }.build()
 
         val retrofit = Retrofit.Builder()
+            .baseUrl("https://nordicsemi.com")
             .addConverterFactory(MoshiConverterFactory.create())
             .client(httpClient)
             .build()
