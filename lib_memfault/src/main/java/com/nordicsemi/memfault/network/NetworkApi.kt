@@ -39,6 +39,6 @@ interface NetworkApi {
     @POST
     suspend fun sendLog(
         @Url url: String,
-        @Body user: String
+        @Body user: ByteArray
     )
 }

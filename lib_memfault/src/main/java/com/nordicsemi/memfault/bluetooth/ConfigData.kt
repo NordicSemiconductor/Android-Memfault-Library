@@ -37,8 +37,27 @@ object MemfaultDataNotAvailableEntity : MemfaultEntity
 
 data class MemfaultDataEntity(
     val config: ConfigData,
-    val message: String
-) : MemfaultEntity
+    val message: ByteArray
+) : MemfaultEntity {
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MemfaultDataEntity
+
+        if (config != other.config) return false
+        if (!message.contentEquals(other.message)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = config.hashCode()
+        result = 31 * result + message.contentHashCode()
+        return result
+    }
+}
 
 data class ConfigData(
     val authorisation: AuthorisationHeader,

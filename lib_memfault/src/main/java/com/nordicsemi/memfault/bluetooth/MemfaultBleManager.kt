@@ -103,7 +103,7 @@ internal class MemfaultBleManager(
 
                 val config = ConfigData(AuthorisationHeader(authorisation), deviceId, url)
 
-                setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<StringReadResponse>().onEach {
+                setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<ByteReadResponse>().onEach {
                     dataHolder.setValue(MemfaultDataEntity(config, it.value!!))
                 }.launchIn(scope)
                 enableNotifications(mdsDataExportCharacteristic).suspend()

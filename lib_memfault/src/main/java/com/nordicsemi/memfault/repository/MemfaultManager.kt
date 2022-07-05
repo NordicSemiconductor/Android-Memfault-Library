@@ -33,6 +33,7 @@ package com.nordicsemi.memfault.repository
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.util.Log
 import com.nordicsemi.memfault.bluetooth.*
 import com.nordicsemi.memfault.network.NetworkApi
 import kotlinx.coroutines.GlobalScope
@@ -55,7 +56,12 @@ class MemfaultManager @Inject constructor() {
         val bleManager = MemfaultBleManager(context, GlobalScope)
         manager = bleManager
         bleManager.dataHolder.status.onEach {
+            Log.d("AAAA", "Data received: $it")
+            (it as? SuccessResult)?.data?.let {
+                Log.d("AAAA", "Success: $it")
+            }
             ((it as? SuccessResult)?.data as? MemfaultDataEntity)?.let {
+                Log.d("AAAA", "Data should be sent")
                 val network = createNetwork(it.config.authorisation)
                 network.sendLog(it.config.url, it.message)
             }
