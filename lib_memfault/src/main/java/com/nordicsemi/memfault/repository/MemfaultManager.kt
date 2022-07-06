@@ -33,17 +33,11 @@ package com.nordicsemi.memfault.repository
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.util.Log
-import com.nordicsemi.memfault.bluetooth.*
-import com.nordicsemi.memfault.network.NetworkApi
+import com.nordicsemi.memfault.bluetooth.BleManagerResult
+import com.nordicsemi.memfault.bluetooth.MemfaultBleManager
+import com.nordicsemi.memfault.bluetooth.MemfaultEntity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Inject
 
 class MemfaultManager @Inject constructor() {
@@ -55,40 +49,6 @@ class MemfaultManager @Inject constructor() {
     suspend fun install(context: Context, device: BluetoothDevice) {
         val bleManager = MemfaultBleManager(context, GlobalScope)
         manager = bleManager
-        bleManager.dataHolder.status.onEach {
-            Log.d("AAAA", "Data received: $it")
-            (it as? SuccessResult)?.data?.let {
-                Log.d("AAAA", "Success: $it")
-            }
-            ((it as? SuccessResult)?.data as? MemfaultDataEntity)?.let {
-                Log.d("AAAA", "Data should be sent")
-                val network = createNetwork(it.config.authorisation)
-                network.sendLog(it.config.url, it.message)
-            }
-        }.launchIn(GlobalScope)
-
         bleManager.start(device)
-    }
-
-    private fun createNetwork(header: AuthorisationHeader): NetworkApi {
-        val httpClient = OkHttpClient.Builder().apply {
-            addInterceptor { chain ->
-                val request = chain.request()
-                    .newBuilder()
-                    .addHeader(header.key, header.value)
-                    .build()
-
-                chain.proceed(request)
-            }
-            addInterceptor(HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) })
-        }.build()
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://nordicsemi.com")
-            .addConverterFactory(MoshiConverterFactory.create())
-            .client(httpClient)
-            .build()
-
-        return retrofit.create(NetworkApi::class.java)
     }
 }

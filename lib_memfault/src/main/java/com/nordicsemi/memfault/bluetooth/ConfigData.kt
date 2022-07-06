@@ -66,7 +66,8 @@ data class ConfigData(
 )
 
 data class AuthorisationHeader(
-    val header: String
+    val header: String,
+    val chunkNumber: Byte
 ) {
 
     val key: String
