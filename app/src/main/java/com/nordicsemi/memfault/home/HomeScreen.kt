@@ -31,15 +31,18 @@
 
 package com.nordicsemi.memfault.home
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,9 +59,25 @@ fun HomeScreen() {
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(stringResource(id = R.string.app_info))
+            Image(
+                painter = painterResource(id = R.drawable.ic_dk),
+                contentDescription = stringResource(id = R.string.cd_start_image),
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondary)
+                    .padding(32.dp)
+            )
 
-            Spacer(modifier = Modifier.fillMaxSize().weight(1f))
+            Spacer(modifier = Modifier.size(16.dp))
+
+            Text(
+                stringResource(id = R.string.app_info),
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Spacer(modifier = Modifier
+                .fillMaxSize()
+                .weight(1f))
 
             Button(onClick = { viewModel.navigateNext() }) {
                 Text(stringResource(id = R.string.start))

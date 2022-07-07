@@ -38,6 +38,8 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <string name="cd_start_image">Start icon representing a board.</string>
+
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 
@@ -51,5 +53,7 @@
 
     <string name="start">Start</string>
 
-    <string name="app_info">Memfault is used to gather logs and memory dumps from a DK when fatal exception occurs.</string>
+    <string name="app_info">Application allows to gather monitor logs from nRF devices and upload it to the cloud.
+\n\nThis two step process requires Bluetooth and stable network connection.
+\n\nDownloaded logs will be visible in cloud console.</string>
 </resources>
