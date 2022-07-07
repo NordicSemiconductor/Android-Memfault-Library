@@ -30,7 +30,7 @@
   -->
 
 <resources>
-    <string name="app_name">Android-Memfault-Library</string>
+    <string name="app_name">nRF Memfault</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -53,6 +53,14 @@
     <string name="app_bar_title">Memfault</string>
 
     <string name="start">Start</string>
+    <string name="abort">Abort</string>
+
+    <string name="progress_ble">Downloading logs over BLE</string>
+    <string name="progress_rest">Uploading logs to server</string>
+    <string name="progress_connecting">Connecting</string>
+    <string name="progress_downloading">Downloading logs</string>
+    <string name="progress_completed">Completed</string>
+    <string name="progress_uploading">Uploading</string>
 
     <string name="app_info">Application allows to gather monitor logs from nRF devices and upload it to the cloud.
 \n\nThis two step process requires Bluetooth and stable network connection.

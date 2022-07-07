@@ -32,10 +32,18 @@
 package com.nordicsemi.memfault.dumping
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Divider
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
 import com.nordicsemi.memfault.home.BackIconAppBar
@@ -45,9 +53,48 @@ fun DumpingScreen() {
     val viewModel: DumpingViewModel = hiltViewModel()
     val status = viewModel.status.collectAsState()
 
-    Column {
+    Column(
+        modifier = Modifier.padding(bottom = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         BackIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.navigateBack() }
 
-        Text(status.value.toString())
+        ScreenItem(title = stringResource(id = R.string.progress_ble))
+
+        ScreenItem(
+            title = stringResource(id = R.string.progress_ble),
+            leftIcon = R.drawable.ic_circle,
+            info = "99%",
+            isSelected = true
+        )
+        ScreenItem(
+            title = stringResource(id = R.string.progress_downloading),
+            leftIcon = R.drawable.ic_circle
+        )
+        ScreenItem(
+            title = stringResource(id = R.string.progress_completed),
+            leftIcon = R.drawable.ic_circle
+        )
+
+        Divider(modifier = Modifier.padding(16.dp))
+
+        ScreenItem(title = stringResource(id = R.string.progress_rest))
+
+        ScreenItem(
+            title = stringResource(id = R.string.progress_uploading),
+            leftIcon = R.drawable.ic_circle
+        )
+        ScreenItem(
+            title = stringResource(id = R.string.progress_completed),
+            leftIcon = R.drawable.ic_circle
+        )
+
+        Spacer(modifier = Modifier
+            .fillMaxSize()
+            .weight(1f))
+
+        OutlinedButton(onClick = { /*TODO*/ }) {
+            Text(stringResource(id = R.string.abort))
+        }
     }
 }
