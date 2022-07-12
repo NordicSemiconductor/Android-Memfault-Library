@@ -62,11 +62,17 @@ class DumpingViewModel @Inject constructor(
     private val memfaultManager: MemfaultManager
 ) : ViewModel() {
 
-    private val _status = MutableStateFlow<BleManagerResult<MemfaultEntity>>(IdleResult())
+    private val _status = MutableStateFlow<BleManagerResult>(IdleResult)
     val status = _status.asStateFlow()
 
     init {
         requestBluetoothDevice()
+    }
+
+    fun disconnect() {
+        viewModelScope.launch {
+            memfaultManager.disconnect()
+        }
     }
 
     fun navigateBack() {

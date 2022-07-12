@@ -38,17 +38,23 @@ import com.nordicsemi.memfault.bluetooth.MemfaultBleManager
 import com.nordicsemi.memfault.bluetooth.MemfaultEntity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.StateFlow
+import no.nordicsemi.android.ble.ktx.suspend
 import javax.inject.Inject
 
 class MemfaultManager @Inject constructor() {
 
     private var manager: MemfaultBleManager? = null
-    val status: StateFlow<BleManagerResult<MemfaultEntity>>?
+    val status: StateFlow<BleManagerResult>?
         get() = manager?.dataHolder?.status
 
     suspend fun install(context: Context, device: BluetoothDevice) {
         val bleManager = MemfaultBleManager(context, GlobalScope)
         manager = bleManager
         bleManager.start(device)
+    }
+
+    suspend fun disconnect() {
+        manager?.disconnect()?.suspend()
+        manager = null
     }
 }

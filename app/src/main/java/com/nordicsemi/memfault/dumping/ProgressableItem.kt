@@ -22,8 +22,9 @@ import com.nordicsemi.memfault.R
 fun ScreenItem(
     title: String,
     @DrawableRes leftIcon: Int? = null,
-    info: String? = null,
-    isSelected: Boolean = false
+    description: String? = null,
+    isSelected: Boolean = false,
+    isActive: Boolean = false
 ) {
 
     val backgroundColor = if (isSelected) {
@@ -49,20 +50,34 @@ fun ScreenItem(
             Spacer(modifier = Modifier.size(16.dp))
         }
 
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.weight(1f)
-        )
-
-        info?.let {
-            Spacer(modifier = Modifier.size(16.dp))
-
+        Column {
             Text(
-                text = info,
-                style = MaterialTheme.typography.titleSmall
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.fillMaxWidth(),
+                color = getTextColor(isActive)
             )
+
+            description?.let {
+                Spacer(modifier = Modifier.size(8.dp))
+
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth(),
+                    color = getTextColor(isActive)
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun getTextColor(isActive: Boolean): Color {
+    return if (isActive) {
+        Color.Unspecified
+    } else {
+        MaterialTheme.colorScheme.outline
     }
 }
 

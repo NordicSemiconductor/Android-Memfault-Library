@@ -71,6 +71,7 @@ internal class MemfaultBleManager(
 
     private val LOG = "MEMFAULT"
 
+    private val chunkValidator = ChunkValidator()
     private var mdsSupportedFeaturesCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsDeviceIdCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsDataUriCharacteristic: BluetoothGattCharacteristic? = null
@@ -81,7 +82,6 @@ internal class MemfaultBleManager(
 
     init {
         connectionObserver = dataHolder
-        dataHolder.setValue(MemfaultDataNotAvailableEntity)
     }
 
     override fun log(priority: Int, message: String) {
@@ -116,8 +116,17 @@ internal class MemfaultBleManager(
 
                 setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<ByteReadResponse>()
                     .onEach {
-                        val network = createNetwork(AuthorisationHeader(authorisation, it.chunkNumber!!))
-                        network.sendLog(config.url, ByteArrayRequestBody(it.value!!))
+                        val chunkNumber = it.chunkNumber!!.toInt()
+                        val data = it.value!!
+                        val network = createNetwork(AuthorisationHeader(authorisation, chunkNumber))
+
+                        chunkValidator.validateChunk(chunkNumber)
+
+                        val request = ByteArrayRequestBody(data)
+                        network.sendLog(config.url, request)
+
+                        dataHolder.updateProgress(chunkNumber, data)
+
                         //Nasty delay to synchronise requests.
                         delay(1000)
                     }.launchIn(scope)

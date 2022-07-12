@@ -35,7 +35,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Divider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
+import com.nordicsemi.memfault.bluetooth.*
 import com.nordicsemi.memfault.home.BackIconAppBar
 
 @Composable
@@ -59,42 +59,76 @@ fun DumpingScreen() {
     ) {
         BackIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.navigateBack() }
 
-        ScreenItem(title = stringResource(id = R.string.progress_ble))
+        ConnectingItem(status.value)
 
-        ScreenItem(
-            title = stringResource(id = R.string.progress_ble),
-            leftIcon = R.drawable.ic_circle,
-            info = "99%",
-            isSelected = true
-        )
-        ScreenItem(
-            title = stringResource(id = R.string.progress_downloading),
-            leftIcon = R.drawable.ic_circle
-        )
-        ScreenItem(
-            title = stringResource(id = R.string.progress_completed),
-            leftIcon = R.drawable.ic_circle
-        )
+        UploadingItem(status.value)
 
-        Divider(modifier = Modifier.padding(16.dp))
+        ResultItem(status.value)
 
-        ScreenItem(title = stringResource(id = R.string.progress_rest))
+        Spacer(modifier = Modifier.fillMaxSize().weight(1f))
 
-        ScreenItem(
-            title = stringResource(id = R.string.progress_uploading),
-            leftIcon = R.drawable.ic_circle
-        )
-        ScreenItem(
-            title = stringResource(id = R.string.progress_completed),
-            leftIcon = R.drawable.ic_circle
-        )
-
-        Spacer(modifier = Modifier
-            .fillMaxSize()
-            .weight(1f))
-
-        OutlinedButton(onClick = { /*TODO*/ }) {
+        if (status.value is SuccessResult)
+        OutlinedButton(onClick = { viewModel.disconnect() }) {
             Text(stringResource(id = R.string.abort))
+        }
+    }
+}
+
+@Composable
+private fun ConnectingItem(state: BleManagerResult) {
+    ScreenItem(
+        title = stringResource(id = R.string.connecting),
+        isActive = true,
+        isSelected = state is IdleResult || state is ConnectingResult
+    )
+}
+
+@Composable
+private fun UploadingItem(state: BleManagerResult) {
+    when (state) {
+        is IdleResult, is ConnectingResult -> {
+            ScreenItem(
+                title = stringResource(id = R.string.first_item),
+                isActive = false
+            )
+        }
+        is WorkingResult -> {
+            ScreenItem(
+                title = stringResource(id = R.string.next_item, state.chunk),
+                description = state.getDisplayData(),
+                isActive = true,
+                isSelected = true,
+            )
+        }
+        else -> {
+            ScreenItem(
+                title = stringResource(id = R.string.last_item),
+                isActive = true
+            )
+        }
+    }
+}
+
+@Composable
+private fun ResultItem(state: BleManagerResult) {
+    when (state) {
+        is SuccessResult -> {
+            ScreenItem(
+                title = stringResource(id = R.string.success_timeout_item),
+                isActive = true
+            )
+        }
+        is ErrorResult -> {
+            ScreenItem(
+                title = stringResource(id = R.string.error_disconnected_item),
+                isActive = true
+            )
+        }
+        else -> {
+            ScreenItem(
+                title = stringResource(id = R.string.result),
+                isActive = false
+            )
         }
     }
 }

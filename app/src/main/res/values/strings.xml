@@ -55,6 +55,14 @@
     <string name="start">Start</string>
     <string name="abort">Abort</string>
 
+    <string name="connecting">Connecting…</string>
+    <string name="first_item">Waiting for first item…</string>
+    <string name="next_item">Uploading chunk number: %d</string>
+    <string name="last_item">Items upload finished.</string>
+    <string name="success_timeout_item">Upload finished after timeout.</string>
+    <string name="error_disconnected_item">Upload finished with error.</string>
+    <string name="result">Result</string>
+
     <string name="progress_ble">Downloading logs over BLE</string>
     <string name="progress_rest">Uploading logs to server</string>
     <string name="progress_connecting">Connecting</string>

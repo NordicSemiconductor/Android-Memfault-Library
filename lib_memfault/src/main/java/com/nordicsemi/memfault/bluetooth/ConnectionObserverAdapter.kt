@@ -41,33 +41,26 @@ class ConnectionObserverAdapter<T> : ConnectionObserver {
 
     private val TAG = "BLE-CONNECTION"
 
-    private val _status = MutableStateFlow<BleManagerResult<T>>(IdleResult())
+    private val _status = MutableStateFlow<BleManagerResult>(IdleResult)
     val status = _status.asStateFlow()
-
-    private var lastValue: T? = null
-
-    private fun getData(): T? {
-        return (_status.value as? SuccessResult)?.data
-    }
 
     override fun onDeviceConnecting(device: BluetoothDevice) {
         Log.d(TAG, "onDeviceConnecting()")
-        _status.value = ConnectingResult(device)
+        _status.value = ConnectingResult
     }
 
     override fun onDeviceConnected(device: BluetoothDevice) {
         Log.d(TAG, "onDeviceConnected()")
-        _status.value = ConnectedResult(device)
     }
 
     override fun onDeviceFailedToConnect(device: BluetoothDevice, reason: Int) {
         Log.d(TAG, "onDeviceFailedToConnect(), reason: $reason")
-        _status.value = MissingServiceResult(device)
+        _status.value = ErrorResult
     }
 
     override fun onDeviceReady(device: BluetoothDevice) {
         Log.d(TAG, "onDeviceReady()")
-        _status.value = SuccessResult(device, lastValue!!)
+        _status.value = ConnectedResult
     }
 
     override fun onDeviceDisconnecting(device: BluetoothDevice) {
@@ -76,18 +69,10 @@ class ConnectionObserverAdapter<T> : ConnectionObserver {
 
     override fun onDeviceDisconnected(device: BluetoothDevice, reason: Int) {
         Log.d(TAG, "onDeviceDisconnected(), reason: $reason")
-        _status.value = when (reason) {
-            ConnectionObserver.REASON_NOT_SUPPORTED -> MissingServiceResult(device)
-            ConnectionObserver.REASON_LINK_LOSS -> LinkLossResult(device, getData())
-            ConnectionObserver.REASON_SUCCESS -> DisconnectedResult(device)
-            else -> UnknownErrorResult(device)
-        }
+        _status.value = ErrorResult
     }
 
-    fun setValue(value: T) {
-        lastValue = value
-        (_status.value as? SuccessResult)?.let {
-            _status.value = SuccessResult(it.device, value)
-        }
+    fun updateProgress(chunkNumber: Int, data: ByteArray) {
+        _status.value = WorkingResult(chunkNumber, data)
     }
 }
