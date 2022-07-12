@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.util.Log
+import com.nordicsemi.memfault.network.ByteArrayRequestBody
 import com.nordicsemi.memfault.network.NetworkApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -117,7 +118,10 @@ internal class MemfaultBleManager(
                 setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<ByteReadResponse>()
                     .onEach {
                         val network = createNetwork(AuthorisationHeader(authorisation, it.chunkNumber!!))
-                        network.sendLog(config.url, it.value!!)
+                        Log.d("AAATESTAAA", "send: ${it.value!!}")
+                        Log.d("AAATESTAAA", "send string: ${it.value!!}")
+                        Log.d("AAATESTAAA", "send decoded string: ${it.value!!.decodeToString()}")
+                        network.sendLog(config.url, ByteArrayRequestBody(it.value!!))
                         //Nasty delay to synchronise requests.
                         delay(1000)
                     }.launchIn(scope)

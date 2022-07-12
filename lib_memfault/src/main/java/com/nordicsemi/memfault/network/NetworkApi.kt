@@ -31,6 +31,10 @@
 
 package com.nordicsemi.memfault.network
 
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
+import okio.BufferedSink
 import retrofit2.http.*
 
 interface NetworkApi {
@@ -39,6 +43,21 @@ interface NetworkApi {
     @POST
     suspend fun sendLog(
         @Url url: String,
-        @Body user: ByteArray
+        @Body user: ByteArrayRequestBody
     )
+}
+
+class ByteArrayRequestBody(private val data: ByteArray) : RequestBody() {
+
+    override fun contentType(): MediaType? {
+        return "application/octet-stream".toMediaTypeOrNull()
+    }
+
+    override fun writeTo(sink: BufferedSink) {
+        sink.write(data)
+    }
+
+    override fun contentLength(): Long {
+        return data.size.toLong()
+    }
 }

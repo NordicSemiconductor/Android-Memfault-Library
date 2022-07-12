@@ -33,6 +33,7 @@ package com.nordicsemi.memfault.dumping
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nordicsemi.memfault.bluetooth.BleManagerResult
@@ -51,7 +52,6 @@ import no.nordicsemi.android.navigation.*
 import no.nordicsemi.ui.scanner.ScannerDestinationId
 import no.nordicsemi.ui.scanner.ui.exhaustive
 import no.nordicsemi.ui.scanner.ui.getDevice
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -95,10 +95,9 @@ class DumpingViewModel @Inject constructor(
             memfaultManager.install(context, device)
 
             memfaultManager.status?.onEach {
+                Log.d("AAATESTAAA", "Status: $it")
                 _status.value = it
             }?.launchIn(viewModelScope)
         }
     }
 }
-
-private val HRS_SERVICE_UUID: UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb")
