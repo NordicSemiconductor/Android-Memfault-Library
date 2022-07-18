@@ -31,8 +31,6 @@
 
 package com.nordicsemi.memfault.bluetooth
 
-import okio.ByteString.Companion.toByteString
-
 sealed interface BleManagerResult
 
 object IdleResult : BleManagerResult
@@ -43,7 +41,6 @@ data class WorkingResult(
     val chunks: List<UploadedChunk>
 ) : BleManagerResult
 
-object SuccessResult : BleManagerResult
 object ErrorResult : BleManagerResult
 
 data class UploadedChunk(

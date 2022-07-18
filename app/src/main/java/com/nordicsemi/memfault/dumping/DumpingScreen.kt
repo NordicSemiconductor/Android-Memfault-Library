@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -54,6 +55,11 @@ fun DumpingScreen() {
     val viewModel: DumpingViewModel = hiltViewModel()
     val state = viewModel.status.collectAsState().value
 
+    if (state is ErrorResult) {
+        ErrorItem(viewModel = viewModel)
+        return
+    }
+
     Scaffold(
         topBar = { BackIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.disconnect() } },
         floatingActionButton = {
@@ -67,14 +73,6 @@ fun DumpingScreen() {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = stringResource(id = R.string.uploaded_chunks),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.size(16.dp))
-
                 if (state is IdleResult || state is ConnectingResult || state is ConnectedResult) {
                     LoadingView()
                 } else if (state is WorkingResult) {
@@ -90,10 +88,39 @@ private fun UploadingItem(state: WorkingResult) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        item {
+            Text(
+                text = stringResource(id = R.string.uploaded_chunks),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         items(state.chunks) {
             ScreenItem(
                 title = stringResource(id = R.string.next_item, it.number),
                 description = it.getDisplayData()
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ErrorItem(viewModel: DumpingViewModel) {
+    Scaffold(
+        topBar = { BackIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.disconnect() } },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(onClick = { viewModel.disconnect() }) {
+                FabContent(Icons.Default.ArrowBack, stringResource(id = R.string.go_back))
+            }
+        }
+    ) {
+        Box(modifier = Modifier.padding(it)) {
+            Text(
+                text = stringResource(id = R.string.error),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(16.dp)
             )
         }
     }

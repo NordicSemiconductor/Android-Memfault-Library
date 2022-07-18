@@ -55,6 +55,8 @@
 
     <string name="start">Start</string>
     <string name="abort">Abort</string>
+    <string name="go_back">Go back</string>
+    <string name="error">An error has occurred. The connection has been dropped.</string>
 
     <string name="connecting">Connecting…</string>
     <string name="first_item">Waiting for first item…</string>

@@ -39,6 +39,8 @@ import android.util.Log
 import com.nordicsemi.memfault.network.NetworkApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -101,42 +103,54 @@ internal class MemfaultBleManager(
             super.initialize()
 
             scope.launch {
-                //TODO error handling
-                val deviceId = readCharacteristic(mdsDeviceIdCharacteristic)
-                    .suspendForValidResponse<StringReadResponse>()
-                    .value!!
-                val url = readCharacteristic(mdsDataUriCharacteristic)
-                    .suspendForValidResponse<StringReadResponse>()
-                    .value!!
-                val authorisation = readCharacteristic(mdsAuthorisationCharacteristic)
-                    .suspendForValidResponse<StringReadResponse>()
-                    .value!!
+                try {
+                    val deviceId = readCharacteristic(mdsDeviceIdCharacteristic)
+                        .suspendForValidResponse<StringReadResponse>()
+                        .value!!
+                    val url = readCharacteristic(mdsDataUriCharacteristic)
+                        .suspendForValidResponse<StringReadResponse>()
+                        .value!!
+                    val authorisation = readCharacteristic(mdsAuthorisationCharacteristic)
+                        .suspendForValidResponse<StringReadResponse>()
+                        .value!!
 
-                val config = ConfigData(AuthorisationHeader(authorisation, 0), deviceId, url)
+                    val config = ConfigData(AuthorisationHeader(authorisation, 0), deviceId, url)
 
-                setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<ByteReadResponse>()
-                    .onEach {
-                        val chunkNumber = it.chunkNumber!!.toInt()
-                        val data = it.value!!
-                        val network = createNetwork(AuthorisationHeader(authorisation, chunkNumber))
+                    setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<ByteReadResponse>()
+                        .cancellable()
+                        .catch {
+                            //catch catches only exceptions from inside the flow
+                            disconnectWithCatch()
+                        }
+                        .onEach {
+                            try {
+                                val chunkNumber = it.chunkNumber!!.toInt()
+                                val data = it.value!!
+                                val network = createNetwork(AuthorisationHeader(authorisation, chunkNumber))
 
-                        chunkValidator.validateChunk(chunkNumber)
+                                chunkValidator.validateChunk(chunkNumber)
 
-                        val request = ByteArrayRequestBody(data)
-                        network.sendLog(config.url, request)
+                                val request = ByteArrayRequestBody(data)
+                                network.sendLog(config.url, request)
 
-                        dataHolder.updateProgress(chunkNumber, data)
+                                dataHolder.updateProgress(chunkNumber, data)
 
-                        //Nasty delay to synchronise requests.
-                        delay(1000)
-                    }.launchIn(scope)
-                enableNotifications(mdsDataExportCharacteristic).suspend()
+                                //Nasty delay to synchronise requests.
+                                delay(1000)
+                            } catch (e: Exception) {
+                                disconnectWithCatch()
+                            }
+                        }.launchIn(scope)
+                    enableNotifications(mdsDataExportCharacteristic).suspend()
 
-                writeCharacteristic(
-                    mdsDataExportCharacteristic,
-                    byteArrayOf(0x01),
-                    BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-                ).suspend()
+                    writeCharacteristic(
+                        mdsDataExportCharacteristic,
+                        byteArrayOf(0x01),
+                        BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                    ).suspend()
+                } catch (e: Exception) {
+                    disconnectWithCatch()
+                }
             }
         }
 
@@ -164,6 +178,14 @@ internal class MemfaultBleManager(
             mdsDataUriCharacteristic = null
             mdsAuthorisationCharacteristic = null
             mdsDataExportCharacteristic = null
+        }
+    }
+
+    suspend fun disconnectWithCatch() {
+        try {
+            disconnect().suspend()
+        } catch (e: Exception) {
+            //do nothing
         }
     }
 

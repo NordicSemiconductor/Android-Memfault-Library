@@ -37,7 +37,6 @@ import com.nordicsemi.memfault.bluetooth.BleManagerResult
 import com.nordicsemi.memfault.bluetooth.MemfaultBleManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.StateFlow
-import no.nordicsemi.android.ble.ktx.suspend
 import javax.inject.Inject
 
 class MemfaultManager @Inject constructor() {
@@ -52,7 +51,7 @@ class MemfaultManager @Inject constructor() {
     }
 
     suspend fun disconnect() {
-        manager?.disconnect()?.suspend()
+        manager?.disconnectWithCatch()
         manager = null
     }
 }
