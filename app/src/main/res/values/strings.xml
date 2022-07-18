@@ -51,13 +51,14 @@
     <string name="disconnect">Disconnect</string>
 
     <string name="app_bar_title">Memfault</string>
+    <string name="uploaded_chunks">Uploaded chunks</string>
 
     <string name="start">Start</string>
     <string name="abort">Abort</string>
 
     <string name="connecting">Connecting…</string>
     <string name="first_item">Waiting for first item…</string>
-    <string name="next_item">Uploading chunk number: %d</string>
+    <string name="next_item">Chunk number: %d</string>
     <string name="last_item">Items upload finished.</string>
     <string name="success_timeout_item">Upload finished after timeout.</string>
     <string name="error_disconnected_item">Upload finished with error.</string>
@@ -69,6 +70,8 @@
     <string name="progress_downloading">Downloading logs</string>
     <string name="progress_completed">Completed</string>
     <string name="progress_uploading">Uploading</string>
+
+    <string name="cd_icon_stop">Disconnect and stop uploading logs.</string>
 
     <string name="app_info">Application allows to gather monitor logs from nRF devices and upload it to the cloud.
 \n\nThis two step process requires Bluetooth and stable network connection.

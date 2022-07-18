@@ -31,12 +31,12 @@
 
 package com.nordicsemi.memfault.dumping
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -48,86 +48,52 @@ import com.nordicsemi.memfault.R
 import com.nordicsemi.memfault.bluetooth.*
 import com.nordicsemi.memfault.home.BackIconAppBar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DumpingScreen() {
     val viewModel: DumpingViewModel = hiltViewModel()
-    val status = viewModel.status.collectAsState()
+    val state = viewModel.status.collectAsState().value
 
-    Column(
-        modifier = Modifier.padding(bottom = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        topBar = { BackIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.disconnect() } },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(onClick = { viewModel.disconnect() }) {
+                FabContent(Icons.Default.Stop, stringResource(id = R.string.abort))
+            }
+        }
     ) {
-        BackIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.navigateBack() }
+        Box(modifier = Modifier.padding(it)) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(id = R.string.uploaded_chunks),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-        ConnectingItem(status.value)
+                Spacer(modifier = Modifier.size(16.dp))
 
-        UploadingItem(status.value)
-
-        ResultItem(status.value)
-
-        Spacer(modifier = Modifier.fillMaxSize().weight(1f))
-
-        if (status.value is SuccessResult)
-        OutlinedButton(onClick = { viewModel.disconnect() }) {
-            Text(stringResource(id = R.string.abort))
+                if (state is IdleResult || state is ConnectingResult || state is ConnectedResult) {
+                    LoadingView()
+                } else if (state is WorkingResult) {
+                    UploadingItem(state)
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun ConnectingItem(state: BleManagerResult) {
-    ScreenItem(
-        title = stringResource(id = R.string.connecting),
-        isActive = true,
-        isSelected = state is IdleResult || state is ConnectingResult
-    )
-}
-
-@Composable
-private fun UploadingItem(state: BleManagerResult) {
-    when (state) {
-        is IdleResult, is ConnectingResult -> {
+private fun UploadingItem(state: WorkingResult) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(state.chunks) {
             ScreenItem(
-                title = stringResource(id = R.string.first_item),
-                isActive = false
-            )
-        }
-        is WorkingResult -> {
-            ScreenItem(
-                title = stringResource(id = R.string.next_item, state.chunk),
-                description = state.getDisplayData(),
-                isActive = true,
-                isSelected = true,
-            )
-        }
-        else -> {
-            ScreenItem(
-                title = stringResource(id = R.string.last_item),
-                isActive = true
-            )
-        }
-    }
-}
-
-@Composable
-private fun ResultItem(state: BleManagerResult) {
-    when (state) {
-        is SuccessResult -> {
-            ScreenItem(
-                title = stringResource(id = R.string.success_timeout_item),
-                isActive = true
-            )
-        }
-        is ErrorResult -> {
-            ScreenItem(
-                title = stringResource(id = R.string.error_disconnected_item),
-                isActive = true
-            )
-        }
-        else -> {
-            ScreenItem(
-                title = stringResource(id = R.string.result),
-                isActive = false
+                title = stringResource(id = R.string.next_item, it.number),
+                description = it.getDisplayData()
             )
         }
     }

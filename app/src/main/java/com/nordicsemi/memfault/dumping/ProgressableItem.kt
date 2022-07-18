@@ -21,6 +21,28 @@ import com.nordicsemi.memfault.R
 @Composable
 fun ScreenItem(
     title: String,
+    description: String
+) {
+    Column {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.size(4.dp))
+
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+fun ScreenItem(
+    title: String,
     @DrawableRes leftIcon: Int? = null,
     description: String? = null,
     isSelected: Boolean = false,

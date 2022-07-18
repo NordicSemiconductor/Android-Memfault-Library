@@ -73,6 +73,9 @@ class ConnectionObserverAdapter<T> : ConnectionObserver {
     }
 
     fun updateProgress(chunkNumber: Int, data: ByteArray) {
-        _status.value = WorkingResult(chunkNumber, data)
+        val chunk = UploadedChunk(chunkNumber, data)
+        _status.value = (_status.value as? WorkingResult)?.let {
+            it.copy(chunks = it.chunks + chunk)
+        } ?: WorkingResult(listOf(chunk))
     }
 }

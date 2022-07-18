@@ -35,9 +35,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Start
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,40 +47,41 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
+import com.nordicsemi.memfault.dumping.FabContent
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
     val viewModel: HomeViewModel = hiltViewModel()
 
-    Column {
-        CloseIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.navigateBack() }
+    Scaffold(
+        topBar = { CloseIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.navigateBack() } },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(onClick = { viewModel.navigateNext() }) {
+                FabContent(Icons.Default.Start, stringResource(id = R.string.start))
+            }
+        }
+    ) {
+        Box(modifier = Modifier.padding(it)) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_dk),
+                    contentDescription = stringResource(id = R.string.cd_start_image),
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondary)
+                        .padding(32.dp)
+                )
 
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_dk),
-                contentDescription = stringResource(id = R.string.cd_start_image),
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondary)
-                    .padding(32.dp)
-            )
+                Spacer(modifier = Modifier.size(16.dp))
 
-            Spacer(modifier = Modifier.size(16.dp))
-
-            Text(
-                stringResource(id = R.string.app_info),
-                style = MaterialTheme.typography.bodyLarge
-            )
-
-            Spacer(modifier = Modifier
-                .fillMaxSize()
-                .weight(1f))
-
-            Button(onClick = { viewModel.navigateNext() }) {
-                Text(stringResource(id = R.string.start))
+                Text(
+                    stringResource(id = R.string.app_info),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
     }

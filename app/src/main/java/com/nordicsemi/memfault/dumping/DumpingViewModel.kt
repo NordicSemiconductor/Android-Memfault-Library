@@ -39,7 +39,6 @@ import androidx.lifecycle.viewModelScope
 import com.nordicsemi.memfault.bluetooth.BleManagerResult
 import com.nordicsemi.memfault.bluetooth.IdleResult
 import com.nordicsemi.memfault.bluetooth.MDS_SERVICE_UUID
-import com.nordicsemi.memfault.bluetooth.MemfaultEntity
 import com.nordicsemi.memfault.repository.MemfaultManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -72,6 +71,7 @@ class DumpingViewModel @Inject constructor(
     fun disconnect() {
         viewModelScope.launch {
             memfaultManager.disconnect()
+            navigationManager.navigateUp()
         }
     }
 
@@ -98,12 +98,10 @@ class DumpingViewModel @Inject constructor(
 
     private fun installBluetoothDevice(device: BluetoothDevice) {
         viewModelScope.launch {
-            memfaultManager.install(context, device)
-
-            memfaultManager.status?.onEach {
+            memfaultManager.install(context, device).onEach {
                 Log.d("AAATESTAAA", "Status: $it")
                 _status.value = it
-            }?.launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
         }
     }
 }
