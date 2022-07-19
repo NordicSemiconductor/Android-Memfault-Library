@@ -60,7 +60,7 @@ fun DumpingScreen() {
     val stats = viewModel.stats.collectAsState().value
 
     if (state is ErrorResult) {
-        ErrorItem(viewModel = viewModel)
+        ErrorItem(viewModel = viewModel, error = state, stats = stats)
         return
     }
 
@@ -115,7 +115,7 @@ private fun UploadingItem(state: WorkingResult) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ErrorItem(viewModel: DumpingViewModel) {
+private fun ErrorItem(viewModel: DumpingViewModel, error: ErrorResult, stats: StatsViewEntity) {
     Scaffold(
         topBar = { BackIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.disconnect() } },
         floatingActionButton = {
@@ -124,13 +124,26 @@ private fun ErrorItem(viewModel: DumpingViewModel) {
             }
         }
     ) {
-        Box(modifier = Modifier.padding(it)) {
-            Text(
-                text = stringResource(id = R.string.error),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(16.dp)
-            )
+        Column(modifier = Modifier.padding(it)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                StatsView(stats)
+
+                Spacer(modifier = Modifier.size(16.dp))
+
+                Text(
+                    text = stringResource(id = R.string.error),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+
+                Spacer(modifier = Modifier.size(16.dp))
+
+                Text(
+                    text = error.exception.toString(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
     }
 }

@@ -41,7 +41,7 @@ data class WorkingResult(
     val chunks: List<UploadedChunk>
 ) : BleManagerResult
 
-object ErrorResult : BleManagerResult
+data class ErrorResult(val exception: Throwable) : BleManagerResult
 
 data class UploadedChunk(
     val number: Int,

@@ -50,7 +50,7 @@ class MemfaultManager @Inject constructor() {
         return bleManager.dataHolder.status
     }
 
-    suspend fun disconnect() {
+    fun disconnect() {
         manager?.disconnectWithCatch()
         manager = null
     }

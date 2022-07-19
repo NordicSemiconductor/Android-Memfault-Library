@@ -120,7 +120,7 @@ internal class MemfaultBleManager(
                         .cancellable()
                         .catch {
                             //catch catches only exceptions from inside the flow
-                            disconnectWithCatch()
+                            dataHolder.updateError(it)
                         }
                         .onEach {
                             try {
@@ -138,7 +138,7 @@ internal class MemfaultBleManager(
                                 //Nasty delay to synchronise requests.
                                 delay(1000)
                             } catch (e: Exception) {
-                                disconnectWithCatch()
+                                dataHolder.updateError(e)
                             }
                         }.launchIn(scope)
                     enableNotifications(mdsDataExportCharacteristic).suspend()
@@ -149,7 +149,7 @@ internal class MemfaultBleManager(
                         BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
                     ).suspend()
                 } catch (e: Exception) {
-                    disconnectWithCatch()
+                    dataHolder.updateError(e)
                 }
             }
         }
@@ -181,9 +181,9 @@ internal class MemfaultBleManager(
         }
     }
 
-    suspend fun disconnectWithCatch() {
+    fun disconnectWithCatch() {
         try {
-            disconnect().suspend()
+            disconnect().enqueue()
         } catch (e: Exception) {
             //do nothing
         }

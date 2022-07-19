@@ -82,10 +82,6 @@ class DumpingViewModel @Inject constructor(
         }
     }
 
-    fun navigateBack() {
-        navigationManager.navigateUp()
-    }
-
     private fun requestBluetoothDevice() {
         navigationManager.navigateTo(ScannerDestinationId, UUIDArgument(MDS_SERVICE_UUID))
 
@@ -114,5 +110,10 @@ class DumpingViewModel @Inject constructor(
                 }
             }.launchIn(viewModelScope)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        memfaultManager.disconnect()
     }
 }

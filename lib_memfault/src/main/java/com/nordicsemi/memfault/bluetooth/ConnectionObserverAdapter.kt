@@ -35,6 +35,7 @@ import android.bluetooth.BluetoothDevice
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import no.nordicsemi.android.ble.exception.ConnectionException
 import no.nordicsemi.android.ble.observer.ConnectionObserver
 
 class ConnectionObserverAdapter<T> : ConnectionObserver {
@@ -55,7 +56,7 @@ class ConnectionObserverAdapter<T> : ConnectionObserver {
 
     override fun onDeviceFailedToConnect(device: BluetoothDevice, reason: Int) {
         Log.d(TAG, "onDeviceFailedToConnect(), reason: $reason")
-        _status.value = ErrorResult
+        updateError(ConnectionException())
     }
 
     override fun onDeviceReady(device: BluetoothDevice) {
@@ -69,7 +70,6 @@ class ConnectionObserverAdapter<T> : ConnectionObserver {
 
     override fun onDeviceDisconnected(device: BluetoothDevice, reason: Int) {
         Log.d(TAG, "onDeviceDisconnected(), reason: $reason")
-        _status.value = ErrorResult
     }
 
     fun updateProgress(chunkNumber: Int, data: ByteArray) {
@@ -77,5 +77,9 @@ class ConnectionObserverAdapter<T> : ConnectionObserver {
         _status.value = (_status.value as? WorkingResult)?.let {
             it.copy(chunks = it.chunks + chunk)
         } ?: WorkingResult(listOf(chunk))
+    }
+
+    fun updateError(e: Throwable) {
+        _status.value = ErrorResult(e)
     }
 }
