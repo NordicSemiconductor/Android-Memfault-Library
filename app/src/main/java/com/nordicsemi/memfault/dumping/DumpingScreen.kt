@@ -31,6 +31,7 @@
 
 package com.nordicsemi.memfault.dumping
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,7 +43,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
@@ -54,6 +57,7 @@ import com.nordicsemi.memfault.home.BackIconAppBar
 fun DumpingScreen() {
     val viewModel: DumpingViewModel = hiltViewModel()
     val state = viewModel.status.collectAsState().value
+    val stats = viewModel.stats.collectAsState().value
 
     if (state is ErrorResult) {
         ErrorItem(viewModel = viewModel)
@@ -73,6 +77,18 @@ fun DumpingScreen() {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                StatsView(stats)
+
+                Spacer(modifier = Modifier.size(16.dp))
+
+                Text(
+                    text = stringResource(id = R.string.uploaded_chunks),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.size(16.dp))
+
                 if (state is IdleResult || state is ConnectingResult || state is ConnectedResult) {
                     LoadingView()
                 } else if (state is WorkingResult) {
@@ -86,15 +102,8 @@ fun DumpingScreen() {
 @Composable
 private fun UploadingItem(state: WorkingResult) {
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        item {
-            Text(
-                text = stringResource(id = R.string.uploaded_chunks),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
         items(state.chunks) {
             ScreenItem(
                 title = stringResource(id = R.string.next_item, it.number),
@@ -123,5 +132,60 @@ private fun ErrorItem(viewModel: DumpingViewModel) {
                 modifier = Modifier.padding(16.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun StatsView(stats: StatsViewEntity) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        StatsItem(
+            R.drawable.ic_chunk,
+            stringResource(id = R.string.chunks),
+            stats.displayChunks()
+        )
+        Spacer(modifier = Modifier.size(16.dp))
+        StatsItem(
+            R.drawable.ic_time,
+            stringResource(id = R.string.uptime),
+            stats.displayWorkingTime()
+        )
+        Spacer(modifier = Modifier.size(16.dp))
+        StatsItem(
+            R.drawable.ic_bug_stop,
+            stringResource(id = R.string.standby),
+            stats.displayLastChunkUpdate()
+        )
+    }
+}
+
+@Composable
+private fun StatsItem(
+    @DrawableRes
+    iconRes: Int,
+    title: String,
+    description: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.widthIn(max = 60.dp),
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Row {
+            Icon(painter = painterResource(id = iconRes), contentDescription = title)
+        }
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }

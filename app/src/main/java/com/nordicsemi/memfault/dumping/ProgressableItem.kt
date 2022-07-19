@@ -26,11 +26,9 @@ fun ScreenItem(
     Column {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.fillMaxWidth(),
         )
-
-        Spacer(modifier = Modifier.size(4.dp))
 
         Text(
             text = description,

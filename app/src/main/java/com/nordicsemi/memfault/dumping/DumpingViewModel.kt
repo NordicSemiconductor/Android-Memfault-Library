@@ -36,16 +36,12 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nordicsemi.memfault.bluetooth.BleManagerResult
-import com.nordicsemi.memfault.bluetooth.IdleResult
-import com.nordicsemi.memfault.bluetooth.MDS_SERVICE_UUID
+import com.nordicsemi.memfault.bluetooth.*
 import com.nordicsemi.memfault.repository.MemfaultManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.channels.ticker
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.navigation.*
 import no.nordicsemi.ui.scanner.ScannerDestinationId
@@ -64,8 +60,19 @@ class DumpingViewModel @Inject constructor(
     private val _status = MutableStateFlow<BleManagerResult>(IdleResult)
     val status = _status.asStateFlow()
 
+    private val _stats = MutableStateFlow(StatsViewEntity())
+    val stats = _stats.asStateFlow()
+
     init {
         requestBluetoothDevice()
+
+        ticker(1000).consumeAsFlow().onEach {
+            val stats = _stats.value
+            _stats.value = stats.copy(
+                workingTime = stats.workingTime+1,
+                lastChunkUpdateTime = stats.lastChunkUpdateTime+1
+            )
+        }.launchIn(viewModelScope)
     }
 
     fun disconnect() {
@@ -101,6 +108,10 @@ class DumpingViewModel @Inject constructor(
             memfaultManager.install(context, device).onEach {
                 Log.d("AAATESTAAA", "Status: $it")
                 _status.value = it
+
+                (it as? WorkingResult)?.let {
+                    _stats.value = _stats.value.copy(chunks = it.chunks.size, lastChunkUpdateTime = 0)
+                }
             }.launchIn(viewModelScope)
         }
     }

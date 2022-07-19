@@ -53,6 +53,10 @@
     <string name="app_bar_title">Memfault</string>
     <string name="uploaded_chunks">Uploaded chunks</string>
 
+    <string name="chunks">Chunks</string>
+    <string name="standby">Standby</string>
+    <string name="uptime">Uptime</string>
+
     <string name="start">Start</string>
     <string name="abort">Abort</string>
     <string name="go_back">Go back</string>
