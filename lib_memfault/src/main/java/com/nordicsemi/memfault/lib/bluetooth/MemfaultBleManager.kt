@@ -29,14 +29,14 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.bluetooth
+package com.nordicsemi.memfault.lib.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.util.Log
-import com.nordicsemi.memfault.network.NetworkApi
+import com.nordicsemi.memfault.lib.network.NetworkApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable

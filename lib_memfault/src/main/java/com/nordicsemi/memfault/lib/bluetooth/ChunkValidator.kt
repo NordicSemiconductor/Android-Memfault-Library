@@ -1,4 +1,4 @@
-package com.nordicsemi.memfault.bluetooth
+package com.nordicsemi.memfault.lib.bluetooth
 
 class ChunkValidator {
 

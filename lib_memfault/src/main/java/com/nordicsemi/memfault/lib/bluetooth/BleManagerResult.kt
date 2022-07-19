@@ -29,26 +29,45 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault
+package com.nordicsemi.memfault.lib.bluetooth
 
-import com.nordicsemi.memfault.network.NetworkApi
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+sealed interface BleManagerResult
 
-@Module
-@InstallIn(SingletonComponent::class)
-class MemfaultModule {
+object IdleResult : BleManagerResult
+object ConnectingResult : BleManagerResult
+object ConnectedResult : BleManagerResult
 
-    @Provides
-    fun provideNetworkApi(): NetworkApi {
-        val retrofit = Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create())
-            .build()
+data class WorkingResult(
+    val chunks: List<UploadedChunk>
+) : BleManagerResult
 
-        return retrofit.create(NetworkApi::class.java)
+data class ErrorResult(val exception: Throwable) : BleManagerResult
+
+data class UploadedChunk(
+    val number: Int,
+    val data: ByteArray
+) {
+    fun getDisplayData() = "[${
+        data.joinToString(separator = "-") {
+            it.toUByte().toString()
+        }
+    }]"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as UploadedChunk
+
+        if (number != other.number) return false
+        if (!data.contentEquals(other.data)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = number
+        result = 31 * result + data.contentHashCode()
+        return result
     }
 }

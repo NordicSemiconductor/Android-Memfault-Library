@@ -49,8 +49,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
-import com.nordicsemi.memfault.bluetooth.*
 import com.nordicsemi.memfault.home.BackIconAppBar
+import com.nordicsemi.memfault.lib.bluetooth.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

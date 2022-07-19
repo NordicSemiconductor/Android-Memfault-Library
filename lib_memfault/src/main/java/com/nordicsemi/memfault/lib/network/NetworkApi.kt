@@ -29,53 +29,20 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.bluetooth
+package com.nordicsemi.memfault.lib.network
 
-sealed interface MemfaultEntity
+import com.nordicsemi.memfault.lib.bluetooth.ByteArrayRequestBody
+import retrofit2.http.Body
+import retrofit2.http.Headers
+import retrofit2.http.POST
+import retrofit2.http.Url
 
-object MemfaultDataNotAvailableEntity : MemfaultEntity
+interface NetworkApi {
 
-data class MemfaultDataEntity(
-    val config: ConfigData,
-    val message: ByteArray
-) : MemfaultEntity {
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MemfaultDataEntity
-
-        if (config != other.config) return false
-        if (!message.contentEquals(other.message)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = config.hashCode()
-        result = 31 * result + message.contentHashCode()
-        return result
-    }
-}
-
-data class ConfigData(
-    val authorisation: AuthorisationHeader,
-    val deviceId: String,
-    val url: String
-)
-
-data class AuthorisationHeader(
-    val header: String,
-    val chunkNumber: Int
-) {
-
-    val key: String
-    val value: String
-
-    init {
-        val components = header.split(":")
-        key = components[0]
-        value = components[1]
-    }
+    @Headers("Content-Type: application/octet-stream")
+    @POST
+    suspend fun sendLog(
+        @Url url: String,
+        @Body user: ByteArrayRequestBody
+    )
 }

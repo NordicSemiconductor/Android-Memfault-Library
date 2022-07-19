@@ -29,45 +29,29 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.bluetooth
+package com.nordicsemi.memfault.lib.repository
 
-sealed interface BleManagerResult
+import android.bluetooth.BluetoothDevice
+import android.content.Context
+import com.nordicsemi.memfault.lib.bluetooth.BleManagerResult
+import com.nordicsemi.memfault.lib.bluetooth.MemfaultBleManager
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-object IdleResult : BleManagerResult
-object ConnectingResult : BleManagerResult
-object ConnectedResult : BleManagerResult
+class MemfaultManager @Inject constructor() {
 
-data class WorkingResult(
-    val chunks: List<UploadedChunk>
-) : BleManagerResult
+    private var manager: MemfaultBleManager? = null
 
-data class ErrorResult(val exception: Throwable) : BleManagerResult
-
-data class UploadedChunk(
-    val number: Int,
-    val data: ByteArray
-) {
-    fun getDisplayData() = "[${
-        data.joinToString(separator = "-") {
-            it.toUByte().toString()
-        }
-    }]"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as UploadedChunk
-
-        if (number != other.number) return false
-        if (!data.contentEquals(other.data)) return false
-
-        return true
+    suspend fun install(context: Context, device: BluetoothDevice): StateFlow<BleManagerResult> {
+        val bleManager = MemfaultBleManager(context, GlobalScope)
+        manager = bleManager
+        bleManager.start(device)
+        return bleManager.dataHolder.status
     }
 
-    override fun hashCode(): Int {
-        var result = number
-        result = 31 * result + data.contentHashCode()
-        return result
+    fun disconnect() {
+        manager?.disconnectWithCatch()
+        manager = null
     }
 }

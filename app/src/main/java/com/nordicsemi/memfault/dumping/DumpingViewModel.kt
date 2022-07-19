@@ -36,8 +36,11 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nordicsemi.memfault.bluetooth.*
-import com.nordicsemi.memfault.repository.MemfaultManager
+import com.nordicsemi.memfault.lib.bluetooth.BleManagerResult
+import com.nordicsemi.memfault.lib.bluetooth.IdleResult
+import com.nordicsemi.memfault.lib.bluetooth.MDS_SERVICE_UUID
+import com.nordicsemi.memfault.lib.bluetooth.WorkingResult
+import com.nordicsemi.memfault.lib.repository.MemfaultManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.ticker

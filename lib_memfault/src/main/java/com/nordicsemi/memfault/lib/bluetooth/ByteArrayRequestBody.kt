@@ -1,4 +1,4 @@
-package com.nordicsemi.memfault.bluetooth
+package com.nordicsemi.memfault.lib.bluetooth
 
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull

@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.bluetooth
+package com.nordicsemi.memfault.lib.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.util.Log

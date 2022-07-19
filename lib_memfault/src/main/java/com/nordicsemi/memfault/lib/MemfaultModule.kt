@@ -29,19 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.bluetooth
+package com.nordicsemi.memfault.lib
 
-import android.bluetooth.BluetoothDevice
-import no.nordicsemi.android.ble.callback.profile.ProfileReadResponse
-import no.nordicsemi.android.ble.data.Data
+import com.nordicsemi.memfault.lib.network.NetworkApi
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
 
-class StringReadResponse : ProfileReadResponse() {
+@Module
+@InstallIn(SingletonComponent::class)
+class MemfaultModule {
 
-    var value: String? = null
+    @Provides
+    fun provideNetworkApi(): NetworkApi {
+        val retrofit = Retrofit.Builder()
+            .addConverterFactory(MoshiConverterFactory.create())
+            .build()
 
-    override fun onDataReceived(device: BluetoothDevice, data: Data) {
-        super.onDataReceived(device, data)
-
-        value = data.getStringValue(0)
+        return retrofit.create(NetworkApi::class.java)
     }
 }

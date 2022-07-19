@@ -29,29 +29,19 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.repository
+package com.nordicsemi.memfault.lib.bluetooth
 
 import android.bluetooth.BluetoothDevice
-import android.content.Context
-import com.nordicsemi.memfault.bluetooth.BleManagerResult
-import com.nordicsemi.memfault.bluetooth.MemfaultBleManager
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.StateFlow
-import javax.inject.Inject
+import no.nordicsemi.android.ble.callback.profile.ProfileReadResponse
+import no.nordicsemi.android.ble.data.Data
 
-class MemfaultManager @Inject constructor() {
+class StringReadResponse : ProfileReadResponse() {
 
-    private var manager: MemfaultBleManager? = null
+    var value: String? = null
 
-    suspend fun install(context: Context, device: BluetoothDevice): StateFlow<BleManagerResult> {
-        val bleManager = MemfaultBleManager(context, GlobalScope)
-        manager = bleManager
-        bleManager.start(device)
-        return bleManager.dataHolder.status
-    }
+    override fun onDataReceived(device: BluetoothDevice, data: Data) {
+        super.onDataReceived(device, data)
 
-    fun disconnect() {
-        manager?.disconnectWithCatch()
-        manager = null
+        value = data.getStringValue(0)
     }
 }
