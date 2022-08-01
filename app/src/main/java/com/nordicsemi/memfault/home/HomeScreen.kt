@@ -32,16 +32,14 @@
 package com.nordicsemi.memfault.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Start
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -55,7 +53,7 @@ fun HomeScreen() {
     val viewModel: HomeViewModel = hiltViewModel()
 
     Scaffold(
-        topBar = { CloseIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.navigateBack() } },
+        topBar = { HomeIconAppBar(text = stringResource(id = R.string.app_bar_title)) },
         floatingActionButton = {
             ExtendedFloatingActionButton(onClick = { viewModel.navigateNext() }) {
                 FabContent(Icons.Default.Start, stringResource(id = R.string.start))
@@ -68,12 +66,10 @@ fun HomeScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_dk),
+                    painter = painterResource(id = R.drawable.ic_intro),
                     contentDescription = stringResource(id = R.string.cd_start_image),
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondary)
-                        .padding(32.dp)
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    contentScale = ContentScale.FillWidth
                 )
 
                 Spacer(modifier = Modifier.size(16.dp))

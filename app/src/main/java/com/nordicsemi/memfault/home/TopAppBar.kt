@@ -34,7 +34,6 @@ package com.nordicsemi.memfault.home
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -48,8 +47,7 @@ import com.nordicsemi.memfault.R as mainR
 import no.nordicsemi.android.logger.R as loggerR
 
 @Composable
-fun CloseIconAppBar(text: String, onClick: () -> Unit) {
-
+fun HomeIconAppBar(text: String) {
     SmallTopAppBar(
         title = { Text(text, maxLines = 2) },
         colors = TopAppBarDefaults.smallTopAppBarColors(
@@ -58,15 +56,7 @@ fun CloseIconAppBar(text: String, onClick: () -> Unit) {
             titleContentColor = MaterialTheme.colorScheme.onPrimary,
             actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
             navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-        ),
-        navigationIcon = {
-            IconButton(onClick = { onClick() }) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = stringResource(id = mainR.string.close_app),
-                )
-            }
-        }
+        )
     )
 }
 
