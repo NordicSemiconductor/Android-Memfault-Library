@@ -38,7 +38,6 @@ import android.content.Context
 import android.util.Log
 import com.nordicsemi.memfault.lib.network.NetworkApi
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
@@ -134,9 +133,6 @@ internal class MemfaultBleManager(
                                 network.sendLog(config.url, request)
 
                                 dataHolder.updateProgress(chunkNumber, data)
-
-                                //Nasty delay to synchronise requests.
-                                delay(1000)
                             } catch (e: Exception) {
                                 dataHolder.updateError(e)
                             }
