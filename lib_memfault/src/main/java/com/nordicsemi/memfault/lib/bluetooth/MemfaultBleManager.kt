@@ -142,6 +142,7 @@ internal class MemfaultBleManager(
                     BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
                 ).suspend()
             }
+            requestMtu(512).enqueue()
         }
 
         public override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
