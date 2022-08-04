@@ -34,7 +34,7 @@ package com.nordicsemi.memfault.home
 import androidx.lifecycle.ViewModel
 import com.nordicsemi.memfault.DumpingDestinationId
 import dagger.hilt.android.lifecycle.HiltViewModel
-import no.nordicsemi.android.navigation.NavigationManager
+import no.nordicsemi.android.common.navigation.NavigationManager
 import javax.inject.Inject
 
 @HiltViewModel

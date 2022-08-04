@@ -33,23 +33,21 @@ package com.nordicsemi.memfault.dumping
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nordicsemi.memfault.lib.MemfaultManager
 import com.nordicsemi.memfault.lib.bluetooth.BleManagerResult
 import com.nordicsemi.memfault.lib.bluetooth.IdleResult
 import com.nordicsemi.memfault.lib.bluetooth.MDS_SERVICE_UUID
 import com.nordicsemi.memfault.lib.bluetooth.WorkingResult
-import com.nordicsemi.memfault.lib.repository.MemfaultManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import no.nordicsemi.android.navigation.*
-import no.nordicsemi.ui.scanner.ScannerDestinationId
-import no.nordicsemi.ui.scanner.ui.exhaustive
-import no.nordicsemi.ui.scanner.ui.getDevice
+import no.nordicsemi.android.common.navigation.*
+import no.nordicsemi.android.common.ui.scanner.ScannerDestinationId
+import no.nordicsemi.android.common.ui.scanner.model.getDevice
 import javax.inject.Inject
 
 @HiltViewModel
@@ -99,13 +97,12 @@ class DumpingViewModel @Inject constructor(
         when (args) {
             is CancelDestinationResult -> navigationManager.navigateUp()
             is SuccessDestinationResult -> installBluetoothDevice(args.getDevice().device)
-        }.exhaustive
+        }
     }
 
     private fun installBluetoothDevice(device: BluetoothDevice) {
         viewModelScope.launch {
             memfaultManager.install(context, device).onEach {
-                Log.d("AAATESTAAA", "Status: $it")
                 _status.value = it
 
                 (it as? WorkingResult)?.let {

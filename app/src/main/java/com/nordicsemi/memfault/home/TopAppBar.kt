@@ -42,10 +42,11 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.android.theme.R
+import no.nordicsemi.android.common.theme.R
 import com.nordicsemi.memfault.R as mainR
-import no.nordicsemi.android.logger.R as loggerR
+import no.nordicsemi.android.common.ui.logger.R as loggerR
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeIconAppBar(text: String) {
     SmallTopAppBar(
@@ -60,6 +61,7 @@ fun HomeIconAppBar(text: String) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoggerBackIconAppBar(text: String, onClick: () -> Unit) {
     SmallTopAppBar(
@@ -93,6 +95,7 @@ fun LoggerBackIconAppBar(text: String, onClick: () -> Unit) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackIconAppBar(text: String, onClick: () -> Unit) {
     SmallTopAppBar(
@@ -116,6 +119,7 @@ fun BackIconAppBar(text: String, onClick: () -> Unit) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoggerIconAppBar(text: String, onClick: () -> Unit, onDisconnectClick: () -> Unit, onLoggerClick: () -> Unit) {
     SmallTopAppBar(

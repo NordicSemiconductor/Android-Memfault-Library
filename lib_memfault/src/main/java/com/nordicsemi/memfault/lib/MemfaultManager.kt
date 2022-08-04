@@ -31,24 +31,26 @@
 
 package com.nordicsemi.memfault.lib
 
-import com.nordicsemi.memfault.lib.network.NetworkApi
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import android.bluetooth.BluetoothDevice
+import android.content.Context
+import com.nordicsemi.memfault.lib.bluetooth.BleManagerResult
+import com.nordicsemi.memfault.lib.bluetooth.MemfaultBleManager
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.StateFlow
 
-@Module
-@InstallIn(SingletonComponent::class)
-class MemfaultModule {
+class MemfaultManager {
 
-    @Provides
-    fun provideNetworkApi(): NetworkApi {
-        val retrofit = Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create())
-            .build()
+    private var manager: MemfaultBleManager? = null
 
-        return retrofit.create(NetworkApi::class.java)
+    suspend fun install(context: Context, device: BluetoothDevice): StateFlow<BleManagerResult> {
+        val bleManager = MemfaultBleManager(context, GlobalScope)
+        manager = bleManager
+        bleManager.start(device)
+        return bleManager.dataHolder.status
+    }
+
+    fun disconnect() {
+        manager?.disconnectWithCatch()
+        manager = null
     }
 }

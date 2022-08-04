@@ -29,29 +29,18 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.lib.repository
+package com.nordicsemi.memfault
 
-import android.bluetooth.BluetoothDevice
-import android.content.Context
-import com.nordicsemi.memfault.lib.bluetooth.BleManagerResult
-import com.nordicsemi.memfault.lib.bluetooth.MemfaultBleManager
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.StateFlow
-import javax.inject.Inject
+import com.nordicsemi.memfault.lib.MemfaultManager
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 
-class MemfaultManager @Inject constructor() {
+@Module
+@InstallIn(SingletonComponent::class)
+internal class MemfaultModule {
 
-    private var manager: MemfaultBleManager? = null
-
-    suspend fun install(context: Context, device: BluetoothDevice): StateFlow<BleManagerResult> {
-        val bleManager = MemfaultBleManager(context, GlobalScope)
-        manager = bleManager
-        bleManager.start(device)
-        return bleManager.dataHolder.status
-    }
-
-    fun disconnect() {
-        manager?.disconnectWithCatch()
-        manager = null
-    }
+    @Provides
+    fun providesMemfaultManager() = MemfaultManager()
 }
