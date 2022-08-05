@@ -31,41 +31,15 @@
 
 package com.nordicsemi.memfault.lib.bluetooth
 
-sealed interface MemfaultEntity
+internal sealed interface MemfaultEntity
 
-object MemfaultDataNotAvailableEntity : MemfaultEntity
-
-data class MemfaultDataEntity(
-    val config: ConfigData,
-    val message: ByteArray
-) : MemfaultEntity {
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MemfaultDataEntity
-
-        if (config != other.config) return false
-        if (!message.contentEquals(other.message)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = config.hashCode()
-        result = 31 * result + message.contentHashCode()
-        return result
-    }
-}
-
-data class ConfigData(
+internal data class ConfigData(
     val authorisation: AuthorisationHeader,
     val deviceId: String,
     val url: String
 )
 
-data class AuthorisationHeader(
+internal data class AuthorisationHeader(
     val header: String,
     val chunkNumber: Int
 ) {

@@ -99,7 +99,7 @@ class DumpingViewModel @Inject constructor(
 
     private fun installBluetoothDevice(device: BluetoothDevice) {
         viewModelScope.launch {
-            memfaultManager.install(context, device).onEach {
+            memfaultManager.install(context, device).collect {
                 when (it) {
                     IdleResult,
                     ConnectedResult,
@@ -107,11 +107,11 @@ class DumpingViewModel @Inject constructor(
                     is ErrorResult -> _status.value = it
                     DisconnectedResult -> navigationManager.navigateUp()
                     is WorkingResult -> {
-                        _stats.value.copy(chunks = it.chunks.size, lastChunkUpdateTime = 0)
+                        _stats.value = _stats.value.copy(chunks = it.chunks.size, lastChunkUpdateTime = 0)
                         _status.value = it
                     }
                 }
-            }.launchIn(viewModelScope)
+            }
         }
     }
 

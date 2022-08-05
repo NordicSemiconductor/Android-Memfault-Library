@@ -1,6 +1,6 @@
 package com.nordicsemi.memfault.lib.bluetooth
 
-class ChunkValidator {
+internal class ChunkValidator {
 
     private var expectedChunk = 0
 

@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.ble.exception.ConnectionException
 import no.nordicsemi.android.ble.observer.ConnectionObserver
 
-class ConnectionObserverAdapter<T> : ConnectionObserver {
+internal class ConnectionObserverAdapter<T> : ConnectionObserver {
 
     private val TAG = "BLE-CONNECTION"
 

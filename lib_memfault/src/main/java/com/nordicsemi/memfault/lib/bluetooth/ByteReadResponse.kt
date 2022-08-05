@@ -7,7 +7,7 @@ import no.nordicsemi.android.ble.data.Data
 
 private const val TAG = "DATA-RECEIVER"
 
-class ByteReadResponse : ProfileReadResponse() {
+internal class ByteReadResponse : ProfileReadResponse() {
 
     var value: ByteArray? = null
     var chunkNumber: Byte? = null
