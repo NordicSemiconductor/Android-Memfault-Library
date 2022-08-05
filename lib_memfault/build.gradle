@@ -44,8 +44,8 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
     implementation "com.squareup.okhttp3:logging-interceptor:4.9.3"
 
-    implementation "no.nordicsemi.android:ble-common:2.4.1"
-    implementation "no.nordicsemi.android:ble-ktx:2.4.1"
+    implementation "no.nordicsemi.android:ble-common:2.5.1"
+    implementation "no.nordicsemi.android:ble-ktx:2.5.1"
     implementation "no.nordicsemi.android.support.v18:scanner:1.6.0"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2"
