@@ -70,6 +70,7 @@ class ConnectionObserverAdapter<T> : ConnectionObserver {
 
     override fun onDeviceDisconnected(device: BluetoothDevice, reason: Int) {
         Log.d(TAG, "onDeviceDisconnected(), reason: $reason")
+        _status.value = DisconnectedResult
     }
 
     fun updateProgress(chunkNumber: Int, data: ByteArray) {

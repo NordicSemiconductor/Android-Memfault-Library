@@ -43,6 +43,8 @@ data class WorkingResult(
 
 data class ErrorResult(val exception: Throwable) : BleManagerResult
 
+object DisconnectedResult : BleManagerResult
+
 data class UploadedChunk(
     val number: Int,
     val data: ByteArray

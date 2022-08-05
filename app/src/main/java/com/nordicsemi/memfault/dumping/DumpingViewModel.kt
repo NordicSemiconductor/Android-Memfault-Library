@@ -36,10 +36,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nordicsemi.memfault.lib.MemfaultManager
-import com.nordicsemi.memfault.lib.bluetooth.BleManagerResult
-import com.nordicsemi.memfault.lib.bluetooth.IdleResult
-import com.nordicsemi.memfault.lib.bluetooth.MDS_SERVICE_UUID
-import com.nordicsemi.memfault.lib.bluetooth.WorkingResult
+import com.nordicsemi.memfault.lib.bluetooth.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.ticker
@@ -103,10 +100,16 @@ class DumpingViewModel @Inject constructor(
     private fun installBluetoothDevice(device: BluetoothDevice) {
         viewModelScope.launch {
             memfaultManager.install(context, device).onEach {
-                _status.value = it
-
-                (it as? WorkingResult)?.let {
-                    _stats.value = _stats.value.copy(chunks = it.chunks.size, lastChunkUpdateTime = 0)
+                when (it) {
+                    IdleResult,
+                    ConnectedResult,
+                    ConnectingResult,
+                    is ErrorResult -> _status.value = it
+                    DisconnectedResult -> navigationManager.navigateUp()
+                    is WorkingResult -> {
+                        _stats.value.copy(chunks = it.chunks.size, lastChunkUpdateTime = 0)
+                        _status.value = it
+                    }
                 }
             }.launchIn(viewModelScope)
         }
