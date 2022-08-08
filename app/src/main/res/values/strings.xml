@@ -80,6 +80,6 @@
     <string name="cd_icon_stop">Disconnect and stop uploading logs.</string>
 
     <string name="app_info">Application allows to gather crash logs from nRF devices and uploads them to the cloud.
-\n\nThis two step process requires Bluetooth and stable network connection.
+\n\nThis two step process requires Bluetooth Low Energy and a stable network connection.
 \n\nUploaded logs will be visible in the Memfault account on the web browser.</string>
 </resources>
