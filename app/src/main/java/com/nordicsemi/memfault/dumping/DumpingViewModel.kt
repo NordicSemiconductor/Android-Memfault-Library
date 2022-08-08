@@ -76,7 +76,6 @@ class DumpingViewModel @Inject constructor(
     fun disconnect() {
         viewModelScope.launch {
             memfaultManager.disconnect()
-            navigationManager.navigateUp()
         }
     }
 
