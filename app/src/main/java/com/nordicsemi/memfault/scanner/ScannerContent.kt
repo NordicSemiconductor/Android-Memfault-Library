@@ -29,41 +29,32 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.home
+package com.nordicsemi.memfault.scanner
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.nordicsemi.memfault.DumpingDestinationArgs
-import com.nordicsemi.memfault.DumpingDestinationId
-import com.nordicsemi.memfault.lib.bluetooth.MDS_SERVICE_UUID
-import com.nordicsemi.memfault.scanner.ScannerArgument
-import com.nordicsemi.memfault.scanner.ScannerDestinationId
-import com.nordicsemi.memfault.scanner.ScannerSuccessResult
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
 import no.nordicsemi.android.common.navigation.NavigationManager
-import no.nordicsemi.android.common.ui.scanner.model.DiscoveredBluetoothDevice
-import javax.inject.Inject
+import no.nordicsemi.android.common.permission.view.PermissionViewModel
+import no.nordicsemi.android.common.ui.scanner.ScannerResultCancel
+import no.nordicsemi.android.common.ui.scanner.ScannerResultSuccess
+import no.nordicsemi.android.common.ui.scanner.ScannerScreen
 
-@HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val navigationManager: NavigationManager
-) : ViewModel() {
+@Composable
+fun ScannerContent(navigationManager: NavigationManager) {
+    val argument = navigationManager.getArgument(ScannerDestinationId) as ScannerArgument
+    val viewModel = hiltViewModel<PermissionViewModel>()
+    val isLocationPermissionRequired = viewModel.isLocationPermissionRequired.collectAsState().value
 
-    init {
-        navigationManager.recentResult.onEach {
-            if (it is ScannerSuccessResult) {
-                navigateToDumpingScreen(it.device)
+    ScannerScreen(
+        uuid = argument.uuid,
+        isLocationPermissionRequired = isLocationPermissionRequired,
+        onResult = {
+            when (it) {
+                ScannerResultCancel -> navigationManager.navigateUp(ScannerCancelResult(ScannerDestinationId))
+                is ScannerResultSuccess -> navigationManager.navigateUp(ScannerSuccessResult(ScannerDestinationId, it.device))
             }
-        }.launchIn(viewModelScope)
-    }
-
-    fun navigateToScanner() {
-        navigationManager.navigateTo(ScannerDestinationId, ScannerArgument(ScannerDestinationId, MDS_SERVICE_UUID))
-    }
-
-    private fun navigateToDumpingScreen(device: DiscoveredBluetoothDevice) {
-        navigationManager.navigateTo(DumpingDestinationId, DumpingDestinationArgs(DumpingDestinationId, device))
-    }
+        },
+        onDevicesDiscovered = { viewModel.onDevicesDiscovered() }
+    )
 }

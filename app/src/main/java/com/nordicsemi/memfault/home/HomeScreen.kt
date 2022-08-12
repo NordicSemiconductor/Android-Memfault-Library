@@ -55,7 +55,7 @@ fun HomeScreen() {
     Scaffold(
         topBar = { HomeIconAppBar(text = stringResource(id = R.string.app_bar_title)) },
         floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = { viewModel.navigateNext() }) {
+            ExtendedFloatingActionButton(onClick = { viewModel.navigateToScanner() }) {
                 FabContent(Icons.Default.Start, stringResource(id = R.string.start))
             }
         }
