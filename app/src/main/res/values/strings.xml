@@ -38,6 +38,7 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <string name="cd_memfault">The logo of Memfault.</string>
     <string name="cd_start_image">Start icon representing a board.</string>
     <string name="cd_progress_icon">Icon representing current progress stage.</string>
 
@@ -79,7 +80,8 @@
 
     <string name="cd_icon_stop">Disconnect and stop uploading logs.</string>
 
-    <string name="app_info">Application allows to gather crash logs from nRF devices and uploads them to the cloud.
-\n\nThis two step process requires Bluetooth Low Energy and a stable network connection.
-\n\nUploaded logs will be visible in the Memfault account on the web browser.</string>
+    <string name="app_info">An Android library that can connect to a Bluetooth LE device, download dump logs and upload them to the [Memfault console](https://docs.memfault.com).
+\n\nThe device should contain predefined [GATT characteristics](https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b).
+\n\nThe library maintains connection as long as the user decides.
+    </string>
 </resources>

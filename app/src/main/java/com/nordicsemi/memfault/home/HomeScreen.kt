@@ -33,8 +33,6 @@ package com.nordicsemi.memfault.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Start
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,7 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
-import com.nordicsemi.memfault.dumping.FabContent
+import no.nordicsemi.android.common.theme.view.NordicText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,12 +51,7 @@ fun HomeScreen() {
     val viewModel: HomeViewModel = hiltViewModel()
 
     Scaffold(
-        topBar = { HomeIconAppBar(text = stringResource(id = R.string.app_bar_title)) },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = { viewModel.navigateToScanner() }) {
-                FabContent(Icons.Default.Start, stringResource(id = R.string.start))
-            }
-        }
+        topBar = { HomeIconAppBar(text = stringResource(id = R.string.app_bar_title)) }
     ) {
         Box(modifier = Modifier.padding(it)) {
             Column(
@@ -66,18 +59,23 @@ fun HomeScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_intro),
-                    contentDescription = stringResource(id = R.string.cd_start_image),
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    painter = painterResource(id = R.drawable.ic_memfault),
+                    contentDescription = stringResource(id = R.string.cd_memfault),
                     contentScale = ContentScale.FillWidth
                 )
 
                 Spacer(modifier = Modifier.size(16.dp))
 
-                Text(
+                NordicText(
                     stringResource(id = R.string.app_info),
                     style = MaterialTheme.typography.bodyLarge
                 )
+
+                Spacer(modifier = Modifier.size(32.dp))
+
+                Button(onClick = { viewModel.navigateToScanner() }) {
+                    Text(text = stringResource(id = R.string.start))
+                }
             }
         }
     }
