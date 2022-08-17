@@ -122,8 +122,7 @@ internal class MemfaultBleManager(
                         .collect {
                             val chunkNumber = it.chunkNumber!!.toInt()
                             val data = it.value!!
-                            val network =
-                                createNetwork(AuthorisationHeader(authorisation, chunkNumber))
+                            val network = createNetwork(AuthorisationHeader(authorisation, chunkNumber))
 
                             chunkValidator.validateChunk(chunkNumber)
 

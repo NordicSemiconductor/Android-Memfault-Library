@@ -51,6 +51,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
 import com.nordicsemi.memfault.home.BackIconAppBar
 import com.nordicsemi.memfault.lib.bluetooth.*
+import no.nordicsemi.android.common.theme.ScreenSection
+import no.nordicsemi.android.common.theme.view.SectionTitle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,22 +79,26 @@ fun DumpingScreen() {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                StatsView(stats)
+                ScreenSection {
+                    SectionTitle(resId = R.drawable.ic_chart, title = stringResource(id = R.string.statistics))
+
+                    Spacer(modifier = Modifier.size(16.dp))
+
+                    StatsView(stats)
+                }
 
                 Spacer(modifier = Modifier.size(16.dp))
 
-                Text(
-                    text = stringResource(id = R.string.uploaded_chunks),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                ScreenSection {
+                    SectionTitle(resId = R.drawable.ic_chunk, title = stringResource(id = R.string.uploaded_chunks))
 
-                Spacer(modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.size(16.dp))
 
-                if (state is IdleResult || state is ConnectingResult || state is ConnectedResult) {
-                    LoadingView()
-                } else if (state is WorkingResult) {
-                    UploadingItem(state)
+                    if (state is IdleResult || state is ConnectingResult || state is ConnectedResult) {
+                        LoadingView()
+                    } else if (state is WorkingResult) {
+                        UploadingItem(state)
+                    }
                 }
             }
         }
@@ -185,16 +191,16 @@ private fun StatsItem(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row {
+            Icon(painter = painterResource(id = iconRes), contentDescription = title)
+        }
+        Spacer(modifier = Modifier.size(8.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.widthIn(max = 60.dp),
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.size(8.dp))
-        Row {
-            Icon(painter = painterResource(id = iconRes), contentDescription = title)
-        }
         Spacer(modifier = Modifier.size(8.dp))
         Text(
             text = description,

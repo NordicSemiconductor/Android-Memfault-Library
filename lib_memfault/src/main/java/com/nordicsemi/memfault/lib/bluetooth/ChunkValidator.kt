@@ -8,7 +8,7 @@ internal class ChunkValidator {
         if (chunk == expectedChunk) {
             expectedChunk++
 
-            if (expectedChunk >= 31) {
+            if (expectedChunk > 31) {
                 expectedChunk = 0
             }
         } else {

@@ -37,6 +37,7 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <string name="statistics">Statistics</string>
 
     <string name="cd_memfault">The logo of Memfault.</string>
     <string name="cd_start_image">Start icon representing a board.</string>
