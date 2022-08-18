@@ -31,10 +31,6 @@
 
 package com.nordicsemi.memfault.lib.bluetooth
 
-import android.util.Log
-import com.google.iot.cbor.CborMap
-import okio.ByteString.Companion.toByteString
-
 sealed interface BleManagerResult
 
 object IdleResult : BleManagerResult
@@ -43,30 +39,7 @@ object ConnectedResult : BleManagerResult
 
 data class WorkingResult(
     val chunks: List<UploadedChunk>
-) : BleManagerResult {
-
-    init {
-        parse()
-    }
-
-    fun parse() {
-        try {
-            chunks.forEach {
-                Log.d("AAATESTAAA", "displayed data: ${it.data.reversed().toByteArray().toByteString().hex()}")
-            }
-            val bytes = chunks.map { it.data }.reduce { acc, b ->
-                b+acc
-            }
-            val bytesString = bytes.joinToString(separator = ",") { "%02x".format(it) }
-
-            val map = CborMap.createFromCborByteArray(bytes)
-
-            Log.d("AAATESTAAA", "parsed: $map")
-        } catch (e: Exception) {
-            Log.e("AAATESTAAA", "not good", e)
-        }
-    }
-}
+) : BleManagerResult
 
 data class ErrorResult(val exception: Throwable) : BleManagerResult
 

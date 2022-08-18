@@ -53,7 +53,7 @@
     <string name="disconnect">Disconnect</string>
 
     <string name="app_bar_title">Memfault</string>
-    <string name="uploaded_chunks">Uploaded chunks</string>
+    <string name="uploaded_chunks">Chunks</string>
 
     <string name="chunks">Chunks</string>
     <string name="standby">Standby</string>
@@ -67,6 +67,7 @@
     <string name="connecting">Connecting…</string>
     <string name="first_item">Waiting for first item…</string>
     <string name="next_item">Chunk number: %d</string>
+    <string name="bytes">Bytes sent: %d</string>
     <string name="last_item">Items upload finished.</string>
     <string name="success_timeout_item">Upload finished after timeout.</string>
     <string name="error_disconnected_item">Upload finished with error.</string>

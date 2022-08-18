@@ -113,7 +113,7 @@ private fun UploadingItem(state: WorkingResult) {
         items(state.chunks) {
             ScreenItem(
                 title = stringResource(id = R.string.next_item, it.number),
-                description = it.getDisplayData()
+                description = stringResource(id = R.string.bytes, it.data.size)
             )
         }
     }
