@@ -52,7 +52,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     init {
-        navigationManager.recentResult.onEach {
+        navigationManager.getResultForIds(ScannerDestinationId).onEach {
             if (it is ScannerSuccessResult) {
                 navigateToDumpingScreen(it.device)
             }

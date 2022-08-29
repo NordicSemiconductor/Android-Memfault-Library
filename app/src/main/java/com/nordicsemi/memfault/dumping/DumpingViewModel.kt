@@ -36,6 +36,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nordicsemi.memfault.DumpingDestinationArgs
+import com.nordicsemi.memfault.DumpingDestinationId
 import com.nordicsemi.memfault.lib.MemfaultManager
 import com.nordicsemi.memfault.lib.bluetooth.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -61,7 +62,7 @@ class DumpingViewModel @Inject constructor(
     val stats = _stats.asStateFlow()
 
     init {
-        navigationManager.recentArgument.onEach {
+        navigationManager.getArgumentForId(DumpingDestinationId).onEach {
             if (it is DumpingDestinationArgs) {
                 installBluetoothDevice(it.device.device)
             }
