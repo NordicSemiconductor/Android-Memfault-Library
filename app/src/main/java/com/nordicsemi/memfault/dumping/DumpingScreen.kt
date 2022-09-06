@@ -51,7 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
 import com.nordicsemi.memfault.home.BackIconAppBar
 import com.nordicsemi.memfault.lib.bluetooth.*
-import no.nordicsemi.android.common.theme.ScreenSection
+import no.nordicsemi.android.common.theme.view.ScreenSection
 import no.nordicsemi.android.common.theme.view.SectionTitle
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,7 +80,7 @@ fun DumpingScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ScreenSection {
-                    SectionTitle(resId = R.drawable.ic_chart, title = stringResource(id = R.string.statistics))
+                    SectionTitle(painter = painterResource(id = R.drawable.ic_chart), title = stringResource(id = R.string.statistics))
 
                     Spacer(modifier = Modifier.size(16.dp))
 
@@ -90,7 +90,7 @@ fun DumpingScreen() {
                 Spacer(modifier = Modifier.size(16.dp))
 
                 ScreenSection {
-                    SectionTitle(resId = R.drawable.ic_chunk, title = stringResource(id = R.string.uploaded_chunks))
+                    SectionTitle(painter = painterResource(R.drawable.ic_chunk), title = stringResource(id = R.string.uploaded_chunks))
 
                     Spacer(modifier = Modifier.size(16.dp))
 
