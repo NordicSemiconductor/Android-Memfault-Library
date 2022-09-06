@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
+import no.nordicsemi.android.common.theme.view.NordicAppBar
 import no.nordicsemi.android.common.theme.view.NordicText
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +52,9 @@ fun HomeScreen() {
     val viewModel: HomeViewModel = hiltViewModel()
 
     Scaffold(
-        topBar = { HomeIconAppBar(text = stringResource(id = R.string.app_bar_title)) }
+        topBar = {
+            NordicAppBar(text = stringResource(id = R.string.app_bar_title))
+        }
     ) {
         Box(modifier = Modifier.padding(it)) {
             Column(

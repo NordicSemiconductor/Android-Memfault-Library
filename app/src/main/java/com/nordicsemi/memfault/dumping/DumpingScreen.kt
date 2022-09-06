@@ -32,13 +32,23 @@
 package com.nordicsemi.memfault.dumping
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -49,8 +59,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
-import com.nordicsemi.memfault.home.BackIconAppBar
-import com.nordicsemi.memfault.lib.bluetooth.*
+import com.nordicsemi.memfault.lib.bluetooth.ConnectedResult
+import com.nordicsemi.memfault.lib.bluetooth.ConnectingResult
+import com.nordicsemi.memfault.lib.bluetooth.ErrorResult
+import com.nordicsemi.memfault.lib.bluetooth.IdleResult
+import com.nordicsemi.memfault.lib.bluetooth.WorkingResult
+import no.nordicsemi.android.common.theme.view.NordicAppBar
 import no.nordicsemi.android.common.theme.view.ScreenSection
 import no.nordicsemi.android.common.theme.view.SectionTitle
 
@@ -67,11 +81,12 @@ fun DumpingScreen() {
     }
 
     Scaffold(
-        topBar = { BackIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.disconnect() } },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = { viewModel.disconnect() }) {
-                FabContent(Icons.Default.Stop, stringResource(id = R.string.abort))
-            }
+        topBar = {
+            NordicAppBar(text = stringResource(id = R.string.app_bar_title), actions = {
+                TextButton(onClick = { viewModel.disconnect() }) {
+                    Text(stringResource(id = R.string.disconnect), color = MaterialTheme.colorScheme.onPrimary)
+                }
+            })
         }
     ) {
         Box(modifier = Modifier.padding(it)) {
@@ -80,7 +95,10 @@ fun DumpingScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ScreenSection {
-                    SectionTitle(painter = painterResource(id = R.drawable.ic_chart), title = stringResource(id = R.string.statistics))
+                    SectionTitle(
+                        painter = painterResource(id = R.drawable.ic_chart),
+                        title = stringResource(id = R.string.statistics)
+                    )
 
                     Spacer(modifier = Modifier.size(16.dp))
 
@@ -90,7 +108,10 @@ fun DumpingScreen() {
                 Spacer(modifier = Modifier.size(16.dp))
 
                 ScreenSection {
-                    SectionTitle(painter = painterResource(R.drawable.ic_chunk), title = stringResource(id = R.string.uploaded_chunks))
+                    SectionTitle(
+                        painter = painterResource(R.drawable.ic_chunk),
+                        title = stringResource(id = R.string.uploaded_chunks)
+                    )
 
                     Spacer(modifier = Modifier.size(16.dp))
 
@@ -123,11 +144,12 @@ private fun UploadingItem(state: WorkingResult) {
 @Composable
 private fun ErrorItem(viewModel: DumpingViewModel, error: ErrorResult, stats: StatsViewEntity) {
     Scaffold(
-        topBar = { BackIconAppBar(text = stringResource(id = R.string.app_bar_title)) { viewModel.disconnect() } },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = { viewModel.disconnect() }) {
-                FabContent(Icons.Default.ArrowBack, stringResource(id = R.string.go_back))
-            }
+        topBar = {
+            NordicAppBar(text = stringResource(id = R.string.app_bar_title), actions = {
+                TextButton(onClick = { viewModel.disconnect() }) {
+                    Text(stringResource(id = R.string.disconnect), color = MaterialTheme.colorScheme.onPrimary)
+                }
+            })
         }
     ) {
         Column(modifier = Modifier.padding(it)) {
