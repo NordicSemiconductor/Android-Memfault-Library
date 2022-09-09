@@ -33,6 +33,7 @@ package com.nordicsemi.memfault.lib.bluetooth
 
 import com.memfault.cloud.sdk.ChunkSender
 import com.memfault.cloud.sdk.SendChunksCallback
+import kotlinx.coroutines.delay
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -44,6 +45,11 @@ suspend fun ChunkSender.send() = suspendCoroutine {
             it.resume(ChunkSenderError(delay, sent, exception))
         }
     })
+}
+
+suspend fun ChunkSender.retrySend(delayMillis: Long): ChunkSenderResult {
+    delay(delayMillis)
+    return send()
 }
 
 sealed interface ChunkSenderResult

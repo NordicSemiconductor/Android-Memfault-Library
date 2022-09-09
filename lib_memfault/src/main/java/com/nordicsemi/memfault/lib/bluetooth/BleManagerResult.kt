@@ -38,8 +38,13 @@ object ConnectingResult : BleManagerResult
 object ConnectedResult : BleManagerResult
 
 data class WorkingResult(
-    val chunks: List<UploadedChunk>
-) : BleManagerResult
+    val chunksSent: Int = 0,
+    val chunks: List<UploadedChunk> = emptyList(),
+    val uploadStatus: UploadStatus = UploadStatus.WORKING
+) : BleManagerResult {
+
+    val chunksReceived = chunks.size
+}
 
 data class ErrorResult(val exception: Throwable) : BleManagerResult
 
@@ -72,4 +77,8 @@ data class UploadedChunk(
         result = 31 * result + data.contentHashCode()
         return result
     }
+}
+
+enum class UploadStatus {
+    WORKING, SUSPENDED
 }

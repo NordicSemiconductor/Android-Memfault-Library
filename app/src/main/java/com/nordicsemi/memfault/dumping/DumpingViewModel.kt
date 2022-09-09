@@ -38,11 +38,19 @@ import androidx.lifecycle.viewModelScope
 import com.nordicsemi.memfault.DumpingDestinationArgs
 import com.nordicsemi.memfault.DumpingDestinationId
 import com.nordicsemi.memfault.lib.MemfaultManager
-import com.nordicsemi.memfault.lib.bluetooth.*
+import com.nordicsemi.memfault.lib.bluetooth.BleManagerResult
+import com.nordicsemi.memfault.lib.bluetooth.ConnectedResult
+import com.nordicsemi.memfault.lib.bluetooth.ConnectingResult
+import com.nordicsemi.memfault.lib.bluetooth.DisconnectedResult
+import com.nordicsemi.memfault.lib.bluetooth.ErrorResult
+import com.nordicsemi.memfault.lib.bluetooth.IdleResult
+import com.nordicsemi.memfault.lib.bluetooth.WorkingResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.channels.ticker
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.NavigationManager
 import javax.inject.Inject
@@ -56,24 +64,12 @@ class DumpingViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _status = MutableStateFlow<BleManagerResult>(IdleResult)
-    val status = _status.asStateFlow()
-
-    private val _stats = MutableStateFlow(StatsViewEntity())
-    val stats = _stats.asStateFlow()
-
+    val state = _status.asStateFlow()
     init {
         navigationManager.getArgumentForId(DumpingDestinationId).onEach {
             if (it is DumpingDestinationArgs) {
                 installBluetoothDevice(it.device.device)
             }
-        }.launchIn(viewModelScope)
-
-        ticker(1000).consumeAsFlow().onEach {
-            val stats = _stats.value
-            _stats.value = stats.copy(
-                workingTime = stats.workingTime+1,
-                lastChunkUpdateTime = stats.lastChunkUpdateTime+1
-            )
         }.launchIn(viewModelScope)
     }
 
@@ -93,7 +89,6 @@ class DumpingViewModel @Inject constructor(
                     is ErrorResult -> _status.value = it
                     DisconnectedResult -> navigationManager.navigateUp()
                     is WorkingResult -> {
-                        _stats.value = _stats.value.copy(chunks = it.chunks.size, lastChunkUpdateTime = 0)
                         _status.value = it
                     }
                 }

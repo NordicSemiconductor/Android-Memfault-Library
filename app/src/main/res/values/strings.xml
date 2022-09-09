@@ -56,9 +56,11 @@
     <string name="app_bar_title">Memfault</string>
     <string name="uploaded_chunks">Chunks</string>
 
-    <string name="chunks">Chunks</string>
-    <string name="standby">Standby</string>
-    <string name="uptime">Uptime</string>
+    <string name="chunks_received">Chunks received</string>
+    <string name="chunks_sent">Chunks sent</string>
+    <string name="upload_status">Upload status</string>
+    <string name="upload_status_working">WORKING</string>
+    <string name="upload_status_suspended">SUSPENDED</string>
 
     <string name="start">Start</string>
     <string name="abort">Abort</string>

@@ -63,6 +63,7 @@ import com.nordicsemi.memfault.lib.bluetooth.ConnectedResult
 import com.nordicsemi.memfault.lib.bluetooth.ConnectingResult
 import com.nordicsemi.memfault.lib.bluetooth.ErrorResult
 import com.nordicsemi.memfault.lib.bluetooth.IdleResult
+import com.nordicsemi.memfault.lib.bluetooth.UploadStatus
 import com.nordicsemi.memfault.lib.bluetooth.WorkingResult
 import no.nordicsemi.android.common.theme.view.NordicAppBar
 import no.nordicsemi.android.common.theme.view.ScreenSection
@@ -72,11 +73,10 @@ import no.nordicsemi.android.common.theme.view.SectionTitle
 @Composable
 fun DumpingScreen() {
     val viewModel: DumpingViewModel = hiltViewModel()
-    val state = viewModel.status.collectAsState().value
-    val stats = viewModel.stats.collectAsState().value
+    val state = viewModel.state.collectAsState().value
 
     if (state is ErrorResult) {
-        ErrorItem(viewModel = viewModel, error = state, stats = stats)
+        ErrorItem(viewModel = viewModel, error = state)
         return
     }
 
@@ -94,23 +94,25 @@ fun DumpingScreen() {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                ScreenSection {
-                    SectionTitle(
-                        painter = painterResource(id = R.drawable.ic_chart),
-                        title = stringResource(id = R.string.statistics)
-                    )
+                (state as? WorkingResult)?.let {
+                    ScreenSection {
+                        SectionTitle(
+                            painter = painterResource(id = R.drawable.ic_chart),
+                            title = stringResource(id = R.string.statistics)
+                        )
+
+                        Spacer(modifier = Modifier.size(16.dp))
+
+                        StatsView(it)
+                    }
 
                     Spacer(modifier = Modifier.size(16.dp))
-
-                    StatsView(stats)
                 }
-
-                Spacer(modifier = Modifier.size(16.dp))
 
                 ScreenSection {
                     SectionTitle(
                         painter = painterResource(R.drawable.ic_chunk),
-                        title = stringResource(id = R.string.uploaded_chunks)
+                        title = stringResource(id = R.string.chunks_received)
                     )
 
                     Spacer(modifier = Modifier.size(16.dp))
@@ -142,7 +144,7 @@ private fun UploadingItem(state: WorkingResult) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ErrorItem(viewModel: DumpingViewModel, error: ErrorResult, stats: StatsViewEntity) {
+private fun ErrorItem(viewModel: DumpingViewModel, error: ErrorResult) {
     Scaffold(
         topBar = {
             NordicAppBar(text = stringResource(id = R.string.app_bar_title), actions = {
@@ -154,10 +156,6 @@ private fun ErrorItem(viewModel: DumpingViewModel, error: ErrorResult, stats: St
     ) {
         Column(modifier = Modifier.padding(it)) {
             Column(modifier = Modifier.padding(16.dp)) {
-                StatsView(stats)
-
-                Spacer(modifier = Modifier.size(16.dp))
-
                 Text(
                     text = stringResource(id = R.string.error),
                     color = MaterialTheme.colorScheme.error,
@@ -177,7 +175,7 @@ private fun ErrorItem(viewModel: DumpingViewModel, error: ErrorResult, stats: St
 }
 
 @Composable
-private fun StatsView(stats: StatsViewEntity) {
+private fun StatsView(stats: WorkingResult) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth(),
@@ -185,20 +183,24 @@ private fun StatsView(stats: StatsViewEntity) {
     ) {
         StatsItem(
             R.drawable.ic_chunk,
-            stringResource(id = R.string.chunks),
-            stats.displayChunks()
+            stringResource(id = R.string.chunks_received),
+            stats.chunksReceived.toString()
         )
         Spacer(modifier = Modifier.size(16.dp))
         StatsItem(
-            R.drawable.ic_time,
-            stringResource(id = R.string.uptime),
-            stats.displayWorkingTime()
+            R.drawable.ic_chunk_send,
+            stringResource(id = R.string.chunks_sent),
+            stats.chunksSent.toString()
         )
         Spacer(modifier = Modifier.size(16.dp))
+        val label = when (stats.uploadStatus) {
+            UploadStatus.WORKING -> stringResource(id = R.string.upload_status_working)
+            UploadStatus.SUSPENDED -> stringResource(id = R.string.upload_status_suspended)
+        }
         StatsItem(
-            R.drawable.ic_bug_stop,
-            stringResource(id = R.string.standby),
-            stats.displayLastChunkUpdate()
+            R.drawable.ic_cloud_upload,
+            stringResource(id = R.string.upload_status),
+            label
         )
     }
 }

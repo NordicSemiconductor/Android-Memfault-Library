@@ -77,6 +77,8 @@ internal class MemfaultBleManager(
     private var mdsAuthorisationCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsDataExportCharacteristic: BluetoothGattCharacteristic? = null
 
+    private var memfaultCloud: MemfaultCloud? = null
+
     val dataHolder = ConnectionObserverAdapter<MemfaultEntity>()
 
     init {
@@ -119,6 +121,7 @@ internal class MemfaultBleManager(
                 val memfaultCloud = MemfaultCloud.Builder()
                     .setApiKey(authorisationHeader.value)
                     .build()
+                this@MemfaultBleManager.memfaultCloud = memfaultCloud
 
                 val memfaultSender = ChunkSender.Builder()
                     .setMemfaultCloud(memfaultCloud)
@@ -135,12 +138,10 @@ internal class MemfaultBleManager(
 
                             chunkValidator.validateChunk(chunkNumber)
                             memfaultSender.addChunks(listOf(data))
-                            dataHolder.updateProgress(chunkNumber, data)
+                            dataHolder.updateChunksReceived(chunkNumber, data)
                         }
                         .debounce(500)
-                        .collect {
-                            memfaultSender.send()
-                        }
+                        .collect { sendChunks(memfaultSender) }
                 }
 
                 enableNotifications(mdsDataExportCharacteristic).suspend()
@@ -152,6 +153,19 @@ internal class MemfaultBleManager(
                 ).suspend()
             }
             requestMtu(512).enqueue()
+        }
+
+        private suspend fun sendChunks(memfaultSender: ChunkSender) {
+            var result = memfaultSender.send()
+
+            while (result is ChunkSenderError) {
+                dataHolder.updateChunksSent(result.sent, UploadStatus.SUSPENDED)
+                result = memfaultSender.retrySend(result.delay)
+            }
+
+            (result as? ChunkSenderSuccess)?.let {
+                dataHolder.updateChunksSent(result.sent)
+            }
         }
 
         public override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
@@ -182,6 +196,8 @@ internal class MemfaultBleManager(
     fun disconnectWithCatch() {
         try {
             disconnect().enqueue()
+            memfaultCloud?.deinit()
+            memfaultCloud = null
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -73,11 +73,17 @@ internal class ConnectionObserverAdapter<T> : ConnectionObserver {
         _status.value = DisconnectedResult
     }
 
-    fun updateProgress(chunkNumber: Int, data: ByteArray) {
+    fun updateChunksReceived(chunkNumber: Int, data: ByteArray) {
         val chunk = UploadedChunk(chunkNumber, data)
         _status.value = (_status.value as? WorkingResult)?.let {
             it.copy(chunks = it.chunks + chunk)
-        } ?: WorkingResult(listOf(chunk))
+        } ?: WorkingResult(chunks = listOf(chunk))
+    }
+
+    fun updateChunksSent(chunksSent: Int, uploadStatus: UploadStatus = UploadStatus.WORKING) {
+        _status.value = (_status.value as? WorkingResult)?.let {
+            it.copy(chunksSent = it.chunksSent + chunksSent, uploadStatus = uploadStatus)
+        } ?: WorkingResult(chunksSent = chunksSent, uploadStatus = uploadStatus)
     }
 
     fun updateError(e: Throwable) {
