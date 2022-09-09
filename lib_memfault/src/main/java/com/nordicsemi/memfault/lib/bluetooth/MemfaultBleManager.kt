@@ -92,10 +92,10 @@ internal class MemfaultBleManager(
     }
 
     override fun getGattCallback(): BleManagerGattCallback {
-        return CSCManagerGattCallback()
+        return MemfaultManagerGattCallback()
     }
 
-    private inner class CSCManagerGattCallback : BleManagerGattCallback() {
+    private inner class MemfaultManagerGattCallback : BleManagerGattCallback() {
         override fun initialize() {
             super.initialize()
 
@@ -183,7 +183,7 @@ internal class MemfaultBleManager(
         try {
             disconnect().enqueue()
         } catch (e: Exception) {
-            //do nothing
+            e.printStackTrace()
         }
     }
 
