@@ -29,20 +29,29 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.lib.network
+package com.nordicsemi.memfault.lib.bluetooth
 
-import com.nordicsemi.memfault.lib.bluetooth.ByteArrayRequestBody
-import retrofit2.http.Body
-import retrofit2.http.Headers
-import retrofit2.http.POST
-import retrofit2.http.Url
+import com.memfault.cloud.sdk.ChunkSender
+import com.memfault.cloud.sdk.SendChunksCallback
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-internal interface NetworkApi {
+suspend fun ChunkSender.send() = suspendCoroutine {
+    send(object : SendChunksCallback {
+        override fun onQueueEmpty(sent: Int) { it.resume(ChunkSenderSuccess(sent)) }
 
-    @Headers("Content-Type: application/octet-stream")
-    @POST
-    suspend fun sendLog(
-        @Url url: String,
-        @Body user: ByteArrayRequestBody
-    )
+        override fun onRetryAfterDelay(delay: Long, sent: Int, exception: Exception) {
+            it.resume(ChunkSenderError(delay, sent, exception))
+        }
+    })
 }
+
+sealed interface ChunkSenderResult
+
+data class ChunkSenderSuccess(val sent: Int) : ChunkSenderResult
+
+data class ChunkSenderError(
+    val delay: Long,
+    val sent: Int,
+    val exception: Exception
+) : ChunkSenderResult

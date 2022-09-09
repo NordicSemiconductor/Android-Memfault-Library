@@ -36,19 +36,19 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.util.Log
-import com.nordicsemi.memfault.lib.network.NetworkApi
+import com.memfault.cloud.sdk.ChunkSender
+import com.memfault.cloud.sdk.MemfaultCloud
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.ble.BleManager
 import no.nordicsemi.android.ble.ktx.asValidResponseFlow
 import no.nordicsemi.android.ble.ktx.suspend
 import no.nordicsemi.android.ble.ktx.suspendForValidResponse
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import java.io.File
 import java.util.*
 
 val MDS_SERVICE_UUID: UUID = UUID.fromString("54220000-f6a5-4007-a371-722f4ebd8436")
@@ -114,22 +114,32 @@ internal class MemfaultBleManager(
                     .suspendForValidResponse<StringReadResponse>()
                     .value!!
 
-                val config = ConfigData(AuthorisationHeader(authorisation, 0), deviceId, url)
+                val authorisationHeader = AuthorisationHeader(authorisation, 0)
+
+                val memfaultCloud = MemfaultCloud.Builder()
+                    .setApiKey(authorisationHeader.value)
+                    .build()
+
+                val memfaultSender = ChunkSender.Builder()
+                    .setMemfaultCloud(memfaultCloud)
+                    .setChunkQueue(PersistentChunkQueue(File(context.filesDir, deviceId)))
+                    .setDeviceSerialNumber(deviceId)
+                    .build()
 
                 launch {
                     setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<ByteReadResponse>()
                         .cancellable()
-                        .collect {
+                        .onEach {
                             val chunkNumber = it.chunkNumber!!.toInt()
                             val data = it.value!!
-                            val network = createNetwork(AuthorisationHeader(authorisation, chunkNumber))
 
                             chunkValidator.validateChunk(chunkNumber)
-
-                            val request = ByteArrayRequestBody(data)
-                            network.sendLog(config.url, request)
-
+                            memfaultSender.addChunks(listOf(data))
                             dataHolder.updateProgress(chunkNumber, data)
+                        }
+                        .debounce(500)
+                        .collect {
+                            memfaultSender.send()
                         }
                 }
 
@@ -146,12 +156,10 @@ internal class MemfaultBleManager(
 
         public override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
             gatt.getService(MDS_SERVICE_UUID)?.run {
-                mdsSupportedFeaturesCharacteristic =
-                    getCharacteristic(MDS_SUPPORTED_FEATURES_CHARACTERISTIC_UUID)
+                mdsSupportedFeaturesCharacteristic = getCharacteristic(MDS_SUPPORTED_FEATURES_CHARACTERISTIC_UUID)
                 mdsDeviceIdCharacteristic = getCharacteristic(MDS_DEVICE_ID_CHARACTERISTIC_UUID)
                 mdsDataUriCharacteristic = getCharacteristic(MDS_DATA_URI_CHARACTERISTIC_UUID)
-                mdsAuthorisationCharacteristic =
-                    getCharacteristic(MDS_AUTHORISATION_CHARACTERISTIC_UUID)
+                mdsAuthorisationCharacteristic = getCharacteristic(MDS_AUTHORISATION_CHARACTERISTIC_UUID)
                 mdsDataExportCharacteristic = getCharacteristic(MDS_DATA_EXPORT_CHARACTERISTIC_UUID)
 
             }
@@ -188,28 +196,5 @@ internal class MemfaultBleManager(
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    private fun createNetwork(header: AuthorisationHeader): NetworkApi {
-        val httpClient = OkHttpClient.Builder().apply {
-            addInterceptor { chain ->
-                val request = chain.request()
-                    .newBuilder()
-                    .addHeader(header.key, header.value)
-                    .addHeader("Chunk", "${header.chunkNumber}")
-                    .build()
-
-                chain.proceed(request)
-            }
-            addInterceptor(HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) })
-        }.build()
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://nordicsemi.com")
-            .addConverterFactory(MoshiConverterFactory.create())
-            .client(httpClient)
-            .build()
-
-        return retrofit.create(NetworkApi::class.java)
     }
 }
