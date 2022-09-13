@@ -10,7 +10,7 @@ The device should contain characteristics defined in [the Memfault documentation
 val memfaultManager = MemfaultManager()
 
 viewModelScope.launch {
-    memfaultManager.install(context, device).collect {
+    memfaultManager.connect(context, device).collect {
         //Consume status
     }
 }

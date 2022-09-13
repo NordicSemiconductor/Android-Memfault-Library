@@ -81,7 +81,7 @@ class DumpingViewModel @Inject constructor(
 
     private fun installBluetoothDevice(device: BluetoothDevice) {
         viewModelScope.launch {
-            memfaultManager.install(context, device).collect {
+            memfaultManager.connect(context, device).collect {
                 when (it) {
                     IdleResult,
                     ConnectedResult,

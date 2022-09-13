@@ -58,9 +58,12 @@ class MemfaultManager {
     private var manager: MemfaultBleManager? = null
 
     /**
-     * Install function used to connect the phone to a selected [BluetoothDevice].
+     * Function used to connect the phone to a selected [BluetoothDevice].
      * If the device supports required GATT characteristics then uploaded chunks will be reported
      * by [WorkingResult]. Otherwise [ErrorResult] is sent.
+     *
+     * [WorkingResult] can report [UploadStatus.SUSPENDED] which indicates that the Memfault server
+     * is overloaded and upload is postponed to the future.
      *
      * @param context applicationContext needed to set up [BleManager]
      * @param device [BluetoothDevice] to which manager should connect
@@ -68,7 +71,7 @@ class MemfaultManager {
      * @return Returns [BleManagerResult] which indicates status connection.
      * This is the place where library informs about eventual errors or disconnection.
      */
-    suspend fun install(context: Context, device: BluetoothDevice): StateFlow<BleManagerResult> {
+    suspend fun connect(context: Context, device: BluetoothDevice): StateFlow<BleManagerResult> {
         val bleManager = MemfaultBleManager(context, GlobalScope)
         manager = bleManager
         bleManager.start(device)
@@ -77,7 +80,7 @@ class MemfaultManager {
 
     /**
      * Disconnects a previously connected BLE device.
-     * If success then [DisconnectedResult] is emitted by a flow returned by [MemfaultManager.install].
+     * If success then [DisconnectedResult] is emitted by a flow returned by [MemfaultManager.connect].
      */
     fun disconnect() {
         manager?.disconnectWithCatch()
