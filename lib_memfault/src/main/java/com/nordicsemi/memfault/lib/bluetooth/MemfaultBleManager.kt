@@ -36,19 +36,21 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.util.Log
-import com.memfault.cloud.sdk.ChunkSender
-import com.memfault.cloud.sdk.MemfaultCloud
+import com.nordicsemi.memfault.lib.data.MemfaultConfig
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.ble.BleManager
 import no.nordicsemi.android.ble.ktx.asValidResponseFlow
 import no.nordicsemi.android.ble.ktx.suspend
 import no.nordicsemi.android.ble.ktx.suspendForValidResponse
-import java.io.File
 import java.util.*
 
 val MDS_SERVICE_UUID: UUID = UUID.fromString("54220000-f6a5-4007-a371-722f4ebd8436")
@@ -70,16 +72,20 @@ internal class MemfaultBleManager(
 
     private val LOG = "MEMFAULT"
 
-    private val chunkValidator = ChunkValidator()
     private var mdsSupportedFeaturesCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsDeviceIdCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsDataUriCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsAuthorisationCharacteristic: BluetoothGattCharacteristic? = null
     private var mdsDataExportCharacteristic: BluetoothGattCharacteristic? = null
 
-    private var memfaultCloud: MemfaultCloud? = null
+    private val dataHolder = ConnectionObserverAdapter()
+    val status = dataHolder.status
 
-    val dataHolder = ConnectionObserverAdapter<MemfaultEntity>()
+    private val _config = MutableStateFlow<MemfaultConfig?>(null)
+    val config = _config.asStateFlow()
+
+    private val _receivedChunk = MutableSharedFlow<ByteArray>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val receivedChunk = _receivedChunk.asSharedFlow()
 
     init {
         connectionObserver = dataHolder
@@ -101,8 +107,8 @@ internal class MemfaultBleManager(
         override fun initialize() {
             super.initialize()
 
-            val handler = CoroutineExceptionHandler { _, exception ->
-                dataHolder.updateError(exception)
+            val handler = CoroutineExceptionHandler { _, _ ->
+                dataHolder.onError()
             }
 
             scope.launch(handler) {
@@ -116,32 +122,15 @@ internal class MemfaultBleManager(
                     .suspendForValidResponse<StringReadResponse>()
                     .value!!
 
-                val authorisationHeader = AuthorisationHeader(authorisation, 0)
-
-                val memfaultCloud = MemfaultCloud.Builder()
-                    .setApiKey(authorisationHeader.value)
-                    .build()
-                this@MemfaultBleManager.memfaultCloud = memfaultCloud
-
-                val memfaultSender = ChunkSender.Builder()
-                    .setMemfaultCloud(memfaultCloud)
-                    .setChunkQueue(PersistentChunkQueue(File(context.filesDir, deviceId)))
-                    .setDeviceSerialNumber(deviceId)
-                    .build()
+                val authorisationHeader = AuthorisationHeader(authorisation)
+                val config = MemfaultConfig(authorisationHeader, url, deviceId)
+                _config.value = config
 
                 launch {
                     setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<ByteReadResponse>()
                         .cancellable()
-                        .onEach {
-                            val chunkNumber = it.chunkNumber!!.toInt()
-                            val data = it.value!!
-
-                            chunkValidator.validateChunk(chunkNumber)
-                            memfaultSender.addChunks(listOf(data))
-                            dataHolder.updateChunksReceived(chunkNumber, data)
-                        }
-                        .debounce(500)
-                        .collect { sendChunks(memfaultSender) }
+                        .map { it.value }
+                        .collect { it?.let { _receivedChunk.tryEmit(it) } }
                 }
 
                 enableNotifications(mdsDataExportCharacteristic).suspend()
@@ -153,19 +142,6 @@ internal class MemfaultBleManager(
                 ).suspend()
             }
             requestMtu(512).enqueue()
-        }
-
-        private suspend fun sendChunks(memfaultSender: ChunkSender) {
-            var result = memfaultSender.send()
-
-            while (result is ChunkSenderError) {
-                dataHolder.updateChunksSent(result.sent, UploadStatus.SUSPENDED)
-                result = memfaultSender.retrySend(result.delay)
-            }
-
-            (result as? ChunkSenderSuccess)?.let {
-                dataHolder.updateChunksSent(result.sent)
-            }
         }
 
         public override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
@@ -196,8 +172,6 @@ internal class MemfaultBleManager(
     fun disconnectWithCatch() {
         try {
             disconnect().enqueue()
-            memfaultCloud?.deinit()
-            memfaultCloud = null
         } catch (e: Exception) {
             e.printStackTrace()
         }

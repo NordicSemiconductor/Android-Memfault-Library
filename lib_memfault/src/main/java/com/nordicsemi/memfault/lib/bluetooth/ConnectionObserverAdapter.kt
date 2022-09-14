@@ -35,19 +35,18 @@ import android.bluetooth.BluetoothDevice
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import no.nordicsemi.android.ble.exception.ConnectionException
 import no.nordicsemi.android.ble.observer.ConnectionObserver
 
-internal class ConnectionObserverAdapter<T> : ConnectionObserver {
+internal class ConnectionObserverAdapter : ConnectionObserver {
 
     private val TAG = "BLE-CONNECTION"
 
-    private val _status = MutableStateFlow<BleManagerResult>(IdleResult)
+    private val _status = MutableStateFlow(BluetoothLEStatus.IDLE)
     val status = _status.asStateFlow()
 
     override fun onDeviceConnecting(device: BluetoothDevice) {
         Log.d(TAG, "onDeviceConnecting()")
-        _status.value = ConnectingResult
+        _status.value = BluetoothLEStatus.CONNECTING
     }
 
     override fun onDeviceConnected(device: BluetoothDevice) {
@@ -56,12 +55,12 @@ internal class ConnectionObserverAdapter<T> : ConnectionObserver {
 
     override fun onDeviceFailedToConnect(device: BluetoothDevice, reason: Int) {
         Log.d(TAG, "onDeviceFailedToConnect(), reason: $reason")
-        updateError(ConnectionException())
+        _status.value = BluetoothLEStatus.FAILED_TO_CONNECT
     }
 
     override fun onDeviceReady(device: BluetoothDevice) {
         Log.d(TAG, "onDeviceReady()")
-        _status.value = ConnectedResult
+        _status.value = BluetoothLEStatus.CONNECTED
     }
 
     override fun onDeviceDisconnecting(device: BluetoothDevice) {
@@ -70,23 +69,10 @@ internal class ConnectionObserverAdapter<T> : ConnectionObserver {
 
     override fun onDeviceDisconnected(device: BluetoothDevice, reason: Int) {
         Log.d(TAG, "onDeviceDisconnected(), reason: $reason")
-        _status.value = DisconnectedResult
+        _status.value = BluetoothLEStatus.DISCONNECTED
     }
 
-    fun updateChunksReceived(chunkNumber: Int, data: ByteArray) {
-        val chunk = UploadedChunk(chunkNumber, data)
-        _status.value = (_status.value as? WorkingResult)?.let {
-            it.copy(chunks = it.chunks + chunk)
-        } ?: WorkingResult(chunks = listOf(chunk))
-    }
-
-    fun updateChunksSent(chunksSent: Int, uploadStatus: UploadStatus = UploadStatus.WORKING) {
-        _status.value = (_status.value as? WorkingResult)?.let {
-            it.copy(chunksSent = it.chunksSent + chunksSent, uploadStatus = uploadStatus)
-        } ?: WorkingResult(chunksSent = chunksSent, uploadStatus = uploadStatus)
-    }
-
-    fun updateError(e: Throwable) {
-        _status.value = ErrorResult(e)
+    fun onError() {
+        _status.value = BluetoothLEStatus.ERROR
     }
 }

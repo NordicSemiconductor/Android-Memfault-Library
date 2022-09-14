@@ -38,17 +38,8 @@ import androidx.lifecycle.viewModelScope
 import com.nordicsemi.memfault.DumpingDestinationArgs
 import com.nordicsemi.memfault.DumpingDestinationId
 import com.nordicsemi.memfault.lib.MemfaultManager
-import com.nordicsemi.memfault.lib.bluetooth.BleManagerResult
-import com.nordicsemi.memfault.lib.bluetooth.ConnectedResult
-import com.nordicsemi.memfault.lib.bluetooth.ConnectingResult
-import com.nordicsemi.memfault.lib.bluetooth.DisconnectedResult
-import com.nordicsemi.memfault.lib.bluetooth.ErrorResult
-import com.nordicsemi.memfault.lib.bluetooth.IdleResult
-import com.nordicsemi.memfault.lib.bluetooth.WorkingResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -63,8 +54,8 @@ class DumpingViewModel @Inject constructor(
     private val memfaultManager: MemfaultManager
 ) : ViewModel() {
 
-    private val _status = MutableStateFlow<BleManagerResult>(IdleResult)
-    val state = _status.asStateFlow()
+    val state = memfaultManager.state
+
     init {
         navigationManager.getArgumentForId(DumpingDestinationId).onEach {
             if (it is DumpingDestinationArgs) {
@@ -81,18 +72,7 @@ class DumpingViewModel @Inject constructor(
 
     private fun installBluetoothDevice(device: BluetoothDevice) {
         viewModelScope.launch {
-            memfaultManager.connect(context, device).collect {
-                when (it) {
-                    IdleResult,
-                    ConnectedResult,
-                    ConnectingResult,
-                    is ErrorResult -> _status.value = it
-                    DisconnectedResult -> navigationManager.navigateUp()
-                    is WorkingResult -> {
-                        _status.value = it
-                    }
-                }
-            }
+            memfaultManager.connect(context, device)
         }
     }
 

@@ -37,12 +37,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -59,15 +57,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
-import com.nordicsemi.memfault.lib.bluetooth.ConnectedResult
-import com.nordicsemi.memfault.lib.bluetooth.ConnectingResult
-import com.nordicsemi.memfault.lib.bluetooth.ErrorResult
-import com.nordicsemi.memfault.lib.bluetooth.IdleResult
-import com.nordicsemi.memfault.lib.bluetooth.UploadStatus
-import com.nordicsemi.memfault.lib.bluetooth.WorkingResult
+import com.nordicsemi.memfault.lib.bluetooth.BluetoothLEStatus
+import com.nordicsemi.memfault.lib.data.Chunk
 import no.nordicsemi.android.common.theme.view.NordicAppBar
-import no.nordicsemi.android.common.theme.view.ScreenSection
-import no.nordicsemi.android.common.theme.view.SectionTitle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,8 +67,9 @@ fun DumpingScreen() {
     val viewModel: DumpingViewModel = hiltViewModel()
     val state = viewModel.state.collectAsState().value
 
-    if (state is ErrorResult) {
-        ErrorItem(viewModel = viewModel, error = state)
+
+    if (state.bleStatus == BluetoothLEStatus.ERROR) {
+        ErrorItem(viewModel = viewModel)
         return
     }
 
@@ -94,49 +87,50 @@ fun DumpingScreen() {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                (state as? WorkingResult)?.let {
-                    ScreenSection {
-                        SectionTitle(
-                            painter = painterResource(id = R.drawable.ic_chart),
-                            title = stringResource(id = R.string.statistics)
-                        )
-
-                        Spacer(modifier = Modifier.size(16.dp))
-
-                        StatsView(it)
-                    }
-
-                    Spacer(modifier = Modifier.size(16.dp))
-                }
-
-                ScreenSection {
-                    SectionTitle(
-                        painter = painterResource(R.drawable.ic_chunk),
-                        title = stringResource(id = R.string.chunks_received)
-                    )
-
-                    Spacer(modifier = Modifier.size(16.dp))
-
-                    if (state is IdleResult || state is ConnectingResult || state is ConnectedResult) {
-                        LoadingView()
-                    } else if (state is WorkingResult) {
-                        UploadingItem(state)
-                    }
-                }
+//                (state as? WorkingResult)?.let {
+//                    ScreenSection {
+//                        SectionTitle(
+//                            painter = painterResource(id = R.drawable.ic_chart),
+//                            title = stringResource(id = R.string.statistics)
+//                        )
+//
+//                        Spacer(modifier = Modifier.size(16.dp))
+//
+//                        StatsView(it)
+//                    }
+//
+//                    Spacer(modifier = Modifier.size(16.dp))
+//                }
+//
+//                ScreenSection {
+//                    SectionTitle(
+//                        painter = painterResource(R.drawable.ic_chunk),
+//                        title = stringResource(id = R.string.chunks_received)
+//                    )
+//
+//                    Spacer(modifier = Modifier.size(16.dp))
+//
+//                    if (state is IdleResult || state is ConnectingResult || state is ConnectedResult) {
+//                        LoadingView()
+//                    } else if (state is WorkingResult) {
+//                        UploadingItem(state)
+//                    }
+//                }
             }
         }
     }
 }
 
 @Composable
-private fun UploadingItem(state: WorkingResult) {
+private fun UploadingItem(chunks: List<Chunk>) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(state.chunks) {
+        items(chunks.size) {
+            val chunk = chunks[it]
             ScreenItem(
-                title = stringResource(id = R.string.next_item, it.number),
-                description = stringResource(id = R.string.bytes, it.data.size)
+                title = stringResource(id = R.string.next_item, chunk.number),
+                description = stringResource(id = R.string.bytes, chunk.data.size)
             )
         }
     }
@@ -144,7 +138,7 @@ private fun UploadingItem(state: WorkingResult) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ErrorItem(viewModel: DumpingViewModel, error: ErrorResult) {
+private fun ErrorItem(viewModel: DumpingViewModel) {
     Scaffold(
         topBar = {
             NordicAppBar(text = stringResource(id = R.string.app_bar_title), actions = {
@@ -161,49 +155,41 @@ private fun ErrorItem(viewModel: DumpingViewModel, error: ErrorResult) {
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.labelLarge,
                 )
-
-                Spacer(modifier = Modifier.size(16.dp))
-
-                Text(
-                    text = error.exception.toString(),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
             }
         }
     }
 }
 
-@Composable
-private fun StatsView(stats: WorkingResult) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        StatsItem(
-            R.drawable.ic_chunk,
-            stringResource(id = R.string.chunks_received),
-            stats.chunksReceived.toString()
-        )
-        Spacer(modifier = Modifier.size(16.dp))
-        StatsItem(
-            R.drawable.ic_chunk_send,
-            stringResource(id = R.string.chunks_sent),
-            stats.chunksSent.toString()
-        )
-        Spacer(modifier = Modifier.size(16.dp))
-        val label = when (stats.uploadStatus) {
-            UploadStatus.WORKING -> stringResource(id = R.string.upload_status_working)
-            UploadStatus.SUSPENDED -> stringResource(id = R.string.upload_status_suspended)
-        }
-        StatsItem(
-            R.drawable.ic_cloud_upload,
-            stringResource(id = R.string.upload_status),
-            label
-        )
-    }
-}
+//@Composable
+//private fun StatsView(stats: WorkingResult) {
+//    Row(
+//        verticalAlignment = Alignment.CenterVertically,
+//        modifier = Modifier.fillMaxWidth(),
+//        horizontalArrangement = Arrangement.SpaceEvenly
+//    ) {
+//        StatsItem(
+//            R.drawable.ic_chunk,
+//            stringResource(id = R.string.chunks_received),
+//            stats.chunksReceived.toString()
+//        )
+//        Spacer(modifier = Modifier.size(16.dp))
+//        StatsItem(
+//            R.drawable.ic_chunk_send,
+//            stringResource(id = R.string.chunks_sent),
+//            stats.chunksSent.toString()
+//        )
+//        Spacer(modifier = Modifier.size(16.dp))
+//        val label = when (stats.uploadStatus) {
+//            UploadStatus.WORKING -> stringResource(id = R.string.upload_status_working)
+//            UploadStatus.SUSPENDED -> stringResource(id = R.string.upload_status_suspended)
+//        }
+//        StatsItem(
+//            R.drawable.ic_cloud_upload,
+//            stringResource(id = R.string.upload_status),
+//            label
+//        )
+//    }
+//}
 
 @Composable
 private fun StatsItem(

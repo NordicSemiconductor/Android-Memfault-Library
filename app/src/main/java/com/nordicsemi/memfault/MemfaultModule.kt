@@ -42,5 +42,5 @@ import dagger.hilt.components.SingletonComponent
 internal class MemfaultModule {
 
     @Provides
-    fun providesMemfaultManager() = MemfaultManager()
+    fun providesMemfaultManager() = MemfaultManager.create()
 }

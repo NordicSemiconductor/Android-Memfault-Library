@@ -33,9 +33,7 @@ package com.nordicsemi.memfault.lib
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import com.nordicsemi.memfault.lib.bluetooth.BleManagerResult
-import com.nordicsemi.memfault.lib.bluetooth.MemfaultBleManager
-import kotlinx.coroutines.GlobalScope
+import com.nordicsemi.memfault.lib.data.MemfaultData
 import kotlinx.coroutines.flow.StateFlow
 import no.nordicsemi.android.ble.BleManager
 
@@ -48,14 +46,9 @@ import no.nordicsemi.android.ble.BleManager
  * @see <a href="https://app.memfault.com">Memfault console</a>
  * @see <a href="https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b">Memfault GATT characteristics</a>
  */
-class MemfaultManager {
+interface MemfaultManager {
 
-    /**
-     * Bluetooth manager which uses Nordic BLE library [BleManager] to connect to a device which supports Memfault GATT characteristics.
-     *
-     * @see <a href="https://github.com/NordicSemiconductor/Android-BLE-Library">BLE Library</a>
-     */
-    private var manager: MemfaultBleManager? = null
+    val state: StateFlow<MemfaultData>
 
     /**
      * Function used to connect the phone to a selected [BluetoothDevice].
@@ -71,19 +64,18 @@ class MemfaultManager {
      * @return Returns [BleManagerResult] which indicates status connection.
      * This is the place where library informs about eventual errors or disconnection.
      */
-    suspend fun connect(context: Context, device: BluetoothDevice): StateFlow<BleManagerResult> {
-        val bleManager = MemfaultBleManager(context, GlobalScope)
-        manager = bleManager
-        bleManager.start(device)
-        return bleManager.dataHolder.status
-    }
+    suspend fun connect(context: Context, device: BluetoothDevice)
 
     /**
      * Disconnects a previously connected BLE device.
      * If success then [DisconnectedResult] is emitted by a flow returned by [MemfaultManager.connect].
      */
-    fun disconnect() {
-        manager?.disconnectWithCatch()
-        manager = null
+    fun disconnect()
+
+    companion object {
+
+        fun create(): MemfaultManager {
+            return MemfaultManagerImpl()
+        }
     }
 }

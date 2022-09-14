@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nordicsemi.memfault.lib.bluetooth
+package com.nordicsemi.memfault.lib.internet
 
 import com.memfault.cloud.sdk.ChunkSender
 import com.memfault.cloud.sdk.SendChunksCallback
@@ -37,27 +37,17 @@ import kotlinx.coroutines.delay
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-suspend fun ChunkSender.send() = suspendCoroutine {
+internal suspend fun ChunkSender.send() = suspendCoroutine {
     send(object : SendChunksCallback {
-        override fun onQueueEmpty(sent: Int) { it.resume(ChunkSenderSuccess(sent)) }
+        override fun onQueueEmpty(sent: Int) { it.resume(ChunkUploadSuccess(sent)) }
 
         override fun onRetryAfterDelay(delay: Long, sent: Int, exception: Exception) {
-            it.resume(ChunkSenderError(delay, sent, exception))
+            it.resume(ChunkUploadError(delay, sent, exception))
         }
     })
 }
 
-suspend fun ChunkSender.retrySend(delayMillis: Long): ChunkSenderResult {
+internal suspend fun ChunkSender.retrySend(delayMillis: Long): ChunkUploadResult {
     delay(delayMillis)
     return send()
 }
-
-sealed interface ChunkSenderResult
-
-data class ChunkSenderSuccess(val sent: Int) : ChunkSenderResult
-
-data class ChunkSenderError(
-    val delay: Long,
-    val sent: Int,
-    val exception: Exception
-) : ChunkSenderResult

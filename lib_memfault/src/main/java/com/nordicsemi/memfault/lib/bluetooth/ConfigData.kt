@@ -31,12 +31,7 @@
 
 package com.nordicsemi.memfault.lib.bluetooth
 
-internal sealed interface MemfaultEntity
-
-internal data class AuthorisationHeader(
-    val header: String,
-    val chunkNumber: Int
-) {
+data class AuthorisationHeader(val header: String) {
 
     val key: String
     val value: String
