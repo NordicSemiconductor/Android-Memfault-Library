@@ -9,6 +9,7 @@ import com.nordicsemi.memfault.lib.data.MemfaultConfig
 import com.nordicsemi.memfault.lib.db.ChunksDatabase
 import com.nordicsemi.memfault.lib.internet.ChunkUploadManager
 import com.nordicsemi.memfault.lib.internet.DBChunkQueue
+import no.nordicsemi.android.common.permission.internet.InternetStateManager
 
 private val DB_NAME = "chunks-database"
 
@@ -38,5 +39,9 @@ internal class MemfaultFactory(private val context: Context) {
 
     fun getChunkValidator(): ChunkValidator {
         return ChunkValidator()
+    }
+
+    fun getInternetStateManager(context: Context): InternetStateManager {
+        return InternetStateManager(context)
     }
 }

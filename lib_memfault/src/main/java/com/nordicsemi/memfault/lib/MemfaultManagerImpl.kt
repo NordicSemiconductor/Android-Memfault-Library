@@ -5,16 +5,16 @@ import android.content.Context
 import com.nordicsemi.memfault.lib.bluetooth.ChunkValidator
 import com.nordicsemi.memfault.lib.bluetooth.MemfaultBleManager
 import com.nordicsemi.memfault.lib.data.MemfaultData
-import com.nordicsemi.memfault.lib.data.toChunk
 import com.nordicsemi.memfault.lib.db.toChunk
 import com.nordicsemi.memfault.lib.db.toEntity
 import com.nordicsemi.memfault.lib.internet.ChunkUploadManager
-import kotlinx.coroutines.coroutineScope
+import com.nordicsemi.memfault.lib.internet.UploadingStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -26,24 +26,42 @@ class MemfaultManagerImpl : MemfaultManager {
     private val _state = MutableStateFlow(MemfaultData())
     override val state: StateFlow<MemfaultData> = _state.asStateFlow()
 
-    override suspend fun connect(context: Context, device: BluetoothDevice) = coroutineScope {
+    override suspend fun connect(context: Context, device: BluetoothDevice) {
         val factory = MemfaultFactory(context.applicationContext)
         val bleManager = factory.getMemfaultManager()
         val database = factory.getDatabase()
+        val scope = factory.getScope()
         val chunkValidator = ChunkValidator()
         var uploadManager: ChunkUploadManager? = null
+        this.manager = bleManager
+        val internetStateManager = factory.getInternetStateManager(context)
 
         bleManager.start(device)
 
+        //Store chunks in database and schedule update with some delay to aggregate requests
+        scope.launch {
+            bleManager.receivedChunk
+                .buffer()
+                .onEach {
+                    database.chunksDao().insert(it.toEntity()) }
+//                .filter { chunkValidator.validateChunk(it) }
+                .debounce(300)
+                .collect { uploadManager?.uploadChunks() }
+        }
+
         //Collect config and initialise UploadManager
-        launch {
+        scope.launch {
             bleManager.config.collect {
                 it?.let {
                     _state.value = _state.value.copy(config = it)
                     uploadManager = factory.getUploadManager(config = it)
 
                     launch {
-                        uploadManager?.status?.collect {
+                        uploadManager?.uploadChunks()
+
+                        uploadManager!!.status.combine(internetStateManager.networkState()) { status, isOnline ->
+                            status.mapWithInternet(isOnline)
+                        }.collect {
                             _state.value = _state.value.copy(uploadingStatus = it)
                         }
                     }
@@ -52,36 +70,30 @@ class MemfaultManagerImpl : MemfaultManager {
         }
 
         //Collect bluetooth connection status and upload exposed StateFlow
-        launch {
+        scope.launch {
             bleManager.status.collect {
                 _state.value = _state.value.copy(bleStatus = it)
             }
         }
 
-        //Store chunks in database and schedule update with some delay to aggregate requests
-        launch {
-            bleManager.receivedChunk
-                .map { it.toChunk() }
-                .onEach { database.chunksDao().insert(it.toEntity()) }
-                .filter { chunkValidator.validateChunk(it) }
-                .debounce(300)
-                .collect { uploadManager?.uploadChunks() }
-        }
-
-        launch {
+        scope.launch {
             database.chunksDao().getAll()
                 .map { it.map { it.toChunk() } }
                 .collect {
                     _state.value = _state.value.copy(chunks = it)
                 }
         }
-
-        Unit
     }
 
-    override fun disconnect() {
+    private fun UploadingStatus.mapWithInternet(isInternetEnabled: Boolean): UploadingStatus {
+        return when (isInternetEnabled) {
+            true -> this
+            false -> UploadingStatus.SUSPENDED
+        }
+    }
+
+    override suspend fun disconnect() {
         manager?.disconnectWithCatch()
         manager = null
-        _state.value = MemfaultData()
     }
 }

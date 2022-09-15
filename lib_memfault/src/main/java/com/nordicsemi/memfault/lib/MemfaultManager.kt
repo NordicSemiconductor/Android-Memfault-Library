@@ -70,7 +70,7 @@ interface MemfaultManager {
      * Disconnects a previously connected BLE device.
      * If success then [DisconnectedResult] is emitted by a flow returned by [MemfaultManager.connect].
      */
-    fun disconnect()
+    suspend fun disconnect()
 
     companion object {
 

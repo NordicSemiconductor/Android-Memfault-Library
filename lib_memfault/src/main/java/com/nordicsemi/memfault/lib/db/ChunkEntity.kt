@@ -12,6 +12,8 @@ internal data class ChunkEntity(
     val chunkNumber: Int,
     @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB)
     val data: ByteArray,
+    @ColumnInfo(name = "device_id")
+    val deviceId: String,
     @ColumnInfo(name = "is_uploaded")
     val isUploaded: Boolean
 )

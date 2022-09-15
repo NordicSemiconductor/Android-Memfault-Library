@@ -36,7 +36,9 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.util.Log
+import com.nordicsemi.memfault.lib.data.Chunk
 import com.nordicsemi.memfault.lib.data.MemfaultConfig
+import com.nordicsemi.memfault.lib.data.toChunk
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -84,7 +86,7 @@ internal class MemfaultBleManager(
     private val _config = MutableStateFlow<MemfaultConfig?>(null)
     val config = _config.asStateFlow()
 
-    private val _receivedChunk = MutableSharedFlow<ByteArray>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _receivedChunk = MutableSharedFlow<Chunk>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val receivedChunk = _receivedChunk.asSharedFlow()
 
     init {
@@ -107,7 +109,8 @@ internal class MemfaultBleManager(
         override fun initialize() {
             super.initialize()
 
-            val handler = CoroutineExceptionHandler { _, _ ->
+            val handler = CoroutineExceptionHandler { _, it ->
+                it.printStackTrace()
                 dataHolder.onError()
             }
 
@@ -130,7 +133,7 @@ internal class MemfaultBleManager(
                     setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<ByteReadResponse>()
                         .cancellable()
                         .map { it.value }
-                        .collect { it?.let { _receivedChunk.tryEmit(it) } }
+                        .collect { it?.let { _receivedChunk.tryEmit(it.toChunk(deviceId)) } }
                 }
 
                 enableNotifications(mdsDataExportCharacteristic).suspend()
@@ -169,9 +172,9 @@ internal class MemfaultBleManager(
         }
     }
 
-    fun disconnectWithCatch() {
+    suspend fun disconnectWithCatch() {
         try {
-            disconnect().enqueue()
+            disconnect().suspend()
         } catch (e: Exception) {
             e.printStackTrace()
         }

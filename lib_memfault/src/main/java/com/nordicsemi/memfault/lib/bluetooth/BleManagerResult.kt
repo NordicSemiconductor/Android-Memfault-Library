@@ -32,5 +32,16 @@
 package com.nordicsemi.memfault.lib.bluetooth
 
 enum class BluetoothLEStatus {
-    IDLE, CONNECTING, CONNECTED, FAILED_TO_CONNECT, DISCONNECTED, ERROR
+    IDLE, CONNECTING, CONNECTED, FAILED_TO_CONNECT, DISCONNECTED, ERROR;
+
+    fun canConnect(): Boolean {
+        return when (this) {
+            IDLE,
+            FAILED_TO_CONNECT,
+            DISCONNECTED,
+            ERROR -> true
+            CONNECTING,
+            CONNECTED -> false
+        }
+    }
 }

@@ -7,7 +7,7 @@ internal class ChunkValidator {
     private var expectedChunk = 0 //FIXME initialise with latest received chunk number
 
     fun validateChunk(chunk: Chunk): Boolean {
-        return if (chunk.number == expectedChunk) {
+        return if (chunk.chunkNumber == expectedChunk) {
             expectedChunk++
 
             if (expectedChunk > 31) {

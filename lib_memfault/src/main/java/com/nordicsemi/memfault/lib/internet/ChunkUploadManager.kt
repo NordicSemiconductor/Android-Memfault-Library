@@ -1,9 +1,9 @@
 package com.nordicsemi.memfault.lib.internet
 
+import android.content.Context
 import com.memfault.cloud.sdk.ChunkQueue
 import com.memfault.cloud.sdk.ChunkSender
 import com.memfault.cloud.sdk.MemfaultCloud
-import com.nordicsemi.memfault.lib.data.Chunk
 import com.nordicsemi.memfault.lib.data.MemfaultConfig
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -14,7 +14,6 @@ internal class ChunkUploadManager(
     config: MemfaultConfig,
     chunkQueue: ChunkQueue
 ) {
-
     private val _status = MutableStateFlow(UploadingStatus.UPLOADING)
     val status = _status.asStateFlow()
 
@@ -33,9 +32,9 @@ internal class ChunkUploadManager(
             .build()
     }
 
-    suspend fun uploadChunks(): ChunkUploadResult = coroutineScope {
+    suspend fun uploadChunks() = coroutineScope {
         if (status.value == UploadingStatus.SUSPENDED) {
-            throw UploadSuspendedException()
+            return@coroutineScope
         }
 
         val result = memfaultSender.send()
@@ -45,8 +44,6 @@ internal class ChunkUploadManager(
             delay(it.delay)
             _status.value = UploadingStatus.UPLOADING
         }
-
-        result
     }
 
     fun deinit() {

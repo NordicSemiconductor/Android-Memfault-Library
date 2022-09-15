@@ -55,11 +55,12 @@ class DumpingViewModel @Inject constructor(
 ) : ViewModel() {
 
     val state = memfaultManager.state
+    var bluetoothDevice: BluetoothDevice? = null
 
     init {
         navigationManager.getArgumentForId(DumpingDestinationId).onEach {
             if (it is DumpingDestinationArgs) {
-                installBluetoothDevice(it.device.device)
+                bluetoothDevice = it.device.device
             }
         }.launchIn(viewModelScope)
     }
@@ -70,14 +71,11 @@ class DumpingViewModel @Inject constructor(
         }
     }
 
-    private fun installBluetoothDevice(device: BluetoothDevice) {
-        viewModelScope.launch {
-            memfaultManager.connect(context, device)
+    fun connect() {
+        bluetoothDevice?.let {
+            viewModelScope.launch {
+                memfaultManager.connect(context, it)
+            }
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        memfaultManager.disconnect()
     }
 }

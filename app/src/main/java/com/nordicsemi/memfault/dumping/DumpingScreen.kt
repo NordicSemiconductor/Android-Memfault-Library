@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -59,7 +60,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.nordicsemi.memfault.R
 import com.nordicsemi.memfault.lib.bluetooth.BluetoothLEStatus
 import com.nordicsemi.memfault.lib.data.Chunk
+import com.nordicsemi.memfault.lib.data.MemfaultConfig
+import com.nordicsemi.memfault.lib.data.MemfaultData
 import no.nordicsemi.android.common.theme.view.NordicAppBar
+import no.nordicsemi.android.common.theme.view.ScreenSection
+import no.nordicsemi.android.common.theme.view.SectionTitle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,19 +72,12 @@ fun DumpingScreen() {
     val viewModel: DumpingViewModel = hiltViewModel()
     val state = viewModel.state.collectAsState().value
 
-
-    if (state.bleStatus == BluetoothLEStatus.ERROR) {
-        ErrorItem(viewModel = viewModel)
-        return
-    }
-
     Scaffold(
         topBar = {
-            NordicAppBar(text = stringResource(id = R.string.app_bar_title), actions = {
-                TextButton(onClick = { viewModel.disconnect() }) {
-                    Text(stringResource(id = R.string.disconnect), color = MaterialTheme.colorScheme.onPrimary)
-                }
-            })
+            NordicAppBar(
+                text = stringResource(id = R.string.app_bar_title),
+                actions = { ConnectButton(state = state) }
+            )
         }
     ) {
         Box(modifier = Modifier.padding(it)) {
@@ -87,109 +85,145 @@ fun DumpingScreen() {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-//                (state as? WorkingResult)?.let {
-//                    ScreenSection {
-//                        SectionTitle(
-//                            painter = painterResource(id = R.drawable.ic_chart),
-//                            title = stringResource(id = R.string.statistics)
-//                        )
-//
-//                        Spacer(modifier = Modifier.size(16.dp))
-//
-//                        StatsView(it)
-//                    }
-//
-//                    Spacer(modifier = Modifier.size(16.dp))
-//                }
-//
-//                ScreenSection {
-//                    SectionTitle(
-//                        painter = painterResource(R.drawable.ic_chunk),
-//                        title = stringResource(id = R.string.chunks_received)
-//                    )
-//
-//                    Spacer(modifier = Modifier.size(16.dp))
-//
-//                    if (state is IdleResult || state is ConnectingResult || state is ConnectedResult) {
-//                        LoadingView()
-//                    } else if (state is WorkingResult) {
-//                        UploadingItem(state)
-//                    }
-//                }
+
+                StatsView(state)
+
+                Spacer(modifier = Modifier.size(16.dp))
+
+                state.config?.let {
+                    ConfigView(config = it)
+
+                    Spacer(modifier = Modifier.size(16.dp))
+                }
+
+                if (state.bleStatus == BluetoothLEStatus.CONNECTING || state.bleStatus == BluetoothLEStatus.CONNECTED) {
+                    ChunksItem(chunks = state.chunks)
+                } else if (state.bleStatus == BluetoothLEStatus.ERROR) {
+                    ErrorItem()
+                }
             }
         }
     }
 }
 
 @Composable
-private fun UploadingItem(chunks: List<Chunk>) {
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(chunks.size) {
-            val chunk = chunks[it]
-            ScreenItem(
-                title = stringResource(id = R.string.next_item, chunk.number),
-                description = stringResource(id = R.string.bytes, chunk.data.size)
+private fun ConnectButton(state: MemfaultData) {
+    val viewModel: DumpingViewModel = hiltViewModel()
+    
+    if (state.bleStatus == BluetoothLEStatus.CONNECTED) {
+        TextButton(onClick = { viewModel.disconnect() }) {
+            Text(
+                stringResource(id = R.string.disconnect),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+    }
+    if (state.bleStatus.canConnect()) {
+        TextButton(onClick = { viewModel.connect() }) {
+            Text(
+                stringResource(id = R.string.connect),
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ErrorItem(viewModel: DumpingViewModel) {
-    Scaffold(
-        topBar = {
-            NordicAppBar(text = stringResource(id = R.string.app_bar_title), actions = {
-                TextButton(onClick = { viewModel.disconnect() }) {
-                    Text(stringResource(id = R.string.disconnect), color = MaterialTheme.colorScheme.onPrimary)
+private fun ChunksItem(chunks: List<Chunk>) {
+    ScreenSection {
+        SectionTitle(
+            painter = painterResource(R.drawable.ic_chunk),
+            title = stringResource(id = R.string.chunks_received)
+        )
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        if (chunks.isEmpty()) {
+            LoadingView()
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(chunks.size) {
+                    ChunkItem(chunk = chunks[it])
                 }
-            })
-        }
-    ) {
-        Column(modifier = Modifier.padding(it)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(id = R.string.error),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.labelLarge,
-                )
             }
         }
     }
 }
 
-//@Composable
-//private fun StatsView(stats: WorkingResult) {
-//    Row(
-//        verticalAlignment = Alignment.CenterVertically,
-//        modifier = Modifier.fillMaxWidth(),
-//        horizontalArrangement = Arrangement.SpaceEvenly
-//    ) {
-//        StatsItem(
-//            R.drawable.ic_chunk,
-//            stringResource(id = R.string.chunks_received),
-//            stats.chunksReceived.toString()
-//        )
-//        Spacer(modifier = Modifier.size(16.dp))
-//        StatsItem(
-//            R.drawable.ic_chunk_send,
-//            stringResource(id = R.string.chunks_sent),
-//            stats.chunksSent.toString()
-//        )
-//        Spacer(modifier = Modifier.size(16.dp))
-//        val label = when (stats.uploadStatus) {
-//            UploadStatus.WORKING -> stringResource(id = R.string.upload_status_working)
-//            UploadStatus.SUSPENDED -> stringResource(id = R.string.upload_status_suspended)
-//        }
-//        StatsItem(
-//            R.drawable.ic_cloud_upload,
-//            stringResource(id = R.string.upload_status),
-//            label
-//        )
-//    }
-//}
+@Composable
+private fun ErrorItem() {
+    Column {
+        Text(
+            text = stringResource(id = R.string.error),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.labelLarge,
+        )
+    }
+}
+
+@Composable
+private fun ConfigView(config: MemfaultConfig) {
+    ScreenSection {
+        SectionTitle(
+            painter = painterResource(R.drawable.ic_board),
+            title = stringResource(id = R.string.configuration)
+        )
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        Column {
+            TitleItem(
+                title = stringResource(id = R.string.config_device_id),
+                description = config.deviceId
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            TitleItem(
+                title = stringResource(id = R.string.config_authorisation),
+                description = config.authorisationHeader.value
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            TitleItem(
+                title = stringResource(id = R.string.config_url),
+                description = config.url
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatsView(data: MemfaultData) {
+    ScreenSection {
+        SectionTitle(
+            painter = painterResource(R.drawable.ic_chart),
+            title = stringResource(id = R.string.status)
+        )
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            StatsItem(
+                iconRes = R.drawable.ic_bluetooth,
+                title = stringResource(id = R.string.bluetooth_status),
+                description = data.bleStatus.toString()
+            )
+            StatsItem(
+                iconRes = R.drawable.ic_wifi,
+                title = stringResource(id = R.string.upload_status),
+                description = data.uploadingStatus.toString()
+            )
+            StatsItem(
+                iconRes = R.drawable.ic_chunk,
+                title = stringResource(id = R.string.pending_chunks),
+                description = data.pendingChunksSize.toString()
+            )
+        }
+    }
+}
 
 @Composable
 private fun StatsItem(
@@ -204,11 +238,13 @@ private fun StatsItem(
         Row {
             Icon(painter = painterResource(id = iconRes), contentDescription = title)
         }
+
         Spacer(modifier = Modifier.size(8.dp))
+
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.widthIn(max = 60.dp),
+            modifier = Modifier.widthIn(max = 65.dp),
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.size(8.dp))
