@@ -1,6 +1,5 @@
 package com.nordicsemi.memfault.lib.internet
 
-import android.content.Context
 import com.memfault.cloud.sdk.ChunkQueue
 import com.memfault.cloud.sdk.ChunkSender
 import com.memfault.cloud.sdk.MemfaultCloud

@@ -25,12 +25,12 @@ internal class MemfaultFactory(private val context: Context) {
             .also { database = it }
     }
 
-    fun getChunkQueue(): ChunkQueue {
-        return DBChunkQueue(getDatabase().chunksDao())
+    private fun getChunkQueue(deviceId: String): ChunkQueue {
+        return DBChunkQueue(deviceId, getDatabase().chunksDao())
     }
 
     fun getUploadManager(config: MemfaultConfig): ChunkUploadManager {
-        return ChunkUploadManager(config, getChunkQueue())
+        return ChunkUploadManager(config, getChunkQueue(config.deviceId))
     }
 
     fun getMemfaultManager(): MemfaultBleManager {

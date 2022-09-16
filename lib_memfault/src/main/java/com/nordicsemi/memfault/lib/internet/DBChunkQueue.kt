@@ -4,6 +4,7 @@ import com.memfault.cloud.sdk.ChunkQueue
 import com.nordicsemi.memfault.lib.db.ChunksDao
 
 internal class DBChunkQueue(
+    private val deviceId: String,
     private val chunkDao: ChunksDao
 ) : ChunkQueue {
 
@@ -13,10 +14,10 @@ internal class DBChunkQueue(
     }
 
     override fun drop(count: Int) {
-        chunkDao.drop(count)
+        chunkDao.drop(count, deviceId)
     }
 
     override fun peek(count: Int): List<ByteArray> {
-        return chunkDao.getNotUploaded(count).map { it.data }
+        return chunkDao.getNotUploaded(count, deviceId).map { it.data }
     }
 }

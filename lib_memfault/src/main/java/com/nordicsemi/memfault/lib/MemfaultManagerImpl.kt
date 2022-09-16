@@ -42,8 +42,7 @@ class MemfaultManagerImpl : MemfaultManager {
         scope.launch {
             bleManager.receivedChunk
                 .buffer()
-                .onEach {
-                    database.chunksDao().insert(it.toEntity()) }
+                .onEach { database.chunksDao().insert(it.toEntity()) }
 //                .filter { chunkValidator.validateChunk(it) }
                 .debounce(300)
                 .collect { uploadManager?.uploadChunks() }
@@ -51,8 +50,8 @@ class MemfaultManagerImpl : MemfaultManager {
 
         //Collect config and initialise UploadManager
         scope.launch {
-            bleManager.config.collect {
-                it?.let {
+            bleManager.config.collect { config ->
+                config?.let {
                     _state.value = _state.value.copy(config = it)
                     uploadManager = factory.getUploadManager(config = it)
 
@@ -61,9 +60,13 @@ class MemfaultManagerImpl : MemfaultManager {
 
                         uploadManager!!.status.combine(internetStateManager.networkState()) { status, isOnline ->
                             status.mapWithInternet(isOnline)
-                        }.collect {
-                            _state.value = _state.value.copy(uploadingStatus = it)
-                        }
+                        }.collect { _state.value = _state.value.copy(uploadingStatus = it) }
+                    }
+
+                    scope.launch {
+                        database.chunksDao().getAll(config.deviceId)
+                            .map { it.map { it.toChunk() } }
+                            .collect { _state.value = _state.value.copy(chunks = it) }
                     }
                 }
             }
@@ -74,14 +77,6 @@ class MemfaultManagerImpl : MemfaultManager {
             bleManager.status.collect {
                 _state.value = _state.value.copy(bleStatus = it)
             }
-        }
-
-        scope.launch {
-            database.chunksDao().getAll()
-                .map { it.map { it.toChunk() } }
-                .collect {
-                    _state.value = _state.value.copy(chunks = it)
-                }
         }
     }
 
