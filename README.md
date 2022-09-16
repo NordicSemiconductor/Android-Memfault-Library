@@ -23,7 +23,7 @@ memfaultManager.disconnect()
 
 The repository contains also [the app](https://play.google.com/store/apps/details?id=com.nordicsemi.memfault) which shows example usage of the library. It connects to a selected device and maintains connection as long as user decided. The app presents basic statistics about number of uploaded chunks and a delay since the last chunk has been sent.
 
-<img src="https://play-lh.googleusercontent.com/JzsNTdvex7wmthZsLMzQbuSTlyxJw9dIHvDIBlRbFE7FQULj8rQblU0ukW0rwlg9tz8=w2560-h1440" width="200"> <img src="https://play-lh.googleusercontent.com/NcS26DPrspB-nMXYS6qaTgq7ilcsUfolr4tbjnl6H-lNFjR2WNe6Ncot2beGqiBKo6w=w2560-h1440" width="200"> <img src="https://play-lh.googleusercontent.com/B3PcyFzTNEGJsMknxKlLLg0OnVyy8nAyU7xc8MUVTaWwdW5JPj8e6Ws762GE35SFtGI=w2560-h1440" width="200">
+<img src="https://play-lh.googleusercontent.com/73Y1WEr-Yx2y3m0iQbyWhHAVCv5WLQxMcZBQqchDo4z5kFxa_bMhFRpsiJBeFfr-nQI=w2560-h1440" width="200"> <img src="https://play-lh.googleusercontent.com/yzN9kmcg0a8tFqi9wWT4qZkTjubAm3mvYDLGBTT4S80jKNUUyjpR4jbfAbFysI34Kzw=w2560-h1440" width="200"> <img src="https://play-lh.googleusercontent.com/4hEHXCxexumy1Lr0q8C_HGOMAxWvU3sQni6H4B7Aold0osAju7HdTuvXaKsFBfVOTVg=w2560-h1440" width="200">
 
 ## Dependencies
 Application under the hood uses:
