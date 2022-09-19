@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.memfault.cloud.sdk.ChunkQueue
 import no.nordicsemi.memfault.lib.bluetooth.ChunkValidator
-import no.nordicsemi.memfault.lib.bluetooth.MemfaultBleManager
+import no.nordicsemi.memfault.lib.bluetooth.ChunksBleManager
 import no.nordicsemi.memfault.lib.data.MemfaultConfig
 import no.nordicsemi.memfault.lib.db.ChunksDatabase
 import no.nordicsemi.memfault.lib.internet.ChunkUploadManager
@@ -33,8 +33,8 @@ internal class MemfaultFactory(private val context: Context) {
         return ChunkUploadManager(config, getChunkQueue(config.deviceId))
     }
 
-    fun getMemfaultManager(): MemfaultBleManager {
-        return MemfaultBleManager(context, getScope())
+    fun getMemfaultManager(): ChunksBleManager {
+        return ChunksBleManager(context, getScope())
     }
 
     fun getChunkValidator(): ChunkValidator {

@@ -37,7 +37,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import no.nordicsemi.memfault.DumpingDestinationArgs
 import no.nordicsemi.memfault.DumpingDestinationId
-import no.nordicsemi.memfault.lib.MemfaultManager
+import no.nordicsemi.memfault.lib.MemfaultBleManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.launchIn
@@ -51,7 +51,7 @@ class DumpingViewModel @Inject constructor(
     @ApplicationContext
     private val context: Context,
     private val navigationManager: NavigationManager,
-    private val memfaultManager: MemfaultManager
+    private val memfaultManager: MemfaultBleManager
 ) : ViewModel() {
 
     val state = memfaultManager.state

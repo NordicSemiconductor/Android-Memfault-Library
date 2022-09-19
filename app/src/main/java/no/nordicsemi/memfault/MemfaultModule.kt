@@ -31,7 +31,7 @@
 
 package no.nordicsemi.memfault
 
-import no.nordicsemi.memfault.lib.MemfaultManager
+import no.nordicsemi.memfault.lib.MemfaultBleManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,5 +42,5 @@ import dagger.hilt.components.SingletonComponent
 internal class MemfaultModule {
 
     @Provides
-    fun providesMemfaultManager() = MemfaultManager.create()
+    fun providesMemfaultManager() = MemfaultBleManager.create()
 }

@@ -33,49 +33,59 @@ package no.nordicsemi.memfault.lib
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import no.nordicsemi.memfault.lib.data.MemfaultData
+import no.nordicsemi.memfault.lib.data.MemfaultState
 import kotlinx.coroutines.flow.StateFlow
 import no.nordicsemi.android.ble.BleManager
 
 /**
  * Class responsible for managing connection with the remote IoT device which supports Memfault GATT characteristics.
- * [MemfaultManager] connects to the device and uploads all downloaded chunks to the cloud.
+ * [MemfaultBleManager] connects to the device and uploads all downloaded chunks to the cloud.
  *
- * Data can be emitted any time so connection should be maintained as long as needed.
+ * Data can be emitted any time so the connection should be maintained as long as needed.
  *
  * @see <a href="https://app.memfault.com">Memfault console</a>
  * @see <a href="https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b">Memfault GATT characteristics</a>
  */
-interface MemfaultManager {
-
-    val state: StateFlow<MemfaultData>
+interface MemfaultBleManager {
 
     /**
-     * Function used to connect the phone to a selected [BluetoothDevice].
+     * Contains all the information exposed by the library like:
+     *  - Bluetooth connection status with the selected IoT device.
+     *  - Uploading status which may be suspended due to server overload.
+     *  - Received chunks information.
+     *
      * If the device supports required GATT characteristics then uploaded chunks will be reported
      * by [WorkingResult]. Otherwise [ErrorResult] is sent.
      *
      * [WorkingResult] can report [UploadStatus.SUSPENDED] which indicates that the Memfault server
      * is overloaded and upload is postponed to the future.
+     */
+    val state: StateFlow<MemfaultState>
+
+    /**
+     * Function used to connect the phone to a selected [BluetoothDevice].
+     * Chunks upload will start immediately.
      *
      * @param context applicationContext needed to set up [BleManager]
      * @param device [BluetoothDevice] to which manager should connect
-     *
-     * @return Returns [BleManagerResult] which indicates status connection.
-     * This is the place where library informs about eventual errors or disconnection.
      */
     suspend fun connect(context: Context, device: BluetoothDevice)
 
     /**
      * Disconnects a previously connected BLE device.
-     * If success then [DisconnectedResult] is emitted by a flow returned by [MemfaultManager.connect].
+     * If success then [DisconnectedResult] is emitted by a flow returned by [MemfaultBleManager.connect].
      */
     suspend fun disconnect()
 
     companion object {
 
-        fun create(): MemfaultManager {
-            return MemfaultManagerImpl()
+        /**
+         * This function creates a new instance of [MemfaultBleManager] each time it's called.
+         *
+         * @return new [MemfaultBleManager] instance
+         */
+        fun create(): MemfaultBleManager {
+            return MemfaultBleManagerImpl()
         }
     }
 }

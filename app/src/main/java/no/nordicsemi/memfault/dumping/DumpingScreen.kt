@@ -63,7 +63,7 @@ import no.nordicsemi.memfault.R
 import no.nordicsemi.memfault.lib.bluetooth.BluetoothLEStatus
 import no.nordicsemi.memfault.lib.data.Chunk
 import no.nordicsemi.memfault.lib.data.MemfaultConfig
-import no.nordicsemi.memfault.lib.data.MemfaultData
+import no.nordicsemi.memfault.lib.data.MemfaultState
 import no.nordicsemi.android.common.theme.view.NordicAppBar
 import no.nordicsemi.android.common.theme.view.ScreenSection
 import no.nordicsemi.android.common.theme.view.SectionTitle
@@ -108,7 +108,7 @@ fun DumpingScreen() {
 }
 
 @Composable
-private fun ConnectButton(state: MemfaultData) {
+private fun ConnectButton(state: MemfaultState) {
     val viewModel: DumpingViewModel = hiltViewModel()
 
     if (state.bleStatus == BluetoothLEStatus.CONNECTED) {
@@ -182,7 +182,7 @@ private fun ConfigView(config: MemfaultConfig) {
 }
 
 @Composable
-private fun StatsView(data: MemfaultData) {
+private fun StatsView(data: MemfaultState) {
     ScreenSection {
         SectionTitle(
             painter = painterResource(R.drawable.ic_chart),

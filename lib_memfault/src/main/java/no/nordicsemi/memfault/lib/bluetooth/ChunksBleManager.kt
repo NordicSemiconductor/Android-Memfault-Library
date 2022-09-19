@@ -67,7 +67,7 @@ private val MDS_AUTHORISATION_CHARACTERISTIC_UUID =
 private val MDS_DATA_EXPORT_CHARACTERISTIC_UUID =
     UUID.fromString("54220005-f6a5-4007-a371-722f4ebd8436")
 
-internal class MemfaultBleManager(
+internal class ChunksBleManager(
     context: Context,
     private val scope: CoroutineScope
 ) : BleManager(context) {

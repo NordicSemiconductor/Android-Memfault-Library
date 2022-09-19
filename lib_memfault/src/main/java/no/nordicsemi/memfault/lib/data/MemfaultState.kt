@@ -3,7 +3,7 @@ package no.nordicsemi.memfault.lib.data
 import no.nordicsemi.memfault.lib.bluetooth.BluetoothLEStatus
 import no.nordicsemi.memfault.lib.internet.UploadingStatus
 
-data class MemfaultData(
+data class MemfaultState(
     val bleStatus: BluetoothLEStatus = BluetoothLEStatus.IDLE,
     val uploadingStatus: UploadingStatus = UploadingStatus.SUSPENDED,
     val config: MemfaultConfig? = null,

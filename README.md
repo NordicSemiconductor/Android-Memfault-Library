@@ -7,16 +7,20 @@ The device should contain characteristics defined in [the Memfault documentation
 ## Example usage
 
 ```kotlin
-val memfaultManager = MemfaultManager()
+val memfaultBleManager = MemfaultBleManager()
 
-viewModelScope.launch {
-    memfaultManager.connect(context, device).collect {
-        //Consume status
-    }
+//Receive status and data
+memfaultBleManager.state.collect {
+    
 }
 
-//when finished
-memfaultManager.disconnect()
+//To start
+viewModelScope.launch {
+    memfaultBleManager.connect(context, device)
+}
+
+//When finished
+memfaultBleManager.disconnect()
 ```
 
 ## App
@@ -28,4 +32,4 @@ The repository contains also [the app](https://play.google.com/store/apps/detail
 ## Dependencies
 Application under the hood uses:
 1. [BLE Library](https://github.com/NordicSemiconductor/Android-BLE-Library) - for managing BLE connection and reading data from the remote device.
-2. [Retrofit](https://square.github.io/retrofit) - for uploading chunks to the cloud.
+2. [MemfaultCloud Android](https://github.com/memfault/memfault-cloud-android) - for uploading chunks to the cloud.

@@ -3,8 +3,8 @@ package no.nordicsemi.memfault.lib
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import no.nordicsemi.memfault.lib.bluetooth.ChunkValidator
-import no.nordicsemi.memfault.lib.bluetooth.MemfaultBleManager
-import no.nordicsemi.memfault.lib.data.MemfaultData
+import no.nordicsemi.memfault.lib.bluetooth.ChunksBleManager
+import no.nordicsemi.memfault.lib.data.MemfaultState
 import no.nordicsemi.memfault.lib.db.toChunk
 import no.nordicsemi.memfault.lib.db.toEntity
 import no.nordicsemi.memfault.lib.internet.ChunkUploadManager
@@ -19,12 +19,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-class MemfaultManagerImpl : MemfaultManager {
+class MemfaultBleManagerImpl : MemfaultBleManager {
 
-    private var manager: MemfaultBleManager? = null
+    private var manager: ChunksBleManager? = null
 
-    private val _state = MutableStateFlow(MemfaultData())
-    override val state: StateFlow<MemfaultData> = _state.asStateFlow()
+    private val _state = MutableStateFlow(MemfaultState())
+    override val state: StateFlow<MemfaultState> = _state.asStateFlow()
 
     override suspend fun connect(context: Context, device: BluetoothDevice) {
         val factory = MemfaultFactory(context.applicationContext)
