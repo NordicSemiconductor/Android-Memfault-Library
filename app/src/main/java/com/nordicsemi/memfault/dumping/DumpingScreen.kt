@@ -35,6 +35,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,6 +43,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -81,25 +83,24 @@ fun DumpingScreen() {
         }
     ) {
         Box(modifier = Modifier.padding(it)) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-
-                StatsView(state)
-
-                Spacer(modifier = Modifier.size(16.dp))
+                item { StatsView(data = state) }
 
                 state.config?.let {
-                    ConfigView(config = it)
-
-                    Spacer(modifier = Modifier.size(16.dp))
+                    item { ConfigView(config = it) }
                 }
 
                 if (state.bleStatus == BluetoothLEStatus.CONNECTING || state.bleStatus == BluetoothLEStatus.CONNECTED) {
-                    ChunksItem(chunks = state.chunks)
+                    if (state.chunks.isEmpty()) {
+                        LoadingView()
+                    } else {
+                        ChunksItem(chunks = state.chunks)
+                    }
                 } else if (state.bleStatus == BluetoothLEStatus.ERROR) {
-                    ErrorItem()
+                    item { ErrorItem() }
                 }
             }
         }
@@ -109,7 +110,7 @@ fun DumpingScreen() {
 @Composable
 private fun ConnectButton(state: MemfaultData) {
     val viewModel: DumpingViewModel = hiltViewModel()
-    
+
     if (state.bleStatus == BluetoothLEStatus.CONNECTED) {
         TextButton(onClick = { viewModel.disconnect() }) {
             Text(
@@ -128,27 +129,15 @@ private fun ConnectButton(state: MemfaultData) {
     }
 }
 
-@Composable
-private fun ChunksItem(chunks: List<Chunk>) {
-    ScreenSection {
-        SectionTitle(
-            painter = painterResource(R.drawable.ic_chunk),
-            title = stringResource(id = R.string.chunks_received)
+private fun LazyListScope.ChunksItem(chunks: List<Chunk>) {
+    item {
+        Text(
+            text = stringResource(id = R.string.chunks_received),
+            style = MaterialTheme.typography.labelSmall
         )
-
-        Spacer(modifier = Modifier.size(16.dp))
-
-        if (chunks.isEmpty()) {
-            LoadingView()
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(chunks.size) {
-                    ChunkItem(chunk = chunks[it])
-                }
-            }
-        }
+    }
+    items(chunks.size) {
+        ChunkItem(chunk = chunks[it])
     }
 }
 
