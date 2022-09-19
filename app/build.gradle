@@ -10,11 +10,11 @@ android {
     ext.kotlin_version = '1.6.21'
     ext.compose_version = '1.3.0-rc01'
 
-    namespace 'com.nordicsemi.memfault'
+    namespace 'no.nordicsemi.memfault'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.nordicsemi.memfault"
+        applicationId "no.nordicsemi.memfault"
         minSdk 24
         targetSdk 33
         versionCode getVersionCodeFromTags()
