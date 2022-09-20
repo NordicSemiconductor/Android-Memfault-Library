@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id "org.jetbrains.kotlin.kapt"
 }
+apply from: rootProject.file("gradle/git-tag-version.gradle")
 
 android {
     namespace 'no.nordicsemi.memfault.lib'
@@ -61,4 +62,14 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
+}
+
+// === Maven Central configuration ===
+if (rootProject.file('gradle/publish-module.gradle').exists()) {
+    ext {
+        POM_ARTIFACT_ID = 'memfault'
+        POM_NAME = 'Memfault Bluetooth Le Library for Android'
+        POM_PACKAGING = 'aar'
+    }
+    apply from: rootProject.file('gradle/publish-module.gradle')
 }
