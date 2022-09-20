@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace 'com.nordicsemi.memfault.lib'
+    namespace 'no.nordicsemi.memfault.lib'
     compileSdk 33
 
     defaultConfig {
@@ -52,6 +52,13 @@ dependencies {
     implementation "no.nordicsemi.android:ble-common:2.5.1"
     implementation "no.nordicsemi.android:ble-ktx:2.5.1"
     implementation "no.nordicsemi.android.support.v18:scanner:1.6.0"
+    implementation "no.nordicsemi.android.common:permission:1.0.23"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2"
+
+    def room_version = "2.4.3"
+
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
 }

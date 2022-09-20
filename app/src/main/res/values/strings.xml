@@ -52,13 +52,23 @@
     <string name="open_logger">Open logger application.</string>
 
     <string name="disconnect">Disconnect</string>
+    <string name="connect">Connect</string>
 
+    <string name="configuration">Configuration</string>
     <string name="app_bar_title">Memfault</string>
     <string name="uploaded_chunks">Chunks</string>
 
+    <string name="config_device_id">Device ID</string>
+    <string name="config_authorisation">Authorisation Key</string>
+    <string name="config_url">Upload URL</string>
+
+    <string name="status">Status</string>
+    <string name="bluetooth_status">Bluetooth</string>
+    <string name="upload_status">Cloud</string>
+    <string name="pending_chunks">Pending</string>
+
     <string name="chunks_received">Chunks received</string>
     <string name="chunks_sent">Chunks sent</string>
-    <string name="upload_status">Upload status</string>
     <string name="upload_status_working">WORKING</string>
     <string name="upload_status_suspended">SUSPENDED</string>
 
