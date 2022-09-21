@@ -25,7 +25,7 @@ memfaultBleManager.disconnect()
 
 ## Application
 
-<a href='https://play.google.com/store/apps/details?id=no.nordicsemi.android.memfault'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width='250'/></a>
+<a href='https://play.google.com/store/apps/details?id=no.nordicsemi.memfault'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width='250'/></a>
 
 <img src="https://play-lh.googleusercontent.com/73Y1WEr-Yx2y3m0iQbyWhHAVCv5WLQxMcZBQqchDo4z5kFxa_bMhFRpsiJBeFfr-nQI=w2560-h1440" width="200"> <img src="https://play-lh.googleusercontent.com/yzN9kmcg0a8tFqi9wWT4qZkTjubAm3mvYDLGBTT4S80jKNUUyjpR4jbfAbFysI34Kzw=w2560-h1440" width="200"> <img src="https://play-lh.googleusercontent.com/4hEHXCxexumy1Lr0q8C_HGOMAxWvU3sQni6H4B7Aold0osAju7HdTuvXaKsFBfVOTVg=w2560-h1440" width="200">
 
