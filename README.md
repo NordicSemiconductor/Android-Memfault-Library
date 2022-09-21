@@ -11,7 +11,7 @@ val memfaultBleManager = MemfaultBleManager()
 
 //Receive status and data
 memfaultBleManager.state.collect {
-    
+
 }
 
 //To start
@@ -34,7 +34,7 @@ memfaultBleManager.disconnect()
 The library is available on Maven Central repository. Add it to your project by adding the following dependency:
 
 ```Groovy
-implementation 'no.nordicsemi.android:memfault:{{VERSION}}'
+implementation 'no.nordicsemi.android:memfault:1.0.0'
 ```
 
 ## Dependencies
