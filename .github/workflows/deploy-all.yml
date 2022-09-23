@@ -64,6 +64,8 @@ jobs:
           OSSR_PASSWORD: ${{ secrets.OSSR_PASSWORD }}
         run: |
           pwd
+          echo "${{ secrets.KEYSTORE_FILE }}" > keystore.asc
+          gpg -d --passphrase "${{ secrets.KEYSTORE_FILE_PSWD }}" --batch keystore.asc > keystore
           echo "${{ secrets.API_KEY_FILE }}" > fastlane-api.json.asc
           gpg -d --passphrase "${{ secrets.API_KEY_FILE_PSWD }}" --batch fastlane-api.json.asc > fastlane-api.json
           fastlane deployInternal
