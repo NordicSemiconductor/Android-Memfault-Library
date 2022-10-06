@@ -54,8 +54,8 @@ internal class ChunkUploadManager(
 
     private suspend fun launchSuspendTask(delay: Long) {
         for (i in delay downTo 0) {
-            delay(1000)
             _status.value = UploadingStatus.Suspended(i)
+            delay(1000)
         }
 
         _status.value = UploadingStatus.InProgress

@@ -95,6 +95,11 @@ fun DumpingScreen() {
                     item { ConfigView(config = it) }
                 }
 
+                if (state.bleStatus == BluetoothLEStatus.ERROR) {
+                    item { ErrorItem() }
+                } else if (state.chunks.isNotEmpty()) {
+                    ChunksItem(chunks = state.chunks)
+                } else
                 if (state.bleStatus == BluetoothLEStatus.CONNECTING || state.bleStatus == BluetoothLEStatus.CONNECTED) {
                     if (state.chunks.isEmpty()) {
                         LoadingView()
@@ -256,7 +261,8 @@ private fun StatsItem(
         Spacer(modifier = Modifier.size(8.dp))
         Text(
             text = description,
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodySmall,
+            textAlign = TextAlign.Center
         )
     }
 }

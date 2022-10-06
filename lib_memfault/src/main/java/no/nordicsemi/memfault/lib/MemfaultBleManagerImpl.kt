@@ -63,11 +63,13 @@ class MemfaultBleManagerImpl : MemfaultBleManager {
                     uploadManager = factory.getUploadManager(config = it)
 
                     launch {
-                        uploadManager?.uploadChunks()
-
                         uploadManager!!.status.combine(internetStateManager.networkState()) { status, isOnline ->
                             status.mapWithInternet(isOnline)
                         }.collect { _state.value = _state.value.copy(uploadingStatus = it) }
+                    }
+
+                    launch {
+                        uploadManager?.uploadChunks()
                     }
 
                     scope.launch {
