@@ -36,9 +36,6 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.util.Log
-import no.nordicsemi.memfault.lib.data.Chunk
-import no.nordicsemi.memfault.lib.data.MemfaultConfig
-import no.nordicsemi.memfault.lib.data.toChunk
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -53,6 +50,9 @@ import no.nordicsemi.android.ble.BleManager
 import no.nordicsemi.android.ble.ktx.asValidResponseFlow
 import no.nordicsemi.android.ble.ktx.suspend
 import no.nordicsemi.android.ble.ktx.suspendForValidResponse
+import no.nordicsemi.memfault.lib.data.Chunk
+import no.nordicsemi.memfault.lib.data.MemfaultConfig
+import no.nordicsemi.memfault.lib.data.toChunk
 import java.util.*
 
 val MDS_SERVICE_UUID: UUID = UUID.fromString("54220000-f6a5-4007-a371-722f4ebd8436")

@@ -2,13 +2,6 @@ package no.nordicsemi.memfault.lib
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import no.nordicsemi.memfault.lib.bluetooth.ChunkValidator
-import no.nordicsemi.memfault.lib.bluetooth.ChunksBleManager
-import no.nordicsemi.memfault.lib.data.MemfaultState
-import no.nordicsemi.memfault.lib.db.toChunk
-import no.nordicsemi.memfault.lib.db.toEntity
-import no.nordicsemi.memfault.lib.internet.ChunkUploadManager
-import no.nordicsemi.memfault.lib.internet.UploadingStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +11,13 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import no.nordicsemi.memfault.lib.bluetooth.ChunkValidator
+import no.nordicsemi.memfault.lib.bluetooth.ChunksBleManager
+import no.nordicsemi.memfault.lib.data.MemfaultState
+import no.nordicsemi.memfault.lib.db.toChunk
+import no.nordicsemi.memfault.lib.db.toEntity
+import no.nordicsemi.memfault.lib.internet.ChunkUploadManager
+import no.nordicsemi.memfault.lib.internet.UploadingStatus
 
 class MemfaultBleManagerImpl : MemfaultBleManager {
 
@@ -35,6 +35,13 @@ class MemfaultBleManagerImpl : MemfaultBleManager {
         var uploadManager: ChunkUploadManager? = null
         this.manager = bleManager
         val internetStateManager = factory.getInternetStateManager(context)
+
+        //Collect bluetooth connection status and upload exposed StateFlow
+        scope.launch {
+            bleManager.status.collect {
+                _state.value = _state.value.copy(bleStatus = it)
+            }
+        }
 
         bleManager.start(device)
 
@@ -69,13 +76,6 @@ class MemfaultBleManagerImpl : MemfaultBleManager {
                             .collect { _state.value = _state.value.copy(chunks = it) }
                     }
                 }
-            }
-        }
-
-        //Collect bluetooth connection status and upload exposed StateFlow
-        scope.launch {
-            bleManager.status.collect {
-                _state.value = _state.value.copy(bleStatus = it)
             }
         }
     }
