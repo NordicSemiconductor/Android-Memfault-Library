@@ -93,6 +93,10 @@
     <string name="progress_completed">Completed</string>
     <string name="progress_uploading">Uploading</string>
 
+    <string name="status_offline">OFFLINE</string>
+    <string name="status_in_progress">IN PROGRESS</string>
+    <string name="status_suspended">SUSPENDED FOR:\n %d sec.</string>
+
     <string name="cd_icon_stop">Disconnect and stop uploading logs.</string>
 
     <string name="app_info">An Android library that can connect to a Bluetooth LE device, download dump logs and upload them to the [Memfault console](https://docs.memfault.com).

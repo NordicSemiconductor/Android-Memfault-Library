@@ -5,7 +5,7 @@ import no.nordicsemi.memfault.lib.internet.UploadingStatus
 
 data class MemfaultState(
     val bleStatus: BluetoothLEStatus = BluetoothLEStatus.IDLE,
-    val uploadingStatus: UploadingStatus = UploadingStatus.SUSPENDED,
+    val uploadingStatus: UploadingStatus = UploadingStatus.Offline,
     val config: MemfaultConfig? = null,
     val chunks: List<Chunk> = emptyList()
 ) {

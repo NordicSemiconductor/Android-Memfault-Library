@@ -83,7 +83,7 @@ class MemfaultBleManagerImpl : MemfaultBleManager {
     private fun UploadingStatus.mapWithInternet(isInternetEnabled: Boolean): UploadingStatus {
         return when (isInternetEnabled) {
             true -> this
-            false -> UploadingStatus.SUSPENDED
+            false -> UploadingStatus.Offline
         }
     }
 

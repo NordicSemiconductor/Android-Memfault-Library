@@ -44,6 +44,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -59,14 +60,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import no.nordicsemi.android.common.theme.view.NordicAppBar
+import no.nordicsemi.android.common.theme.view.ScreenSection
+import no.nordicsemi.android.common.theme.view.SectionTitle
 import no.nordicsemi.memfault.R
 import no.nordicsemi.memfault.lib.bluetooth.BluetoothLEStatus
 import no.nordicsemi.memfault.lib.data.Chunk
 import no.nordicsemi.memfault.lib.data.MemfaultConfig
 import no.nordicsemi.memfault.lib.data.MemfaultState
-import no.nordicsemi.android.common.theme.view.NordicAppBar
-import no.nordicsemi.android.common.theme.view.ScreenSection
-import no.nordicsemi.android.common.theme.view.SectionTitle
+import no.nordicsemi.memfault.lib.internet.UploadingStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,14 +120,20 @@ private fun ConnectButton(state: MemfaultState) {
                 color = MaterialTheme.colorScheme.onPrimary
             )
         }
-    }
-    if (state.bleStatus.canConnect()) {
+    } else if (state.bleStatus.canConnect()) {
         TextButton(onClick = { viewModel.connect() }) {
             Text(
                 stringResource(id = R.string.connect),
                 color = MaterialTheme.colorScheme.onPrimary
             )
         }
+    } else {
+        CircularProgressIndicator(
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .size(32.dp),
+        )
     }
 }
 
@@ -203,7 +211,7 @@ private fun StatsView(data: MemfaultState) {
             StatsItem(
                 iconRes = R.drawable.ic_wifi,
                 title = stringResource(id = R.string.upload_status),
-                description = data.uploadingStatus.toString()
+                description = getUploadingStatus(data.uploadingStatus)
             )
             StatsItem(
                 iconRes = R.drawable.ic_chunk,
@@ -211,6 +219,15 @@ private fun StatsView(data: MemfaultState) {
                 description = data.pendingChunksSize.toString()
             )
         }
+    }
+}
+
+@Composable
+private fun getUploadingStatus(status: UploadingStatus): String {
+    return when (status) {
+        UploadingStatus.InProgress -> stringResource(id = R.string.status_in_progress)
+        UploadingStatus.Offline -> stringResource(id = R.string.status_offline)
+        is UploadingStatus.Suspended -> stringResource(id = R.string.status_suspended, status.delayInSeconds)
     }
 }
 
