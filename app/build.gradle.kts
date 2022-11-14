@@ -25,7 +25,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.2.1")
     implementation("androidx.compose.material:material-icons-extended:1.2.1")
     // Integration with activities
-    implementation("androidx.activity:activity-compose:1.6.0")
+    implementation("androidx.activity:activity-compose:1.6.1")
     // Integration with ViewModels
 //    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1'
     implementation("androidx.lifecycle:lifecycle-runtime:2.5.1")
