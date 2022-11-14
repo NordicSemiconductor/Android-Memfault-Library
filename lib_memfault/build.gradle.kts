@@ -34,7 +34,7 @@ dependencies {
 
     implementation("com.google.iot.cbor:cbor:0.01.02")
 
-    implementation("com.memfault.cloud:cloud-android:2.0.3")
+    implementation("com.memfault.cloud:cloud-android:2.0.4")
     implementation("com.squareup.tape2:tape:2.0.0-beta1")
 
     implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
