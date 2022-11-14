@@ -47,7 +47,7 @@ dependencies {
     implementation("no.nordicsemi.android.support.v18:scanner:1.6.0")
     implementation("no.nordicsemi.android.common:permission:1.0.24")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     kapt("androidx.room:room-compiler:2.4.3")
     implementation("androidx.room:room-runtime:2.4.3")
