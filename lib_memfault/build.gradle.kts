@@ -25,31 +25,21 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.8.0")
-    implementation("androidx.appcompat:appcompat:1.4.2")
-    implementation("com.google.android.material:material:1.6.1")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.google.material)
 
-    implementation("com.google.iot.cbor:cbor:0.01.02")
+    implementation(libs.memfault.cloud)
 
-    implementation("com.memfault.cloud:cloud-android:2.0.3")
-    implementation("com.squareup.tape2:tape:2.0.0-beta1")
+    implementation(libs.nordic.ble.ktx)
+    implementation(libs.nordic.ble.common)
+    implementation(libs.nordic.scanner)
+    implementation(libs.nordic.permission)
 
-    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation(libs.kotlinx.coroutines.android)
 
-    implementation("no.nordicsemi.android:ble-common:2.6.0-alpha03")
-    implementation("no.nordicsemi.android:ble-ktx:2.6.0-alpha03")
-    implementation("no.nordicsemi.android.support.v18:scanner:1.6.0")
-    implementation("no.nordicsemi.android.common:permission:1.0.24")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
-
-    kapt("androidx.room:room-compiler:2.4.3")
-    implementation("androidx.room:room-runtime:2.4.3")
-    implementation("androidx.room:room-ktx:2.4.3")
+    kapt(libs.room.compiler)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
 }
