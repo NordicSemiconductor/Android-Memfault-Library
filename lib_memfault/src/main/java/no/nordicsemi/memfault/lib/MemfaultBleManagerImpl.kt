@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import no.nordicsemi.android.common.permission.util.Available
+import no.nordicsemi.android.common.permission.util.FeatureState
+import no.nordicsemi.android.common.permission.util.NotAvailable
 import no.nordicsemi.memfault.lib.bluetooth.ChunkValidator
 import no.nordicsemi.memfault.lib.bluetooth.ChunksBleManager
 import no.nordicsemi.memfault.lib.data.MemfaultState
@@ -63,8 +66,8 @@ class MemfaultBleManagerImpl : MemfaultBleManager {
                     uploadManager = factory.getUploadManager(config = it)
 
                     launch {
-                        uploadManager!!.status.combine(internetStateManager.networkState()) { status, isOnline ->
-                            status.mapWithInternet(isOnline)
+                        uploadManager!!.status.combine(internetStateManager.networkState()) { status, internetState ->
+                            status.mapWithInternet(internetState)
                         }.collect { _state.value = _state.value.copy(uploadingStatus = it) }
                     }
 
@@ -82,10 +85,10 @@ class MemfaultBleManagerImpl : MemfaultBleManager {
         }
     }
 
-    private fun UploadingStatus.mapWithInternet(isInternetEnabled: Boolean): UploadingStatus {
-        return when (isInternetEnabled) {
-            true -> this
-            false -> UploadingStatus.Offline
+    private fun UploadingStatus.mapWithInternet(internetState: FeatureState): UploadingStatus {
+        return when (internetState) {
+            Available -> this
+            is NotAvailable -> UploadingStatus.Offline
         }
     }
 

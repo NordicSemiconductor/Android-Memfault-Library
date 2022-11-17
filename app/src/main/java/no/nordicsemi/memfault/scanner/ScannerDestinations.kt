@@ -1,47 +1,29 @@
 package no.nordicsemi.memfault.scanner
 
 import android.os.ParcelUuid
-import no.nordicsemi.android.common.navigation.ComposeDestination
-import no.nordicsemi.android.common.navigation.ComposeDestinations
-import no.nordicsemi.android.common.navigation.DestinationId
-import no.nordicsemi.android.common.navigation.NavigationArgument
-import no.nordicsemi.android.common.navigation.NavigationResult
+import androidx.hilt.navigation.compose.hiltViewModel
+import no.nordicsemi.android.common.navigation.createDestination
+import no.nordicsemi.android.common.navigation.defineDestination
+import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
 import no.nordicsemi.android.common.ui.scanner.DeviceSelected
 import no.nordicsemi.android.common.ui.scanner.ScannerScreen
 import no.nordicsemi.android.common.ui.scanner.ScanningCancelled
 import no.nordicsemi.android.common.ui.scanner.model.DiscoveredBluetoothDevice
-import java.util.*
 
-val ScannerDestinationId = DestinationId("uiscanner-destination")
+val ScannerDestinationId = createDestination<ParcelUuid, DiscoveredBluetoothDevice>("uiscanner-destination")
 
-private val ScannerDestination = ComposeDestination(ScannerDestinationId) { navigationManager ->
-    val argument = navigationManager.getArgument(ScannerDestinationId) as ScannerArgument
+val ScannerDestination = defineDestination(ScannerDestinationId) {
+    val navigationViewModel = hiltViewModel<SimpleNavigationViewModel>()
+
+    val arg = navigationViewModel.parameterOf(ScannerDestinationId)
 
     ScannerScreen(
-        uuid = argument.uuid,
+        uuid = arg,
         onResult = {
             when (it) {
-                is DeviceSelected -> navigationManager.navigateUp(ScannerSuccessResult(ScannerDestinationId, it.device))
-                ScanningCancelled -> navigationManager.navigateUp(ScannerCancelResult(ScannerDestinationId))
+                is DeviceSelected -> navigationViewModel.navigateUpWithResult(ScannerDestinationId, it.device)
+                ScanningCancelled -> navigationViewModel.navigateUp()
             }
         }
     )
 }
-
-val ScannerDestinations = ComposeDestinations(listOf(ScannerDestination))
-
-data class ScannerArgument(
-    override val destinationId: DestinationId,
-    val uuid: ParcelUuid
-) : NavigationArgument {
-    constructor(destinationId: DestinationId, uuid: UUID) : this(destinationId, ParcelUuid(uuid))
-}
-
-data class ScannerSuccessResult(
-    override val destinationId: DestinationId,
-    val device: DiscoveredBluetoothDevice
-) : NavigationResult
-
-data class ScannerCancelResult(
-    override val destinationId: DestinationId
-) : NavigationResult

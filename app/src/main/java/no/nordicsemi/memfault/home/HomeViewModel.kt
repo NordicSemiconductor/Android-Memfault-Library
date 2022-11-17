@@ -31,39 +31,38 @@
 
 package no.nordicsemi.memfault.home
 
+import android.os.ParcelUuid
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import no.nordicsemi.memfault.DumpingDestinationArgs
 import no.nordicsemi.memfault.DumpingDestinationId
 import no.nordicsemi.memfault.lib.bluetooth.MDS_SERVICE_UUID
-import no.nordicsemi.memfault.scanner.ScannerArgument
 import no.nordicsemi.memfault.scanner.ScannerDestinationId
-import no.nordicsemi.memfault.scanner.ScannerSuccessResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.common.navigation.NavigationManager
+import no.nordicsemi.android.common.navigation.NavigationResult
+import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.ui.scanner.model.DiscoveredBluetoothDevice
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val navigationManager: NavigationManager
+    private val navigationManager: Navigator
 ) : ViewModel() {
 
     init {
-        navigationManager.getResultForIds(ScannerDestinationId).onEach {
-            if (it is ScannerSuccessResult) {
-                navigateToDumpingScreen(it.device)
-            }
-        }.launchIn(viewModelScope)
+        navigationManager.resultFrom(ScannerDestinationId)
+            .mapNotNull { it as NavigationResult.Success }
+            .onEach { navigateToDumpingScreen(it.value) }
+            .launchIn(viewModelScope)
     }
 
     fun navigateToScanner() {
-        navigationManager.navigateTo(ScannerDestinationId, ScannerArgument(ScannerDestinationId, MDS_SERVICE_UUID))
+        navigationManager.navigateTo(ScannerDestinationId, ParcelUuid(MDS_SERVICE_UUID))
     }
 
     private fun navigateToDumpingScreen(device: DiscoveredBluetoothDevice) {
-        navigationManager.navigateTo(DumpingDestinationId, DumpingDestinationArgs(DumpingDestinationId, device))
+        navigationManager.navigateTo(DumpingDestinationId, device)
     }
 }

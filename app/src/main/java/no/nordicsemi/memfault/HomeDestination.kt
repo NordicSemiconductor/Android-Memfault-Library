@@ -31,23 +31,17 @@
 
 package no.nordicsemi.memfault
 
+import no.nordicsemi.android.common.navigation.createDestination
+import no.nordicsemi.android.common.navigation.createSimpleDestination
+import no.nordicsemi.android.common.navigation.defineDestination
+import no.nordicsemi.android.common.ui.scanner.model.DiscoveredBluetoothDevice
 import no.nordicsemi.memfault.dumping.DumpingScreen
 import no.nordicsemi.memfault.home.HomeScreen
-import no.nordicsemi.android.common.navigation.ComposeDestination
-import no.nordicsemi.android.common.navigation.ComposeDestinations
-import no.nordicsemi.android.common.navigation.DestinationId
-import no.nordicsemi.android.common.navigation.NavigationArgument
-import no.nordicsemi.android.common.ui.scanner.model.DiscoveredBluetoothDevice
 
-val HomeDestinationId = DestinationId("home-destination")
-val DumpingDestinationId = DestinationId("dumping-destination")
+val HomeDestinationId = createSimpleDestination("home-destination")
+val DumpingDestinationId = createDestination<DiscoveredBluetoothDevice, Unit>("dumping-destination")
 
-val HomeDestinations = ComposeDestinations(listOf(
-    ComposeDestination(HomeDestinationId) { HomeScreen() },
-    ComposeDestination(DumpingDestinationId) { DumpingScreen() }
-))
-
-data class DumpingDestinationArgs(
-    override val destinationId: DestinationId,
-    val device: DiscoveredBluetoothDevice
-) : NavigationArgument
+val HomeDestinations = listOf(
+    defineDestination(HomeDestinationId) { HomeScreen() },
+    defineDestination(DumpingDestinationId) { DumpingScreen() }
+)

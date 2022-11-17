@@ -33,37 +33,28 @@ package no.nordicsemi.memfault.dumping
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import no.nordicsemi.memfault.DumpingDestinationArgs
-import no.nordicsemi.memfault.DumpingDestinationId
-import no.nordicsemi.memfault.lib.MemfaultBleManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import no.nordicsemi.android.common.navigation.NavigationManager
+import no.nordicsemi.android.common.navigation.Navigator
+import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
+import no.nordicsemi.memfault.DumpingDestinationId
+import no.nordicsemi.memfault.lib.MemfaultBleManager
 import javax.inject.Inject
 
 @HiltViewModel
 class DumpingViewModel @Inject constructor(
     @ApplicationContext
     private val context: Context,
-    private val navigationManager: NavigationManager,
-    private val memfaultManager: MemfaultBleManager
-) : ViewModel() {
+    navigationManager: Navigator,
+    private val memfaultManager: MemfaultBleManager,
+    savedStateHandle: SavedStateHandle,
+) : SimpleNavigationViewModel(navigationManager, savedStateHandle) {
 
     val state = memfaultManager.state
-    var bluetoothDevice: BluetoothDevice? = null
-
-    init {
-        navigationManager.getArgumentForId(DumpingDestinationId).onEach {
-            if (it is DumpingDestinationArgs) {
-                bluetoothDevice = it.device.device
-            }
-        }.launchIn(viewModelScope)
-    }
+    private val bluetoothDevice: BluetoothDevice = parameterOf(DumpingDestinationId).device
 
     fun disconnect() {
         viewModelScope.launch {
@@ -72,10 +63,8 @@ class DumpingViewModel @Inject constructor(
     }
 
     fun connect() {
-        bluetoothDevice?.let {
-            viewModelScope.launch {
-                memfaultManager.connect(context, it)
-            }
+        viewModelScope.launch {
+            memfaultManager.connect(context, bluetoothDevice)
         }
     }
 }

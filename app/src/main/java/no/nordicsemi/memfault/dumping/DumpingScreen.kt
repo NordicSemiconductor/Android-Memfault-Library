@@ -44,6 +44,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -61,7 +62,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import no.nordicsemi.android.common.theme.view.NordicAppBar
-import no.nordicsemi.android.common.theme.view.ScreenSection
 import no.nordicsemi.android.common.theme.view.SectionTitle
 import no.nordicsemi.memfault.R
 import no.nordicsemi.memfault.lib.bluetooth.BluetoothLEStatus
@@ -100,15 +100,15 @@ fun DumpingScreen() {
                 } else if (state.chunks.isNotEmpty()) {
                     ChunksItem(chunks = state.chunks)
                 } else
-                if (state.bleStatus == BluetoothLEStatus.CONNECTING || state.bleStatus == BluetoothLEStatus.CONNECTED) {
-                    if (state.chunks.isEmpty()) {
-                        LoadingView()
-                    } else {
-                        ChunksItem(chunks = state.chunks)
+                    if (state.bleStatus == BluetoothLEStatus.CONNECTING || state.bleStatus == BluetoothLEStatus.CONNECTED) {
+                        if (state.chunks.isEmpty()) {
+                            LoadingView()
+                        } else {
+                            ChunksItem(chunks = state.chunks)
+                        }
+                    } else if (state.bleStatus == BluetoothLEStatus.ERROR) {
+                        item { ErrorItem() }
                     }
-                } else if (state.bleStatus == BluetoothLEStatus.ERROR) {
-                    item { ErrorItem() }
-                }
             }
         }
     }
@@ -167,7 +167,7 @@ private fun ErrorItem() {
 
 @Composable
 private fun ConfigView(config: MemfaultConfig) {
-    ScreenSection {
+    Card {
         SectionTitle(
             painter = painterResource(R.drawable.ic_board),
             title = stringResource(id = R.string.configuration)
@@ -196,7 +196,7 @@ private fun ConfigView(config: MemfaultConfig) {
 
 @Composable
 private fun StatsView(data: MemfaultState) {
-    ScreenSection {
+    Card {
         SectionTitle(
             painter = painterResource(R.drawable.ic_chart),
             title = stringResource(id = R.string.status)
@@ -232,7 +232,10 @@ private fun getUploadingStatus(status: UploadingStatus): String {
     return when (status) {
         UploadingStatus.InProgress -> stringResource(id = R.string.status_in_progress)
         UploadingStatus.Offline -> stringResource(id = R.string.status_offline)
-        is UploadingStatus.Suspended -> stringResource(id = R.string.status_suspended, status.delayInSeconds)
+        is UploadingStatus.Suspended -> stringResource(
+            id = R.string.status_suspended,
+            status.delayInSeconds
+        )
     }
 }
 
