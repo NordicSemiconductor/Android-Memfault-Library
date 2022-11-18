@@ -35,7 +35,7 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-rxjava2:1.2.1")
 
     implementation("no.nordicsemi.android.common:theme:1.0.24")
-    implementation("no.nordicsemi.android.common:navigation:1.0.24")
+    implementation("no.nordicsemi.android.common:navigation:1.3.3")
     implementation("no.nordicsemi.android.common:uiscanner:1.0.24")
     implementation("no.nordicsemi.android.common:uilogger:1.0.24")
     implementation("no.nordicsemi.android.common:permission:1.0.24")
