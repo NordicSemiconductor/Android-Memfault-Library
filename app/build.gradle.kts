@@ -38,7 +38,7 @@ dependencies {
     implementation("no.nordicsemi.android.common:navigation:1.0.24")
     implementation("no.nordicsemi.android.common:uiscanner:1.0.24")
     implementation("no.nordicsemi.android.common:uilogger:1.0.24")
-    implementation("no.nordicsemi.android.common:permission:1.0.24")
+    implementation("no.nordicsemi.android.common:permission:1.3.3")
 
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
     implementation("com.google.dagger:hilt-android:2.43.2")

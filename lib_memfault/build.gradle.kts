@@ -45,7 +45,7 @@ dependencies {
     implementation("no.nordicsemi.android:ble-common:2.6.0-alpha03")
     implementation("no.nordicsemi.android:ble-ktx:2.6.0-alpha03")
     implementation("no.nordicsemi.android.support.v18:scanner:1.6.0")
-    implementation("no.nordicsemi.android.common:permission:1.0.24")
+    implementation("no.nordicsemi.android.common:permission:1.3.3")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
 
