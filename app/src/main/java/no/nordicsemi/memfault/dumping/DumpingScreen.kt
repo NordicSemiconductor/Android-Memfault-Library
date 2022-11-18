@@ -49,6 +49,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -167,62 +168,66 @@ private fun ErrorItem() {
 
 @Composable
 private fun ConfigView(config: MemfaultConfig) {
-    Card {
-        SectionTitle(
-            painter = painterResource(R.drawable.ic_board),
-            title = stringResource(id = R.string.configuration)
-        )
+    OutlinedCard {
+        Column(modifier = Modifier.padding(16.dp)) {
+            SectionTitle(
+                painter = painterResource(R.drawable.ic_board),
+                title = stringResource(id = R.string.configuration)
+            )
 
-        Spacer(modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.size(16.dp))
 
-        Column {
-            TitleItem(
-                title = stringResource(id = R.string.config_device_id),
-                description = config.deviceId
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            TitleItem(
-                title = stringResource(id = R.string.config_authorisation),
-                description = config.authorisationHeader.value
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            TitleItem(
-                title = stringResource(id = R.string.config_url),
-                description = config.url
-            )
+            Column {
+                TitleItem(
+                    title = stringResource(id = R.string.config_device_id),
+                    description = config.deviceId
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                TitleItem(
+                    title = stringResource(id = R.string.config_authorisation),
+                    description = config.authorisationHeader.value
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                TitleItem(
+                    title = stringResource(id = R.string.config_url),
+                    description = config.url
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun StatsView(data: MemfaultState) {
-    Card {
-        SectionTitle(
-            painter = painterResource(R.drawable.ic_chart),
-            title = stringResource(id = R.string.status)
-        )
+    OutlinedCard {
+        Column(modifier = Modifier.padding(16.dp)) {
+            SectionTitle(
+                painter = painterResource(R.drawable.ic_chart),
+                title = stringResource(id = R.string.status)
+            )
 
-        Spacer(modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.size(16.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            StatsItem(
-                iconRes = R.drawable.ic_bluetooth,
-                title = stringResource(id = R.string.bluetooth_status),
-                description = data.bleStatus.toString()
-            )
-            StatsItem(
-                iconRes = R.drawable.ic_wifi,
-                title = stringResource(id = R.string.upload_status),
-                description = getUploadingStatus(data.uploadingStatus)
-            )
-            StatsItem(
-                iconRes = R.drawable.ic_chunk,
-                title = stringResource(id = R.string.pending_chunks),
-                description = data.pendingChunksSize.toString()
-            )
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                StatsItem(
+                    iconRes = R.drawable.ic_bluetooth,
+                    title = stringResource(id = R.string.bluetooth_status),
+                    description = data.bleStatus.toString()
+                )
+                StatsItem(
+                    iconRes = R.drawable.ic_wifi,
+                    title = stringResource(id = R.string.upload_status),
+                    description = getUploadingStatus(data.uploadingStatus)
+                )
+                StatsItem(
+                    iconRes = R.drawable.ic_chunk,
+                    title = stringResource(id = R.string.pending_chunks),
+                    description = data.pendingChunksSize.toString()
+                )
+            }
         }
     }
 }
