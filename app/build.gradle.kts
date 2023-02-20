@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.androidx.activity.compose)
 
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.lifecycle.runtime)

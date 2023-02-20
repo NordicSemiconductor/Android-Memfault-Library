@@ -40,13 +40,16 @@ group = "no.nordicsemi.memfault"
 nordicNexusPublishing {
     POM_ARTIFACT_ID = "memfault"
     POM_NAME = "Memfault Bluetooth Le Library for Android"
-    GROUP = "no.nordicsemi.memfault"
 
     POM_DESCRIPTION = "Android Memfault Library"
     POM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
     POM_SCM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
     POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
+
+    POM_DEVELOPER_ID = "syzi"
+    POM_DEVELOPER_NAME = "Sylwester Zieliński"
+    POM_DEVELOPER_EMAIL = "sylwester.zielinski@nordicsemi.no"
 }
 
 android {
