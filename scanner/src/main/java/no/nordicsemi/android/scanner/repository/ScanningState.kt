@@ -29,44 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus.android)
-}
+package no.nordicsemi.android.scanner.repository
 
-group = "no.nordicsemi.memfault"
+import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
 
-nordicNexusPublishing {
-    POM_ARTIFACT_ID = "memfault"
-    POM_NAME = "Memfault Bluetooth Le Library for Android"
+internal sealed class ScanningState {
 
-    POM_DESCRIPTION = "Android Memfault Library"
-    POM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-}
+    data object Loading : ScanningState()
 
-android {
-    namespace = "no.nordicsemi.memfault.lib"
-}
+    data class Error(val errorCode: Int) : ScanningState()
 
-dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.compose.material3)
+    data class DevicesDiscovered(val devices: List<DiscoveredBluetoothDevice>) : ScanningState() {
+        val bonded: List<DiscoveredBluetoothDevice> = devices.filter { it.isBonded }
 
-    implementation(libs.memfault.cloud)
+        val notBonded: List<DiscoveredBluetoothDevice> = devices.filter { !it.isBonded }
 
-    implementation(libs.nordic.ble.ktx)
-    implementation(libs.nordic.ble.common)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.permissions.internet)
+        fun size(): Int = bonded.size + notBonded.size
 
-    implementation(libs.kotlinx.coroutines.android)
+        fun isEmpty(): Boolean = devices.isEmpty()
+    }
 
-    kapt(libs.room.compiler)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
+    fun isRunning(): Boolean {
+        return this is Loading || this is DevicesDiscovered
+    }
 }

@@ -29,44 +29,37 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus.android)
+package no.nordicsemi.android.scanner.repository
+
+import kotlinx.coroutines.flow.MutableStateFlow
+import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
+import no.nordicsemi.android.scanner.model.toDiscoveredBluetoothDevice
+import no.nordicsemi.android.support.v18.scanner.ScanResult
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+internal class DevicesDataStore @Inject constructor() {
+    val devices = mutableListOf<DiscoveredBluetoothDevice>()
+    val data = MutableStateFlow(devices.toList())
+
+    fun addNewDevice(scanResult: ScanResult) {
+        devices.firstOrNull { it.device == scanResult.device }?.let { device ->
+            val i = devices.indexOf(device)
+            devices.set(i, device.update(scanResult))
+        } ?: scanResult.toDiscoveredBluetoothDevice().also { devices.add(it) }
+
+        data.value = devices.toList()
+    }
+
+    fun clear() {
+        devices.clear()
+        data.value = devices
+    }
 }
 
-group = "no.nordicsemi.memfault"
-
-nordicNexusPublishing {
-    POM_ARTIFACT_ID = "memfault"
-    POM_NAME = "Memfault Bluetooth Le Library for Android"
-
-    POM_DESCRIPTION = "Android Memfault Library"
-    POM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-}
-
-android {
-    namespace = "no.nordicsemi.memfault.lib"
-}
-
-dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.compose.material3)
-
-    implementation(libs.memfault.cloud)
-
-    implementation(libs.nordic.ble.ktx)
-    implementation(libs.nordic.ble.common)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.permissions.internet)
-
-    implementation(libs.kotlinx.coroutines.android)
-
-    kapt(libs.room.compiler)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-}
+internal data class DevicesScanFilter(
+    val filterUuidRequired: Boolean?,
+    val filterNearbyOnly: Boolean,
+    val filterWithNames: Boolean
+)

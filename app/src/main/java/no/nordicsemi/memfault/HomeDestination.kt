@@ -34,7 +34,7 @@ package no.nordicsemi.memfault
 import no.nordicsemi.android.common.navigation.createDestination
 import no.nordicsemi.android.common.navigation.createSimpleDestination
 import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.android.common.ui.scanner.model.DiscoveredBluetoothDevice
+import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
 import no.nordicsemi.memfault.dumping.DumpingScreen
 import no.nordicsemi.memfault.home.HomeScreen
 

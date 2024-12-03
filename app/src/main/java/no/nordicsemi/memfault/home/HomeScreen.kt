@@ -37,14 +37,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import no.nordicsemi.memfault.R
-import no.nordicsemi.android.common.theme.view.NordicAppBar
-import no.nordicsemi.android.common.theme.view.NordicText
+import no.nordicsemi.android.common.ui.view.NordicAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +58,11 @@ fun HomeScreen() {
 
     Scaffold(
         topBar = {
-            NordicAppBar(text = stringResource(id = R.string.app_bar_title))
+            NordicAppBar(
+                title = {
+                    Text(stringResource(id = R.string.app_bar_title))
+                }
+            )
         }
     ) {
         Box(modifier = Modifier.padding(it)) {
@@ -69,8 +78,30 @@ fun HomeScreen() {
 
                 Spacer(modifier = Modifier.size(16.dp))
 
-                NordicText(
-                    stringResource(id = R.string.app_info),
+                Text(
+                    text = buildAnnotatedString {
+                        append(stringResource(id = R.string.app_info))
+                        append(" ")
+                        withLink(
+                            LinkAnnotation.Url(
+                                url = "https://memfault.com/",
+                                styles = TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)),
+                            )
+                        ) {
+                            append(stringResource(id = R.string.app_info_memfault_console))
+                        }
+                        append(stringResource(id = R.string.app_info_2))
+                        append(" ")
+                        withLink(
+                            LinkAnnotation.Url(
+                                url = "https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b",
+                                styles = TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)),
+                            )
+                        ) {
+                            append(stringResource(id = R.string.app_info_gatt))
+                        }
+                        append(stringResource(id = R.string.app_info_3))
+                    },
                     style = MaterialTheme.typography.bodyLarge
                 )
 

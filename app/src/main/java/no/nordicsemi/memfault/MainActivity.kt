@@ -33,9 +33,6 @@ package no.nordicsemi.memfault
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import no.nordicsemi.android.common.navigation.NavigationView
 import no.nordicsemi.android.common.theme.NordicActivity
@@ -50,9 +47,7 @@ class MainActivity : NordicActivity() {
 
         setContent {
             NordicTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    NavigationView(HomeDestinations + ScannerDestination)
-                }
+                NavigationView(HomeDestinations + ScannerDestination)
             }
         }
     }

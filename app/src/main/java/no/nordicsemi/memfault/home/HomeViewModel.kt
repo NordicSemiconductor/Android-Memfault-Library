@@ -32,7 +32,6 @@
 package no.nordicsemi.memfault.home
 
 import android.os.ParcelUuid
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,7 +39,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.navigation.onlySuccess
-import no.nordicsemi.android.common.ui.scanner.model.DiscoveredBluetoothDevice
+import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
 import no.nordicsemi.memfault.DumpingDestinationId
 import no.nordicsemi.memfault.lib.bluetooth.MDS_SERVICE_UUID
 import no.nordicsemi.memfault.scanner.ScannerDestinationId
