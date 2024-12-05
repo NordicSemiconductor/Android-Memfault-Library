@@ -35,13 +35,20 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.CircularProgressIndicator
@@ -58,7 +65,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -84,10 +90,25 @@ fun DumpingScreen() {
                 actions = { ConnectButton(state = state) }
             )
         }
-    ) {
-        Box(modifier = Modifier.padding(it)) {
+    ) { innerPadding ->
+        // We want the padding to be at least 16.dp on the sides and 16.dp on the top,
+        // but if the side insets are larger, we want to use them.
+        val insets = WindowInsets.displayCutout
+            .union(WindowInsets.navigationBars)
+            .union(WindowInsets(left = 16.dp, right = 16.dp))
+            .only(WindowInsetsSides.Horizontal)
+            .union(WindowInsets(top = 16.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(insets),
+            contentAlignment = Alignment.TopCenter,
+        ) {
             LazyColumn(
-                contentPadding = PaddingValues(16.dp),
+                modifier = Modifier
+                    .widthIn(max = 600.dp),
+                contentPadding = innerPadding,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item { StatsView(data = state) }
@@ -243,8 +264,7 @@ private fun getUploadingStatus(status: UploadingStatus): String {
 
 @Composable
 private fun StatsItem(
-    @DrawableRes
-    iconRes: Int,
+    @DrawableRes iconRes: Int,
     title: String,
     description: String
 ) {
@@ -260,14 +280,11 @@ private fun StatsItem(
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.widthIn(max = 65.dp),
-            textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.size(8.dp))
         Text(
             text = description,
             style = MaterialTheme.typography.bodySmall,
-            textAlign = TextAlign.Center
         )
     }
 }

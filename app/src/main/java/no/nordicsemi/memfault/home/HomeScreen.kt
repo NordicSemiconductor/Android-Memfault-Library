@@ -31,14 +31,34 @@
 
 package no.nordicsemi.memfault.home
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
@@ -48,8 +68,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import no.nordicsemi.memfault.R
 import no.nordicsemi.android.common.ui.view.NordicAppBar
+import no.nordicsemi.memfault.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,58 +79,141 @@ fun HomeScreen() {
     Scaffold(
         topBar = {
             NordicAppBar(
-                title = {
-                    Text(stringResource(id = R.string.app_bar_title))
-                }
+                title = { Text(text = stringResource(id = R.string.app_bar_title)) }
             )
         }
+    ) { innerPadding ->
+        val isLandscape =
+            LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val insets = WindowInsets.displayCutout
+            .union(WindowInsets.navigationBars)
+            .only(WindowInsetsSides.Horizontal)
+
+        if (isLandscape) {
+            TwoPane(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .windowInsetsPadding(insets),
+                onStart = { viewModel.navigateToScanner() }
+            )
+        } else {
+            OnePane(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(innerPadding)
+                    .windowInsetsPadding(insets),
+                onStart = { viewModel.navigateToScanner() }
+            )
+        }
+    }
+}
+
+@Composable
+private fun OnePane(
+    modifier: Modifier = Modifier,
+    onStart: () -> Unit
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(modifier = Modifier.padding(it)) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_memfault),
-                    contentDescription = stringResource(id = R.string.cd_memfault),
-                    contentScale = ContentScale.FillWidth
-                )
+        Spacer(modifier = Modifier.weight(1f))
 
-                Spacer(modifier = Modifier.size(16.dp))
+        MemfaultLogo()
 
-                Text(
-                    text = buildAnnotatedString {
-                        append(stringResource(id = R.string.app_info))
-                        append(" ")
-                        withLink(
-                            LinkAnnotation.Url(
-                                url = "https://memfault.com/",
-                                styles = TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)),
-                            )
-                        ) {
-                            append(stringResource(id = R.string.app_info_memfault_console))
-                        }
-                        append(stringResource(id = R.string.app_info_2))
-                        append(" ")
-                        withLink(
-                            LinkAnnotation.Url(
-                                url = "https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b",
-                                styles = TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)),
-                            )
-                        ) {
-                            append(stringResource(id = R.string.app_info_gatt))
-                        }
-                        append(stringResource(id = R.string.app_info_3))
-                    },
-                    style = MaterialTheme.typography.bodyLarge
-                )
+        Spacer(modifier = Modifier.weight(0.3f))
 
-                Spacer(modifier = Modifier.size(32.dp))
+        Content(
+            onStart = onStart
+        )
 
-                Button(onClick = { viewModel.navigateToScanner() }) {
-                    Text(text = stringResource(id = R.string.start))
+        Spacer(modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun TwoPane(
+    modifier: Modifier = Modifier,
+    onStart: () -> Unit
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        MemfaultLogo(
+            modifier = Modifier.weight(0.3f),
+        )
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        Content(
+            modifier = Modifier
+                .weight(0.7f)
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 16.dp),
+            onStart = onStart
+        )
+    }
+}
+
+@Composable
+private fun MemfaultLogo(
+    modifier: Modifier = Modifier,
+) {
+    Image(
+        modifier = modifier,
+        painter = painterResource(id = R.drawable.ic_memfault),
+        contentDescription = stringResource(id = R.string.cd_memfault),
+        contentScale = ContentScale.Fit,
+        alignment = Alignment.TopEnd
+    )
+}
+
+@Composable
+private fun Content(
+    modifier: Modifier = Modifier,
+    onStart: () -> Unit,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                append(stringResource(id = R.string.app_info))
+                append(" ")
+                withLink(
+                    LinkAnnotation.Url(
+                        url = "https://memfault.com/",
+                        styles = TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)),
+                    )
+                ) {
+                    append(stringResource(id = R.string.app_info_memfault_console))
                 }
-            }
+                append(stringResource(id = R.string.app_info_2))
+                append(" ")
+                withLink(
+                    LinkAnnotation.Url(
+                        url = "https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b",
+                        styles = TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)),
+                    )
+                ) {
+                    append(stringResource(id = R.string.app_info_gatt))
+                }
+                append(stringResource(id = R.string.app_info_3))
+            },
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier
+                .widthIn(max = 600.dp)
+                .padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.size(32.dp))
+
+        Button(onClick = onStart) {
+            Text(text = stringResource(id = R.string.start))
         }
     }
 }
