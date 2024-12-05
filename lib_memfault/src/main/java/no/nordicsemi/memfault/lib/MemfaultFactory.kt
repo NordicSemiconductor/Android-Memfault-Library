@@ -34,18 +34,16 @@ package no.nordicsemi.memfault.lib
 import android.content.Context
 import androidx.room.Room
 import com.memfault.cloud.sdk.ChunkQueue
-import no.nordicsemi.memfault.lib.bluetooth.ChunkValidator
+import no.nordicsemi.android.common.permissions.internet.repository.InternetStateManager
 import no.nordicsemi.memfault.lib.bluetooth.ChunksBleManager
 import no.nordicsemi.memfault.lib.data.MemfaultConfig
 import no.nordicsemi.memfault.lib.db.ChunksDatabase
 import no.nordicsemi.memfault.lib.internet.ChunkUploadManager
 import no.nordicsemi.memfault.lib.internet.DBChunkQueue
-import no.nordicsemi.android.common.permissions.internet.repository.InternetStateManager
 
 private val DB_NAME = "chunks-database"
 
 internal class MemfaultFactory(private val context: Context) {
-
     private var database: ChunksDatabase? = null
 
     fun getScope() = MemfaultScope
@@ -66,10 +64,6 @@ internal class MemfaultFactory(private val context: Context) {
 
     fun getMemfaultManager(): ChunksBleManager {
         return ChunksBleManager(context, getScope())
-    }
-
-    fun getChunkValidator(): ChunkValidator {
-        return ChunkValidator()
     }
 
     fun getInternetStateManager(context: Context): InternetStateManager {

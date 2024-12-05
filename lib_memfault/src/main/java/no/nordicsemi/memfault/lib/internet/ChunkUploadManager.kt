@@ -47,20 +47,14 @@ internal class ChunkUploadManager(
     private val _status = MutableStateFlow<UploadingStatus>(UploadingStatus.Offline)
     val status = _status.asStateFlow()
 
-    private val memfaultCloud: MemfaultCloud
-    private val memfaultSender: ChunkSender
-
-    init {
-        memfaultCloud = MemfaultCloud.Builder()
-            .setApiKey(config.authorisationHeader.value)
-            .build()
-
-        memfaultSender = ChunkSender.Builder()
-            .setMemfaultCloud(memfaultCloud)
-            .setChunkQueue(chunkQueue)
-            .setDeviceSerialNumber(config.deviceId)
-            .build()
-    }
+    private val memfaultCloud: MemfaultCloud = MemfaultCloud.Builder()
+        .setApiKey(config.authorisationHeader.value)
+        .build()
+    private val memfaultSender: ChunkSender = ChunkSender.Builder()
+        .setMemfaultCloud(memfaultCloud)
+        .setChunkQueue(chunkQueue)
+        .setDeviceSerialNumber(config.deviceId)
+        .build()
 
     /**
      * Uploads already collected chunks to the cloud.

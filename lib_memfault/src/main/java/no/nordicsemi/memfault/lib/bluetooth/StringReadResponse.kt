@@ -36,7 +36,6 @@ import no.nordicsemi.android.ble.callback.profile.ProfileReadResponse
 import no.nordicsemi.android.ble.data.Data
 
 internal class StringReadResponse : ProfileReadResponse() {
-
     var value: String? = null
 
     override fun onDataReceived(device: BluetoothDevice, data: Data) {

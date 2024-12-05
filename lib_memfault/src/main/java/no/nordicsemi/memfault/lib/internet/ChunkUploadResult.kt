@@ -33,7 +33,7 @@ package no.nordicsemi.memfault.lib.internet
 
 internal sealed interface ChunkUploadResult
 
-internal object ChunkUploadSuspended : ChunkUploadResult
+internal data object ChunkUploadSuspended : ChunkUploadResult
 
 internal data class ChunkUploadSuccess(val sent: Int) : ChunkUploadResult
 

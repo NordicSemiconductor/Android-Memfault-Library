@@ -36,7 +36,6 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.util.Log
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -53,141 +52,120 @@ import no.nordicsemi.android.ble.ktx.suspendForValidResponse
 import no.nordicsemi.memfault.lib.data.Chunk
 import no.nordicsemi.memfault.lib.data.MemfaultConfig
 import no.nordicsemi.memfault.lib.data.toChunk
-import java.util.*
+import java.util.UUID
 
 val MDS_SERVICE_UUID: UUID = UUID.fromString("54220000-f6a5-4007-a371-722f4ebd8436")
 private val MDS_SUPPORTED_FEATURES_CHARACTERISTIC_UUID =
-    UUID.fromString("54220001-f6a5-4007-a371-722f4ebd8436")
+	UUID.fromString("54220001-f6a5-4007-a371-722f4ebd8436")
 private val MDS_DEVICE_ID_CHARACTERISTIC_UUID =
-    UUID.fromString("54220002-f6a5-4007-a371-722f4ebd8436")
+	UUID.fromString("54220002-f6a5-4007-a371-722f4ebd8436")
 private val MDS_DATA_URI_CHARACTERISTIC_UUID =
-    UUID.fromString("54220003-f6a5-4007-a371-722f4ebd8436")
+	UUID.fromString("54220003-f6a5-4007-a371-722f4ebd8436")
 private val MDS_AUTHORISATION_CHARACTERISTIC_UUID =
-    UUID.fromString("54220004-f6a5-4007-a371-722f4ebd8436")
+	UUID.fromString("54220004-f6a5-4007-a371-722f4ebd8436")
 private val MDS_DATA_EXPORT_CHARACTERISTIC_UUID =
-    UUID.fromString("54220005-f6a5-4007-a371-722f4ebd8436")
+	UUID.fromString("54220005-f6a5-4007-a371-722f4ebd8436")
 
 internal class ChunksBleManager(
-    context: Context,
-    private val scope: CoroutineScope
+	context: Context,
+	private val scope: CoroutineScope
 ) : BleManager(context) {
+	private val LOG = "MEMFAULT"
 
-    private val LOG = "MEMFAULT"
+	private var mdsSupportedFeaturesCharacteristic: BluetoothGattCharacteristic? = null
+	private var mdsDeviceIdCharacteristic: BluetoothGattCharacteristic? = null
+	private var mdsDataUriCharacteristic: BluetoothGattCharacteristic? = null
+	private var mdsAuthorisationCharacteristic: BluetoothGattCharacteristic? = null
+	private var mdsDataExportCharacteristic: BluetoothGattCharacteristic? = null
 
-    private var mdsSupportedFeaturesCharacteristic: BluetoothGattCharacteristic? = null
-    private var mdsDeviceIdCharacteristic: BluetoothGattCharacteristic? = null
-    private var mdsDataUriCharacteristic: BluetoothGattCharacteristic? = null
-    private var mdsAuthorisationCharacteristic: BluetoothGattCharacteristic? = null
-    private var mdsDataExportCharacteristic: BluetoothGattCharacteristic? = null
+	private val _config = MutableStateFlow<MemfaultConfig?>(null)
+	val config = _config.asStateFlow()
 
-    private val dataHolder = ConnectionObserverAdapter()
-    val status = dataHolder.status
+	private val _receivedChunk = MutableSharedFlow<Chunk>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+	val receivedChunk = _receivedChunk.asSharedFlow()
 
-    private val _config = MutableStateFlow<MemfaultConfig?>(null)
-    val config = _config.asStateFlow()
+	override fun log(priority: Int, message: String) {
+		Log.d(LOG, message)
+	}
 
-    private val _receivedChunk = MutableSharedFlow<Chunk>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val receivedChunk = _receivedChunk.asSharedFlow()
+	override fun getMinLogPriority(): Int {
+		return Log.VERBOSE
+	}
 
-    init {
-        connectionObserver = dataHolder
-    }
+	override fun initialize() {
+		requestMtu(517).enqueue()
 
-    override fun log(priority: Int, message: String) {
-        Log.d(LOG, message)
-    }
+		scope.launch {
+			try {
+				val deviceId = readCharacteristic(mdsDeviceIdCharacteristic)
+					.suspendForValidResponse<StringReadResponse>()
+					.value!!
+				val url = readCharacteristic(mdsDataUriCharacteristic)
+					.suspendForValidResponse<StringReadResponse>()
+					.value!!
+				val authorisation = readCharacteristic(mdsAuthorisationCharacteristic)
+					.suspendForValidResponse<StringReadResponse>()
+					.value!!
 
-    override fun getMinLogPriority(): Int {
-        return Log.VERBOSE
-    }
+				val authorisationHeader = AuthorisationHeader(authorisation)
+				_config.value = MemfaultConfig(authorisationHeader, url, deviceId)
 
-    override fun getGattCallback(): BleManagerGattCallback {
-        return MemfaultManagerGattCallback()
-    }
+				launch {
+					setNotificationCallback(mdsDataExportCharacteristic)
+						.asValidResponseFlow<ByteReadResponse>()
+						.cancellable()
+						.map { it.value }
+						.collect { it?.let { _receivedChunk.tryEmit(it.toChunk(deviceId)) } }
+				}
 
-    private inner class MemfaultManagerGattCallback : BleManagerGattCallback() {
-        override fun initialize() {
-            super.initialize()
+				enableNotifications(mdsDataExportCharacteristic).suspend()
 
-            val handler = CoroutineExceptionHandler { _, it ->
-                it.printStackTrace()
-                dataHolder.onError()
-            }
+				writeCharacteristic(
+					mdsDataExportCharacteristic,
+					byteArrayOf(0x01),
+					BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+				).suspend()
+			} catch (e: Exception) {
+				Log.e(LOG, "Failed to initialize device", e)
+				disconnectWithCatch()
+			}
+		}
+	}
 
-            scope.launch(handler) {
-                val deviceId = readCharacteristic(mdsDeviceIdCharacteristic)
-                    .suspendForValidResponse<StringReadResponse>()
-                    .value!!
-                val url = readCharacteristic(mdsDataUriCharacteristic)
-                    .suspendForValidResponse<StringReadResponse>()
-                    .value!!
-                val authorisation = readCharacteristic(mdsAuthorisationCharacteristic)
-                    .suspendForValidResponse<StringReadResponse>()
-                    .value!!
+	public override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
+		gatt.getService(MDS_SERVICE_UUID)?.run {
+			mdsSupportedFeaturesCharacteristic = getCharacteristic(MDS_SUPPORTED_FEATURES_CHARACTERISTIC_UUID)
+			mdsDeviceIdCharacteristic = getCharacteristic(MDS_DEVICE_ID_CHARACTERISTIC_UUID)
+			mdsDataUriCharacteristic = getCharacteristic(MDS_DATA_URI_CHARACTERISTIC_UUID)
+			mdsAuthorisationCharacteristic = getCharacteristic(MDS_AUTHORISATION_CHARACTERISTIC_UUID)
+			mdsDataExportCharacteristic = getCharacteristic(MDS_DATA_EXPORT_CHARACTERISTIC_UUID)
 
-                val authorisationHeader = AuthorisationHeader(authorisation)
-                val config = MemfaultConfig(authorisationHeader, url, deviceId)
-                _config.value = config
+		}
+		return mdsSupportedFeaturesCharacteristic != null
+				&& mdsDeviceIdCharacteristic != null
+				&& mdsDataUriCharacteristic != null
+				&& mdsAuthorisationCharacteristic != null
+				&& mdsDataExportCharacteristic != null
+	}
 
-                launch {
-                    setNotificationCallback(mdsDataExportCharacteristic).asValidResponseFlow<ByteReadResponse>()
-                        .cancellable()
-                        .map { it.value }
-                        .collect { it?.let { _receivedChunk.tryEmit(it.toChunk(deviceId)) } }
-                }
+	override fun onServicesInvalidated() {
+		mdsSupportedFeaturesCharacteristic = null
+		mdsDeviceIdCharacteristic = null
+		mdsDataUriCharacteristic = null
+		mdsAuthorisationCharacteristic = null
+		mdsDataExportCharacteristic = null
+	}
 
-                enableNotifications(mdsDataExportCharacteristic).suspend()
+	suspend fun disconnectWithCatch() {
+		try {
+			disconnect().suspend()
+		} catch (e: Exception) {
+			Log.e(LOG, "Failed to disconnect", e)
+		}
+	}
 
-                writeCharacteristic(
-                    mdsDataExportCharacteristic,
-                    byteArrayOf(0x01),
-                    BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-                ).suspend()
-            }
-            requestMtu(512).enqueue()
-        }
-
-        public override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
-            gatt.getService(MDS_SERVICE_UUID)?.run {
-                mdsSupportedFeaturesCharacteristic = getCharacteristic(MDS_SUPPORTED_FEATURES_CHARACTERISTIC_UUID)
-                mdsDeviceIdCharacteristic = getCharacteristic(MDS_DEVICE_ID_CHARACTERISTIC_UUID)
-                mdsDataUriCharacteristic = getCharacteristic(MDS_DATA_URI_CHARACTERISTIC_UUID)
-                mdsAuthorisationCharacteristic = getCharacteristic(MDS_AUTHORISATION_CHARACTERISTIC_UUID)
-                mdsDataExportCharacteristic = getCharacteristic(MDS_DATA_EXPORT_CHARACTERISTIC_UUID)
-
-            }
-            return mdsSupportedFeaturesCharacteristic != null
-                    && mdsDeviceIdCharacteristic != null
-                    && mdsDataUriCharacteristic != null
-                    && mdsAuthorisationCharacteristic != null
-                    && mdsDataExportCharacteristic != null
-        }
-
-        override fun onServicesInvalidated() {
-            mdsSupportedFeaturesCharacteristic = null
-            mdsDeviceIdCharacteristic = null
-            mdsDataUriCharacteristic = null
-            mdsAuthorisationCharacteristic = null
-            mdsDataExportCharacteristic = null
-        }
-    }
-
-    suspend fun disconnectWithCatch() {
-        try {
-            disconnect().suspend()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    suspend fun start(device: BluetoothDevice) {
-        try {
-            connect(device)
-                .useAutoConnect(false)
-                .retry(3, 100)
-                .suspend()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
+	suspend fun start(device: BluetoothDevice) = connect(device)
+		.useAutoConnect(false)
+		.retry(3, 100)
+		.suspend()
 }
