@@ -36,10 +36,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import no.nordicsemi.android.common.navigation.createDestination
 import no.nordicsemi.android.common.navigation.defineDestination
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
-import no.nordicsemi.android.common.ui.scanner.DeviceSelected
-import no.nordicsemi.android.common.ui.scanner.ScannerScreen
-import no.nordicsemi.android.common.ui.scanner.ScanningCancelled
-import no.nordicsemi.android.common.ui.scanner.model.DiscoveredBluetoothDevice
+import no.nordicsemi.android.scanner.DeviceSelected
+import no.nordicsemi.android.scanner.ScannerScreen
+import no.nordicsemi.android.scanner.ScanningCancelled
+import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
 
 val ScannerDestinationId = createDestination<ParcelUuid, DiscoveredBluetoothDevice>("uiscanner-destination")
 

@@ -29,44 +29,36 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus.android)
+package no.nordicsemi.android.scanner.view.internal
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import no.nordicsemi.android.common.ui.view.WarningView
+import no.nordicsemi.android.scanner.R
+
+@Composable
+internal fun ScanErrorView(
+    error: Int,
+) {
+    WarningView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        imageVector = Icons.AutoMirrored.Filled.BluetoothSearching,
+        title = stringResource(id = R.string.scanner_error),
+        hint = stringResource(id = R.string.scan_failed, error),
+    )
 }
 
-group = "no.nordicsemi.memfault"
-
-nordicNexusPublishing {
-    POM_ARTIFACT_ID = "memfault"
-    POM_NAME = "Memfault Bluetooth Le Library for Android"
-
-    POM_DESCRIPTION = "Android Memfault Library"
-    POM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-}
-
-android {
-    namespace = "no.nordicsemi.memfault.lib"
-}
-
-dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.compose.material3)
-
-    implementation(libs.memfault.cloud)
-
-    implementation(libs.nordic.ble.ktx)
-    implementation(libs.nordic.ble.common)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.permissions.internet)
-
-    implementation(libs.kotlinx.coroutines.android)
-
-    kapt(libs.room.compiler)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
+@Preview(showBackground = true)
+@Composable
+private fun ErrorSectionPreview() {
+    ScanErrorView(3)
 }

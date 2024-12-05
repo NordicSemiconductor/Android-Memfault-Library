@@ -29,11 +29,13 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault.dumping
+package no.nordicsemi.android.scanner.main
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,44 +44,58 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.memfault.R
+import no.nordicsemi.android.scanner.R
+import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
+import no.nordicsemi.android.scanner.repository.ScanningState
 
-fun LazyListScope.LoadingView() {
-    item {
-        Text(
-            text = stringResource(id = R.string.chunks_received),
-            style = MaterialTheme.typography.labelSmall
-        )
+@Suppress("FunctionName")
+internal fun LazyListScope.DeviceListItems(
+    devices: ScanningState.DevicesDiscovered,
+    onClick: (DiscoveredBluetoothDevice) -> Unit,
+    deviceView: @Composable (DiscoveredBluetoothDevice) -> Unit,
+) {
+    val bondedDevices = devices.bonded
+    val discoveredDevices = devices.notBonded
+
+    if (bondedDevices.isNotEmpty()) {
+        item {
+            Text(
+                text = stringResource(id = R.string.bonded_devices),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
+            )
+        }
+        items(bondedDevices) { device ->
+            ClickableDeviceItem(device, onClick, deviceView)
+        }
     }
-    items(6) {
-        LoadingItem()
+
+    if (discoveredDevices.isNotEmpty()) {
+        item {
+            Text(
+                text = stringResource(id = R.string.discovered_devices),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
+            )
+        }
+
+        items(discoveredDevices) { device ->
+            ClickableDeviceItem(device, onClick, deviceView)
+        }
     }
 }
 
 @Composable
-private fun LoadingItem() {
-    Column(
-        modifier = Modifier
+private fun ClickableDeviceItem(
+    device: DiscoveredBluetoothDevice,
+    onClick: (DiscoveredBluetoothDevice) -> Unit,
+    deviceView: @Composable (DiscoveredBluetoothDevice) -> Unit,
+) {
+    Box(modifier = Modifier
+        .clip(RoundedCornerShape(10.dp))
+        .clickable { onClick(device) }
+        .padding(8.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .background(MaterialTheme.colorScheme.outline)
-                .fillMaxWidth()
-                .height(14.dp)
-                .applyPlaceholder()
-        )
-
-        Spacer(modifier = Modifier.size(4.dp))
-
-        Box(
-            modifier = Modifier
-                .padding(end = 16.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(MaterialTheme.colorScheme.outline)
-                .fillMaxWidth()
-                .height(12.dp)
-                .applyPlaceholder()
-        )
+        deviceView(device)
     }
 }

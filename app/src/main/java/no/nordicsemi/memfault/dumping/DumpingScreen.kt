@@ -62,8 +62,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import no.nordicsemi.android.common.theme.view.NordicAppBar
-import no.nordicsemi.android.common.theme.view.SectionTitle
+import no.nordicsemi.android.common.ui.view.NordicAppBar
+import no.nordicsemi.android.common.ui.view.SectionTitle
 import no.nordicsemi.memfault.R
 import no.nordicsemi.memfault.lib.bluetooth.BluetoothLEStatus
 import no.nordicsemi.memfault.lib.data.Chunk
@@ -80,7 +80,7 @@ fun DumpingScreen() {
     Scaffold(
         topBar = {
             NordicAppBar(
-                text = stringResource(id = R.string.app_bar_title),
+                title = { Text(stringResource(id = R.string.app_bar_title)) },
                 actions = { ConnectButton(state = state) }
             )
         }
@@ -100,16 +100,13 @@ fun DumpingScreen() {
                     item { ErrorItem() }
                 } else if (state.chunks.isNotEmpty()) {
                     ChunksItem(chunks = state.chunks)
-                } else
-                    if (state.bleStatus == BluetoothLEStatus.CONNECTING || state.bleStatus == BluetoothLEStatus.CONNECTED) {
-                        if (state.chunks.isEmpty()) {
-                            LoadingView()
-                        } else {
-                            ChunksItem(chunks = state.chunks)
-                        }
-                    } else if (state.bleStatus == BluetoothLEStatus.ERROR) {
-                        item { ErrorItem() }
+                } else if (state.bleStatus == BluetoothLEStatus.CONNECTING || state.bleStatus == BluetoothLEStatus.CONNECTED) {
+                    if (state.chunks.isEmpty()) {
+                        LoadingView()
+                    } else {
+                        ChunksItem(chunks = state.chunks)
                     }
+                }
             }
         }
     }

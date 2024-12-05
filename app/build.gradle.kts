@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":scanner"))
     implementation(project(":lib_memfault"))
 
     implementation(libs.accompanist.placeholder)
@@ -58,11 +59,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    implementation(libs.nordic.ui)
     implementation(libs.nordic.theme)
     implementation(libs.nordic.navigation)
-    implementation(libs.nordic.uilogger)
-    implementation(libs.nordic.uiscanner)
-    implementation(libs.nordic.permission)
+    implementation(libs.nordic.logger)
+    implementation(libs.nordic.permissions.ble)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

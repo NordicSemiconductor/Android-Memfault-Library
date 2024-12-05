@@ -99,8 +99,9 @@
 
     <string name="cd_icon_stop">Disconnect and stop uploading logs.</string>
 
-    <string name="app_info">An Android library that can connect to a Bluetooth LE device, download dump logs and upload them to the [Memfault console](https://docs.memfault.com).
-\n\nThe device should contain predefined [GATT characteristics](https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b).
-\n\nThe library maintains connection as long as the user decides.
-    </string>
+    <string name="app_info">An Android library that can connect to a Bluetooth LE device, download dump logs and upload them to the</string>
+    <string name="app_info_memfault_console">Memfault console</string>
+    <string name="app_info_2">.\n\nThe device should contain predefined</string>
+    <string name="app_info_gatt">GATT characteristics</string>
+    <string name="app_info_3">.\n\nThe library maintains connection as long as the user decides.</string>
 </resources>

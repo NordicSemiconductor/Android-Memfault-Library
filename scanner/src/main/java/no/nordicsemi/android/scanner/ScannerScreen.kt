@@ -28,45 +28,44 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package no.nordicsemi.android.scanner
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus.android)
-}
+import android.os.ParcelUuid
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import no.nordicsemi.android.scanner.main.DeviceListItem
+import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
+import no.nordicsemi.android.scanner.view.ScannerAppBar
 
-group = "no.nordicsemi.memfault"
+@Composable
+fun ScannerScreen(
+    title: @Composable () -> Unit = { Text(stringResource(id = R.string.scanner_screen)) },
+    uuid: ParcelUuid?,
+    cancellable: Boolean = true,
+    onResult: (ScannerScreenResult) -> Unit,
+    deviceItem: @Composable (DiscoveredBluetoothDevice) -> Unit = {
+        DeviceListItem(it.displayName, it.address)
+    }
+) {
+    var isScanning by rememberSaveable { mutableStateOf(false) }
 
-nordicNexusPublishing {
-    POM_ARTIFACT_ID = "memfault"
-    POM_NAME = "Memfault Bluetooth Le Library for Android"
-
-    POM_DESCRIPTION = "Android Memfault Library"
-    POM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-}
-
-android {
-    namespace = "no.nordicsemi.memfault.lib"
-}
-
-dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.compose.material3)
-
-    implementation(libs.memfault.cloud)
-
-    implementation(libs.nordic.ble.ktx)
-    implementation(libs.nordic.ble.common)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.permissions.internet)
-
-    implementation(libs.kotlinx.coroutines.android)
-
-    kapt(libs.room.compiler)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
+    Column {
+        if (cancellable) {
+            ScannerAppBar(title, isScanning) { onResult(ScanningCancelled) }
+        } else {
+            ScannerAppBar(title, isScanning)
+        }
+        ScannerView(
+            uuid = uuid,
+            onScanningStateChanged = { isScanning = it },
+            onResult = { onResult(DeviceSelected(it)) },
+            deviceItem = deviceItem,
+        )
+    }
 }

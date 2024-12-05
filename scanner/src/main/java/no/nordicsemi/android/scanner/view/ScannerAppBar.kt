@@ -29,44 +29,40 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus.android)
-}
+package no.nordicsemi.android.scanner.view
 
-group = "no.nordicsemi.memfault"
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import no.nordicsemi.android.common.ui.view.NordicAppBar
 
-nordicNexusPublishing {
-    POM_ARTIFACT_ID = "memfault"
-    POM_NAME = "Memfault Bluetooth Le Library for Android"
-
-    POM_DESCRIPTION = "Android Memfault Library"
-    POM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
-}
-
-android {
-    namespace = "no.nordicsemi.memfault.lib"
-}
-
-dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.compose.material3)
-
-    implementation(libs.memfault.cloud)
-
-    implementation(libs.nordic.ble.ktx)
-    implementation(libs.nordic.ble.common)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.permissions.internet)
-
-    implementation(libs.kotlinx.coroutines.android)
-
-    kapt(libs.room.compiler)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun ScannerAppBar(
+    title: @Composable () -> Unit,
+    showProgress: Boolean = false,
+    backButtonIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
+    onNavigationButtonClick: (() -> Unit)? = null,
+) {
+    NordicAppBar(
+        title = title,
+        backButtonIcon = backButtonIcon,
+        onNavigationButtonClick = onNavigationButtonClick,
+        actions = {
+            if (showProgress) {
+                CircularProgressIndicator(
+                    modifier = Modifier.padding(horizontal = 16.dp).size(30.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        },
+    )
 }

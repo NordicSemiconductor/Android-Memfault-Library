@@ -29,64 +29,76 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault.dumping
+package no.nordicsemi.android.scanner.main
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
-import no.nordicsemi.memfault.R
-import no.nordicsemi.memfault.lib.data.Chunk
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import no.nordicsemi.android.common.ui.view.CircularIcon
+import no.nordicsemi.android.common.ui.view.RssiIcon
+import no.nordicsemi.android.scanner.R
 
 @Composable
-fun ChunkItem(chunk: Chunk) {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.weight(1f)) {
-            TitleItem(
-                title = stringResource(id = R.string.next_item, chunk.chunkNumber),
-                description = stringResource(id = R.string.bytes, chunk.data.size)
+internal fun DeviceListItem(
+    name: String?,
+    address: String,
+    modifier: Modifier = Modifier,
+    extras: @Composable () -> Unit = {},
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically)
+    {
+        CircularIcon(Icons.Default.Bluetooth)
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            name?.let { name ->
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            } ?: Text(
+                    text = stringResource(id = R.string.device_no_name),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.alpha(0.7f)
+                )
+            Text(
+                text = address,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
 
-        val icon = if (chunk.isUploaded) {
-            Icons.Default.Done
-        } else {
-            Icons.Default.Close
-        }
-
-        val iconColor = if (chunk.isUploaded) {
-            no.nordicsemi.android.common.theme.R.color.nordicGreen
-        } else {
-            no.nordicsemi.android.common.theme.R.color.nordicRed
-        }
-
-        Icon(imageVector = icon, contentDescription = "", tint = colorResource(id = iconColor))
+        extras()
     }
 }
 
+@Preview(showBackground = true)
 @Composable
-fun TitleItem(title: String, description: String) {
-    Column {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+private fun DeviceListItemPreview() {
+    DeviceListItem(
+        name = "Device name",
+        address = "AA:BB:CC:DD:EE:FF",
+        extras = {
+            RssiIcon(rssi = -45)
+        }
+    )
 }

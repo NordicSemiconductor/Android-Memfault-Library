@@ -40,7 +40,7 @@ import no.nordicsemi.memfault.lib.data.MemfaultConfig
 import no.nordicsemi.memfault.lib.db.ChunksDatabase
 import no.nordicsemi.memfault.lib.internet.ChunkUploadManager
 import no.nordicsemi.memfault.lib.internet.DBChunkQueue
-import no.nordicsemi.android.common.permission.internet.InternetStateManager
+import no.nordicsemi.android.common.permissions.internet.repository.InternetStateManager
 
 private val DB_NAME = "chunks-database"
 
