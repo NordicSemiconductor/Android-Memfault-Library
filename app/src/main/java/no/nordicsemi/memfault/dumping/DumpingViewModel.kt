@@ -52,7 +52,6 @@ class DumpingViewModel @Inject constructor(
     private val memfaultManager: MemfaultBleManager,
     savedStateHandle: SavedStateHandle,
 ) : SimpleNavigationViewModel(navigationManager, savedStateHandle) {
-
     val state = memfaultManager.state
     private val bluetoothDevice: BluetoothDevice = parameterOf(DumpingDestinationId).device
 

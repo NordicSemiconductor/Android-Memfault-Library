@@ -31,21 +31,16 @@
 
 package no.nordicsemi.memfault.lib.data
 
-import no.nordicsemi.memfault.lib.bluetooth.BluetoothLEStatus
+import no.nordicsemi.memfault.lib.bluetooth.DeviceState
 import no.nordicsemi.memfault.lib.internet.UploadingStatus
 
 data class MemfaultState(
-    val bleStatus: BluetoothLEStatus = BluetoothLEStatus.IDLE,
+    val bleStatus: DeviceState = DeviceState.Idle,
     val uploadingStatus: UploadingStatus = UploadingStatus.Offline,
     val config: MemfaultConfig? = null,
     val chunks: List<Chunk> = emptyList()
 ) {
-
-    val pendingChunksSize: Int
-
-    init {
-        pendingChunksSize = chunks.filter { !it.isUploaded }.size
-    }
+    val pendingChunksSize: Int = chunks.filter { !it.isUploaded }.size
 }
 
 data class Chunk(

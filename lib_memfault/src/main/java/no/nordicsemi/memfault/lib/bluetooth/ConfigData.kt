@@ -32,7 +32,6 @@
 package no.nordicsemi.memfault.lib.bluetooth
 
 data class AuthorisationHeader(val header: String) {
-
     val key: String
     val value: String
 

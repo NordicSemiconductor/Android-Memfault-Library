@@ -39,12 +39,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import no.nordicsemi.android.ble.ktx.state.ConnectionState
+import no.nordicsemi.android.ble.ktx.stateAsFlow
 import no.nordicsemi.android.common.permissions.internet.util.InternetPermissionState
-import no.nordicsemi.memfault.lib.bluetooth.ChunkValidator
 import no.nordicsemi.memfault.lib.bluetooth.ChunksBleManager
+import no.nordicsemi.memfault.lib.bluetooth.DeviceState
+import no.nordicsemi.memfault.lib.bluetooth.toDeviceState
 import no.nordicsemi.memfault.lib.data.MemfaultState
 import no.nordicsemi.memfault.lib.db.toChunk
 import no.nordicsemi.memfault.lib.db.toEntity
@@ -52,7 +56,6 @@ import no.nordicsemi.memfault.lib.internet.ChunkUploadManager
 import no.nordicsemi.memfault.lib.internet.UploadingStatus
 
 class MemfaultBleManagerImpl : MemfaultBleManager {
-
     private var manager: ChunksBleManager? = null
 
     private val _state = MutableStateFlow(MemfaultState())
@@ -63,31 +66,36 @@ class MemfaultBleManagerImpl : MemfaultBleManager {
         val bleManager = factory.getMemfaultManager()
         val database = factory.getDatabase()
         val scope = factory.getScope()
-        val chunkValidator = ChunkValidator()
         var uploadManager: ChunkUploadManager? = null
         this.manager = bleManager
         val internetStateManager = factory.getInternetStateManager(context)
 
-        //Collect bluetooth connection status and upload exposed StateFlow
+        // Collect bluetooth connection status and upload exposed StateFlow.
         scope.launch {
-            bleManager.status.collect {
-                _state.value = _state.value.copy(bleStatus = it)
-            }
+            bleManager.stateAsFlow()
+                .dropWhile { it is ConnectionState.Disconnected }
+                .collect {
+                    _state.value = _state.value.copy(bleStatus = it.toDeviceState())
+                }
         }
 
-        bleManager.start(device)
+        try {
+            bleManager.start(device)
+        } catch (e: Exception) {
+            _state.value = _state.value.copy(bleStatus = DeviceState.Disconnected(DeviceState.Disconnected.Reason.FAILED_TO_CONNECT))
+            return
+        }
 
-        //Store chunks in database and schedule update with some delay to aggregate requests
+        // Store chunks in database and schedule update with some delay to aggregate requests.
         scope.launch {
             bleManager.receivedChunk
                 .buffer()
                 .onEach { database.chunksDao().insert(it.toEntity()) }
-//                .filter { chunkValidator.validateChunk(it) }
                 .debounce(300)
                 .collect { uploadManager?.uploadChunks() }
         }
 
-        //Collect config and initialise UploadManager
+        // Collect config and initialise UploadManager.
         scope.launch {
             bleManager.config.collect { config ->
                 config?.let {
@@ -116,12 +124,11 @@ class MemfaultBleManagerImpl : MemfaultBleManager {
         }
     }
 
-    private fun UploadingStatus.mapWithInternet(internetState: InternetPermissionState): UploadingStatus {
-        return when (internetState) {
+    private fun UploadingStatus.mapWithInternet(internetState: InternetPermissionState): UploadingStatus =
+        when (internetState) {
             InternetPermissionState.Available -> this
             is InternetPermissionState.NotAvailable -> UploadingStatus.Offline
         }
-    }
 
     override suspend fun disconnect() {
         manager?.disconnectWithCatch()

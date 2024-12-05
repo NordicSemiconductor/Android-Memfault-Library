@@ -53,12 +53,6 @@ interface MemfaultBleManager {
      *  - Bluetooth connection status with the selected IoT device.
      *  - Uploading status which may be suspended due to server overload.
      *  - Received chunks information.
-     *
-     * If the device supports required GATT characteristics then uploaded chunks will be reported
-     * by [WorkingResult]. Otherwise [ErrorResult] is sent.
-     *
-     * [WorkingResult] can report [UploadStatus.SUSPENDED] which indicates that the Memfault server
-     * is overloaded and upload is postponed to the future.
      */
     val state: StateFlow<MemfaultState>
 
@@ -73,7 +67,6 @@ interface MemfaultBleManager {
 
     /**
      * Disconnects a previously connected BLE device.
-     * If success then [DisconnectedResult] is emitted by a flow returned by [MemfaultBleManager.connect].
      */
     suspend fun disconnect()
 

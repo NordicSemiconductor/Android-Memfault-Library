@@ -31,10 +31,16 @@
 
 package no.nordicsemi.memfault.lib.internet
 
+/**
+ * The status of the data uploading.
+ */
 sealed interface UploadingStatus {
-    object Offline : UploadingStatus
+    /** The device is offline. */
+    data object Offline : UploadingStatus
 
-    object InProgress : UploadingStatus
+    /** The data is currently being uploaded. */
+    data object InProgress : UploadingStatus
 
+    /** The data upload has been suspended. */
     data class Suspended(val delayInSeconds: Long) : UploadingStatus
 }

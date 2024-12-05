@@ -31,6 +31,9 @@
 
 package no.nordicsemi.memfault.lib.data
 
+/**
+ * Converts Device ID to a [Chunk].
+ */
 fun ByteArray.toChunk(deviceId: String): Chunk {
     val chunkNumber = this[0].toInt()
 

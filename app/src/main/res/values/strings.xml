@@ -75,7 +75,11 @@
     <string name="start">Start</string>
     <string name="abort">Abort</string>
     <string name="go_back">Go back</string>
-    <string name="error">An error has occurred. The connection will be dropped.</string>
+
+    <string name="error_connection">Failed to connect to the device.</string>
+    <string name="error_not_supported">The device is not supported.</string>
+    <string name="error_timeout">The connection timed out unexpectedly.</string>
+    <string name="error_connection_lost">The device has disconnected.</string>
 
     <string name="connecting">Connecting…</string>
     <string name="first_item">Waiting for first item…</string>
@@ -93,9 +97,9 @@
     <string name="progress_completed">Completed</string>
     <string name="progress_uploading">Uploading</string>
 
-    <string name="status_offline">OFFLINE</string>
-    <string name="status_in_progress">IN PROGRESS</string>
-    <string name="status_suspended">SUSPENDED:\n %d sec.</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_in_progress">In progress</string>
+    <string name="status_suspended">Suspended:\n %d sec.</string>
 
     <string name="cd_icon_stop">Disconnect and stop uploading logs.</string>
 

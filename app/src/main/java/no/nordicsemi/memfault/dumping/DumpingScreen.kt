@@ -71,7 +71,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.android.common.ui.view.NordicAppBar
 import no.nordicsemi.android.common.ui.view.SectionTitle
 import no.nordicsemi.memfault.R
-import no.nordicsemi.memfault.lib.bluetooth.BluetoothLEStatus
+import no.nordicsemi.memfault.lib.bluetooth.DeviceState
 import no.nordicsemi.memfault.lib.data.Chunk
 import no.nordicsemi.memfault.lib.data.MemfaultConfig
 import no.nordicsemi.memfault.lib.data.MemfaultState
@@ -117,11 +117,12 @@ fun DumpingScreen() {
                     item { ConfigView(config = it) }
                 }
 
-                if (state.bleStatus == BluetoothLEStatus.ERROR) {
-                    item { ErrorItem() }
+                val status = state.bleStatus
+                if (status is DeviceState.Disconnected) {
+                    item { ErrorItem(status.reason) }
                 } else if (state.chunks.isNotEmpty()) {
                     ChunksItem(chunks = state.chunks)
-                } else if (state.bleStatus == BluetoothLEStatus.CONNECTING || state.bleStatus == BluetoothLEStatus.CONNECTED) {
+                } else if (status == DeviceState.Connecting || state.bleStatus == DeviceState.Connected) {
                     if (state.chunks.isEmpty()) {
                         LoadingView()
                     } else {
@@ -137,7 +138,7 @@ fun DumpingScreen() {
 private fun ConnectButton(state: MemfaultState) {
     val viewModel: DumpingViewModel = hiltViewModel()
 
-    if (state.bleStatus == BluetoothLEStatus.CONNECTED) {
+    if (state.bleStatus == DeviceState.Connected) {
         TextButton(onClick = { viewModel.disconnect() }) {
             Text(
                 stringResource(id = R.string.disconnect),
@@ -174,13 +175,20 @@ private fun LazyListScope.ChunksItem(chunks: List<Chunk>) {
 }
 
 @Composable
-private fun ErrorItem() {
-    Column {
-        Text(
-            text = stringResource(id = R.string.error),
-            color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.labelLarge,
-        )
+private fun ErrorItem(reason: DeviceState.Disconnected.Reason) {
+    Text(
+        text = stringResource(id = reason.toStringRes()),
+        color = MaterialTheme.colorScheme.error,
+        style = MaterialTheme.typography.labelLarge,
+    )
+}
+
+private fun DeviceState.Disconnected.Reason.toStringRes(): Int {
+    return when (this) {
+        DeviceState.Disconnected.Reason.TIMEOUT -> R.string.error_timeout
+        DeviceState.Disconnected.Reason.FAILED_TO_CONNECT -> R.string.error_connection
+        DeviceState.Disconnected.Reason.NOT_SUPPORTED -> R.string.error_not_supported
+        DeviceState.Disconnected.Reason.CONNECTION_LOST -> R.string.error_connection_lost
     }
 }
 
