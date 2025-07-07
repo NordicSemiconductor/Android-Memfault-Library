@@ -196,7 +196,7 @@ private fun Content(
                 append(" ")
                 withLink(
                     LinkAnnotation.Url(
-                        url = "https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b",
+                        url = "https://docs.nordicsemi.com/bundle/ncs-latest/page/nrf/libraries/bluetooth/services/mds.html",
                         styles = TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)),
                     )
                 ) {
