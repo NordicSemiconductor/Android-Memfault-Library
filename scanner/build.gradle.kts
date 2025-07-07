@@ -16,6 +16,5 @@ dependencies {
     implementation(libs.nordic.navigation)
     implementation(libs.nordic.permissions.ble)
 
-    implementation(libs.androidx.compose.material)
     implementation(libs.androidx.compose.material.iconsExtended)
 }

@@ -45,26 +45,17 @@ dependencies {
     implementation(project(":lib_memfault"))
 
     implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.tooling)
-    implementation(libs.androidx.compose.foundation)
-    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.iconsExtended)
-    implementation(libs.androidx.activity.compose)
-
-    implementation(libs.androidx.lifecycle.runtime.compose)
 
     implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.androidx.lifecycle.runtime)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
 
     implementation(libs.nordic.ui)
     implementation(libs.nordic.theme)
     implementation(libs.nordic.navigation)
     implementation(libs.nordic.logger)
     implementation(libs.nordic.permissions.ble)
+    implementation(libs.nordic.scanner.ble)
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
+    // Use Native Android BLE Client.
+    implementation(libs.nordic.blek.client.android)
 }
