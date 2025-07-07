@@ -34,12 +34,11 @@ package no.nordicsemi.memfault
 import no.nordicsemi.android.common.navigation.createDestination
 import no.nordicsemi.android.common.navigation.createSimpleDestination
 import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
 import no.nordicsemi.memfault.dumping.DumpingScreen
 import no.nordicsemi.memfault.home.HomeScreen
 
 val HomeDestinationId = createSimpleDestination("home-destination")
-val DumpingDestinationId = createDestination<DiscoveredBluetoothDevice, Unit>("dumping-destination")
+val DumpingDestinationId = createDestination<String, Unit>("dumping-destination")
 
 val HomeDestinations = listOf(
     defineDestination(HomeDestinationId) { HomeScreen() },

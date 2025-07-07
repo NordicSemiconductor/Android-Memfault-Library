@@ -31,8 +31,10 @@
 
 package no.nordicsemi.memfault.dumping
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.os.Build
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,14 +48,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DumpingViewModel @Inject constructor(
-    @ApplicationContext
-    private val context: Context,
+    @ApplicationContext private val context: Context,
     navigationManager: Navigator,
     private val memfaultManager: MemfaultBleManager,
     savedStateHandle: SavedStateHandle,
 ) : SimpleNavigationViewModel(navigationManager, savedStateHandle) {
     val state = memfaultManager.state
-    private val bluetoothDevice: BluetoothDevice = parameterOf(DumpingDestinationId).device
+    private val bluetoothAddress: String = parameterOf(DumpingDestinationId)
 
     fun disconnect() {
         viewModelScope.launch {
@@ -63,7 +64,13 @@ class DumpingViewModel @Inject constructor(
 
     fun connect() {
         viewModelScope.launch {
-            memfaultManager.connect(context, bluetoothDevice)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val ba = BluetoothAdapter.getDefaultAdapter()
+                val device = ba.getRemoteLeDevice(bluetoothAddress, BluetoothDevice.ADDRESS_TYPE_RANDOM)
+                memfaultManager.connect(context, device)
+            } else {
+                TODO("VERSION.SDK_INT < TIRAMISU")
+            }
         }
     }
 }

@@ -42,7 +42,6 @@ android {
 
 dependencies {
     implementation(project(":scanner"))
-    implementation(project(":lib_memfault"))
 
     implementation(libs.accompanist.placeholder)
     implementation(libs.androidx.compose.material.iconsExtended)

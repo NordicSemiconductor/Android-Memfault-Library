@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Nordic Semiconductor
+ * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,13 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.scanner
+package no.nordicsemi.memfault.di
 
-import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
+import android.content.Context
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import no.nordicsemi.kotlin.ble.client.android.CentralManager
+import no.nordicsemi.kotlin.ble.client.android.native
 
+@Module
+@InstallIn(SingletonComponent::class)
+object CentralManagerModule {
 
-sealed interface ScannerScreenResult
-
-data object ScanningCancelled : ScannerScreenResult
-
-data class DeviceSelected(val device: DiscoveredBluetoothDevice) : ScannerScreenResult
+    @Provides
+    fun provideCentralManager(
+        @ApplicationContext context: Context,
+        scope: CoroutineScope
+    ): CentralManager {
+        return CentralManager.Factory.native(context, scope)
+    }
+}
