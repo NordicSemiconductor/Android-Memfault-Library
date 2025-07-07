@@ -29,32 +29,18 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.memfault.observability.internet
 
-group = "no.nordicsemi.memfault"
+/**
+ * The status of the data uploading.
+ */
+sealed interface UploadingStatus {
+    /** The device is offline. */
+    data object Offline : UploadingStatus
 
-android {
-    namespace = "no.nordicsemi.memfault"
-}
+    /** The data is currently being uploaded. */
+    data object InProgress : UploadingStatus
 
-dependencies {
-    implementation(project(":lib:observability"))
-
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
+    /** The data upload has been suspended. */
+    data class Suspended(val delayInSeconds: Long) : UploadingStatus
 }

@@ -29,32 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.memfault.observability.internet
 
-group = "no.nordicsemi.memfault"
+import com.memfault.cloud.sdk.ChunkQueue
+import no.nordicsemi.memfault.observability.db.ChunksDao
 
-android {
-    namespace = "no.nordicsemi.memfault"
-}
+internal class DBChunkQueue(
+    private val deviceId: String,
+    private val chunkDao: ChunksDao
+) : ChunkQueue {
 
-dependencies {
-    implementation(project(":lib:observability"))
+    @Deprecated("This function can't be used, because of a limited signature for a parameter.")
+    override fun addChunks(chunks: List<ByteArray>): Boolean {
+        throw IllegalAccessException()
+    }
 
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
+    override fun drop(count: Int) {
+        chunkDao.drop(count, deviceId)
+    }
 
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
+    override fun peek(count: Int): List<ByteArray> {
+        return chunkDao.getNotUploaded(count, deviceId).map { it.data }
+    }
 }

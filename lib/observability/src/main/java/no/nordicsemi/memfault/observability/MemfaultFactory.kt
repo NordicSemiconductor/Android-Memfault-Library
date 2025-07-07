@@ -29,32 +29,44 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.memfault.observability
 
-group = "no.nordicsemi.memfault"
+import android.content.Context
+import androidx.room.Room
+import com.memfault.cloud.sdk.ChunkQueue
+import no.nordicsemi.memfault.common.internet.InternetStateManager
+import no.nordicsemi.memfault.observability.bluetooth.ChunksBleManager
+import no.nordicsemi.memfault.observability.data.MemfaultConfig
+import no.nordicsemi.memfault.observability.db.ChunksDatabase
+import no.nordicsemi.memfault.observability.internet.ChunkUploadManager
+import no.nordicsemi.memfault.observability.internet.DBChunkQueue
 
-android {
-    namespace = "no.nordicsemi.memfault"
-}
+private val DB_NAME = "chunks-database"
 
-dependencies {
-    implementation(project(":lib:observability"))
+internal class MemfaultFactory(private val context: Context) {
+    private var database: ChunksDatabase? = null
 
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
+    fun getScope() = MemfaultScope
 
-    implementation(libs.androidx.hilt.navigation.compose)
+    fun getDatabase(): ChunksDatabase {
+        return database ?: Room.databaseBuilder(context, ChunksDatabase::class.java, DB_NAME)
+            .build()
+            .also { database = it }
+    }
 
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
+    private fun getChunkQueue(deviceId: String): ChunkQueue {
+        return DBChunkQueue(deviceId, getDatabase().chunksDao())
+    }
 
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
+    fun getUploadManager(config: MemfaultConfig): ChunkUploadManager {
+        return ChunkUploadManager(config, getChunkQueue(config.deviceId))
+    }
+
+    fun getMemfaultManager(): ChunksBleManager {
+        return ChunksBleManager(context, getScope())
+    }
+
+    fun getInternetStateManager(context: Context): InternetStateManager {
+        return InternetStateManager(context)
+    }
 }

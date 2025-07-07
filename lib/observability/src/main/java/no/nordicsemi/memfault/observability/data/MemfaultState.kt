@@ -29,32 +29,23 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
+package no.nordicsemi.memfault.observability.data
+
+import no.nordicsemi.memfault.observability.bluetooth.DeviceState
+import no.nordicsemi.memfault.observability.internet.UploadingStatus
+
+data class MemfaultState(
+    val bleStatus: DeviceState = DeviceState.Idle,
+    val uploadingStatus: UploadingStatus = UploadingStatus.Offline,
+    val config: MemfaultConfig? = null,
+    val chunks: List<Chunk> = emptyList()
+) {
+    val pendingChunksSize: Int = chunks.filter { !it.isUploaded }.size
 }
 
-group = "no.nordicsemi.memfault"
-
-android {
-    namespace = "no.nordicsemi.memfault"
-}
-
-dependencies {
-    implementation(project(":lib:observability"))
-
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
-}
+data class Chunk(
+    val chunkNumber: Int,
+    val data: ByteArray,
+    val deviceId: String,
+    val isUploaded: Boolean
+)

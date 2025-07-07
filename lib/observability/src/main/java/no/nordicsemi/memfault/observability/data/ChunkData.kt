@@ -29,32 +29,14 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.memfault.observability.data
 
-group = "no.nordicsemi.memfault"
+/**
+ * Converts Device ID to a [Chunk].
+ */
+fun ByteArray.toChunk(deviceId: String): Chunk {
+    val chunkNumber = this[0].toInt()
 
-android {
-    namespace = "no.nordicsemi.memfault"
-}
-
-dependencies {
-    implementation(project(":lib:observability"))
-
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
+    val data = this.copyOfRange(1, this.size)
+    return Chunk(chunkNumber, data, deviceId, false)
 }

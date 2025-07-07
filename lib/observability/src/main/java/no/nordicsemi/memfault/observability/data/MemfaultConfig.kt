@@ -29,32 +29,18 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.memfault.observability.data
 
-group = "no.nordicsemi.memfault"
+import no.nordicsemi.memfault.observability.bluetooth.AuthorisationHeader
 
-android {
-    namespace = "no.nordicsemi.memfault"
-}
-
-dependencies {
-    implementation(project(":lib:observability"))
-
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
-}
+/**
+ * The configuration data obtained from the device using GATT.
+ */
+data class MemfaultConfig(
+    /** The authorisation header to be used for the request. */
+    val authorisationHeader: AuthorisationHeader,
+    /** The URL to Memfault cloud. */
+    val url: String,
+    /** The device ID. */
+    val deviceId: String,
+)

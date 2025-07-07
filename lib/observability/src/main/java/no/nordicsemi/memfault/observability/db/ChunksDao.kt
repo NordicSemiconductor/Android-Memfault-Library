@@ -29,32 +29,25 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.memfault.observability.db
 
-group = "no.nordicsemi.memfault"
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
-android {
-    namespace = "no.nordicsemi.memfault"
-}
+@Dao
+internal interface ChunksDao {
 
-dependencies {
-    implementation(project(":lib:observability"))
+    @Query("SELECT * FROM chunks WHERE device_id = :deviceId ORDER BY id DESC")
+    fun getAll(deviceId: String): Flow<List<ChunkEntity>>
 
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
+    @Query("SELECT * FROM chunks WHERE is_uploaded = 0 AND device_id = :deviceId ORDER BY id ASC LIMIT :limit")
+    fun getNotUploaded(limit: Int, deviceId: String): List<ChunkEntity>
 
-    implementation(libs.androidx.hilt.navigation.compose)
+    @Query("""UPDATE chunks SET is_uploaded = 1 WHERE is_uploaded IN (SELECT is_uploaded FROM chunks WHERE is_uploaded = 0 AND device_id = :deviceId ORDER BY id ASC LIMIT :limit)""")
+    fun drop(limit: Int, deviceId: String)
 
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
+    @Insert
+    fun insert(chunk: ChunkEntity)
 }

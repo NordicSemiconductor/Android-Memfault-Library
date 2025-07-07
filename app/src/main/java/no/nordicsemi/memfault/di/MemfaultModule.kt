@@ -29,48 +29,18 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault.dumping
+package no.nordicsemi.memfault.di
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.content.Context
-import android.os.Build
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.launch
-import no.nordicsemi.android.common.navigation.Navigator
-import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
-import no.nordicsemi.memfault.DumpingDestinationId
 import no.nordicsemi.memfault.observability.MemfaultBleManager
-import javax.inject.Inject
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 
-@HiltViewModel
-class DumpingViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
-    navigationManager: Navigator,
-    private val memfaultManager: MemfaultBleManager,
-    savedStateHandle: SavedStateHandle,
-) : SimpleNavigationViewModel(navigationManager, savedStateHandle) {
-    val state = memfaultManager.state
-    private val bluetoothAddress: String = parameterOf(DumpingDestinationId)
+@Module
+@InstallIn(SingletonComponent::class)
+internal class MemfaultModule {
 
-    fun disconnect() {
-        viewModelScope.launch {
-            memfaultManager.disconnect()
-        }
-    }
-
-    fun connect() {
-        viewModelScope.launch {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val ba = BluetoothAdapter.getDefaultAdapter()
-                val device = ba.getRemoteLeDevice(bluetoothAddress, BluetoothDevice.ADDRESS_TYPE_RANDOM)
-                memfaultManager.connect(context, device)
-            } else {
-                TODO("VERSION.SDK_INT < TIRAMISU")
-            }
-        }
-    }
+    @Provides
+    fun providesMemfaultManager() = MemfaultBleManager.create()
 }

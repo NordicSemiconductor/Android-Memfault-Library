@@ -71,11 +71,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.android.common.ui.view.NordicAppBar
 import no.nordicsemi.android.common.ui.view.SectionTitle
 import no.nordicsemi.memfault.R
-import no.nordicsemi.memfault.lib.bluetooth.DeviceState
-import no.nordicsemi.memfault.lib.data.Chunk
-import no.nordicsemi.memfault.lib.data.MemfaultConfig
-import no.nordicsemi.memfault.lib.data.MemfaultState
-import no.nordicsemi.memfault.lib.internet.UploadingStatus
+import no.nordicsemi.memfault.observability.bluetooth.DeviceState
+import no.nordicsemi.memfault.observability.data.Chunk
+import no.nordicsemi.memfault.observability.data.MemfaultConfig
+import no.nordicsemi.memfault.observability.data.MemfaultState
+import no.nordicsemi.memfault.observability.internet.UploadingStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

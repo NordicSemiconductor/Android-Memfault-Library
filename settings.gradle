@@ -51,7 +51,9 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Android-Memfault-Library"
-include ':app', ':lib_memfault'
+include ':app'
+include ':lib:common'
+include ':lib:observability'
 
 //if (file('../Android-Common-Libraries').exists()) {
 //    includeBuild('../Android-Common-Libraries')

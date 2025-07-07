@@ -29,32 +29,13 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.memfault.observability.db
 
-group = "no.nordicsemi.memfault"
+import androidx.room.Database
+import androidx.room.RoomDatabase
 
-android {
-    namespace = "no.nordicsemi.memfault"
-}
+@Database(entities = [ChunkEntity::class], version = 1)
+internal abstract class ChunksDatabase : RoomDatabase() {
 
-dependencies {
-    implementation(project(":lib:observability"))
-
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
+    abstract fun chunksDao(): ChunksDao
 }

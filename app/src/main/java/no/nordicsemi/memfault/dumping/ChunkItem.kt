@@ -46,7 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import no.nordicsemi.memfault.R
-import no.nordicsemi.memfault.lib.data.Chunk
+import no.nordicsemi.memfault.observability.data.Chunk
 
 @Composable
 fun ChunkItem(chunk: Chunk) {

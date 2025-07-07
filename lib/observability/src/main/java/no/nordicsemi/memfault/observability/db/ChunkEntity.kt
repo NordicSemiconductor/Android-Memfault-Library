@@ -29,32 +29,22 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.memfault.observability.db
 
-group = "no.nordicsemi.memfault"
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-android {
-    namespace = "no.nordicsemi.memfault"
-}
-
-dependencies {
-    implementation(project(":lib:observability"))
-
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
-}
+@Entity(tableName = "chunks")
+internal data class ChunkEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    @ColumnInfo(name = "chunk_number")
+    val chunkNumber: Int,
+    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB)
+    val data: ByteArray,
+    @ColumnInfo(name = "device_id")
+    val deviceId: String,
+    @ColumnInfo(name = "is_uploaded")
+    val isUploaded: Boolean
+)

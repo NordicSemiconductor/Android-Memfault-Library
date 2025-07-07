@@ -30,31 +30,36 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.application.compose)
+    alias(libs.plugins.nordic.library)
     alias(libs.plugins.nordic.hilt)
+    alias(libs.plugins.nordic.nexus.android)
 }
 
 group = "no.nordicsemi.memfault"
 
+nordicNexusPublishing {
+    POM_ARTIFACT_ID = "memfault-observability"
+    POM_NAME = "Android Memfault Observability Library"
+
+    POM_DESCRIPTION = "A library for observing and interacting with Memfault-enabled devices over Bluetooth LE."
+    POM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
+    POM_SCM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
+    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
+}
+
 android {
-    namespace = "no.nordicsemi.memfault"
+    namespace = "no.nordicsemi.memfault.observability"
 }
 
 dependencies {
-    implementation(project(":lib:observability"))
+    implementation(project(":lib:common"))
 
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
+    implementation(libs.nordic.ble.ktx)
 
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.kotlinx.coroutines.android)
 
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
+    kapt(libs.room.compiler)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
 }

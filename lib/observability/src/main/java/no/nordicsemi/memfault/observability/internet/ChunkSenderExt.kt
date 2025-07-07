@@ -29,32 +29,25 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
+package no.nordicsemi.memfault.observability.internet
+
+import com.memfault.cloud.sdk.ChunkSender
+import com.memfault.cloud.sdk.SendChunksCallback
+import kotlinx.coroutines.delay
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+
+internal suspend fun ChunkSender.send() = suspendCoroutine {
+    send(object : SendChunksCallback {
+        override fun onQueueEmpty(sent: Int) { it.resume(ChunkUploadSuccess(sent)) }
+
+        override fun onRetryAfterDelay(delay: Long, sent: Int, exception: Exception) {
+            it.resume(ChunkUploadError(delay, sent, exception))
+        }
+    })
 }
 
-group = "no.nordicsemi.memfault"
-
-android {
-    namespace = "no.nordicsemi.memfault"
-}
-
-dependencies {
-    implementation(project(":lib:observability"))
-
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
+internal suspend fun ChunkSender.retrySend(delayMillis: Long): ChunkUploadResult {
+    delay(delayMillis)
+    return send()
 }

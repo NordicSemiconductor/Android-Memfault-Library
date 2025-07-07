@@ -29,32 +29,19 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
+package no.nordicsemi.memfault.observability.db
+
+import no.nordicsemi.memfault.observability.data.Chunk
+
+internal fun ChunkEntity.toChunk(): Chunk {
+    return Chunk(chunkNumber, data, deviceId, isUploaded)
 }
 
-group = "no.nordicsemi.memfault"
-
-android {
-    namespace = "no.nordicsemi.memfault"
-}
-
-dependencies {
-    implementation(project(":lib:observability"))
-
-    implementation(libs.accompanist.placeholder)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.logger)
-    implementation(libs.nordic.permissions.ble)
-    implementation(libs.nordic.scanner.ble)
-
-    // Use Native Android BLE Client.
-    implementation(libs.nordic.blek.client.android)
+internal fun Chunk.toEntity(): ChunkEntity {
+    return ChunkEntity(
+        chunkNumber = chunkNumber,
+        data = data,
+        isUploaded = isUploaded,
+        deviceId = deviceId
+    )
 }
