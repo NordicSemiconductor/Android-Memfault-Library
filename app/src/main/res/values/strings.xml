@@ -31,32 +31,15 @@
 
 <resources>
     <string name="app_name">nRF Memfault</string>
-    <string name="scanner">Scanner</string>
-    <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-    <string name="statistics">Statistics</string>
 
-    <string name="cd_memfault">The logo of Memfault.</string>
-    <string name="cd_start_image">Start icon representing a board.</string>
-    <string name="cd_progress_icon">Icon representing current progress stage.</string>
+    <string name="cd_memfault">Memfault Logo.</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-
-    <string name="close_app">Close the application.</string>
-    <string name="back_screen">Close the current screen.</string>
-    <string name="open_logger">Open logger application.</string>
-
+    <string name="filter_mds">Memfault</string>
     <string name="disconnect">Disconnect</string>
     <string name="connect">Connect</string>
 
     <string name="configuration">Configuration</string>
     <string name="app_bar_title">Memfault</string>
-    <string name="uploaded_chunks">Chunks</string>
 
     <string name="config_device_id">Device ID</string>
     <string name="config_authorisation">Authorisation Key</string>
@@ -73,8 +56,6 @@
     <string name="upload_status_suspended">SUSPENDED</string>
 
     <string name="start">Start</string>
-    <string name="abort">Abort</string>
-    <string name="go_back">Go back</string>
 
     <string name="error_connection">Failed to connect to the device.</string>
     <string name="error_not_supported">The device is not supported.</string>
@@ -85,27 +66,15 @@
     <string name="first_item">Waiting for first item…</string>
     <string name="next_item">Chunk number: %d</string>
     <string name="bytes">Bytes sent: %d</string>
-    <string name="last_item">Items upload finished.</string>
-    <string name="success_timeout_item">Upload finished after timeout.</string>
-    <string name="error_disconnected_item">Upload finished with error.</string>
-    <string name="result">Result</string>
-
-    <string name="progress_ble">Downloading logs over BLE</string>
-    <string name="progress_rest">Uploading logs to server</string>
-    <string name="progress_connecting">Connecting</string>
-    <string name="progress_downloading">Downloading logs</string>
-    <string name="progress_completed">Completed</string>
-    <string name="progress_uploading">Uploading</string>
 
     <string name="status_offline">Offline</string>
     <string name="status_in_progress">In progress</string>
     <string name="status_suspended">Suspended:\n %d sec.</string>
 
-    <string name="cd_icon_stop">Disconnect and stop uploading logs.</string>
-
-    <string name="app_info">An Android library that can connect to a Bluetooth LE device, download dump logs and upload them to the</string>
+    <string name="app_info">nRF Memfault forwards diagnostic data collected by firmware through a
+        Bluetooth LE gateway to the</string>
     <string name="app_info_memfault_console">Memfault console</string>
-    <string name="app_info_2">.\n\nThe device should contain predefined</string>
-    <string name="app_info_gatt">GATT characteristics</string>
-    <string name="app_info_3">.\n\nThe library maintains connection as long as the user decides.</string>
+    <string name="app_info_2">.\n\nThe device should support</string>
+    <string name="app_info_gatt">Memfault Diagnostics Service (MDS)</string>
+    <string name="app_info_3">.\n\nThe app maintains connection as long until disconnected.</string>
 </resources>
