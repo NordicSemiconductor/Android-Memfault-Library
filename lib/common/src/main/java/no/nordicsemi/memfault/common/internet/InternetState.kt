@@ -31,16 +31,9 @@
 
 package no.nordicsemi.memfault.common.internet
 
-enum class InternetPermissionNotAvailableReason {
-    NOT_AVAILABLE,
-    DISABLED,
-}
-
-sealed class InternetPermissionState {
-
-    data object Available : InternetPermissionState()
-
-    data class NotAvailable(
-        val reason: InternetPermissionNotAvailableReason,
-    ) : InternetPermissionState()
+sealed class InternetState {
+    /** Indicates that the Internet is available and the app has permission to use it. */
+    data object Available : InternetState()
+    /** Indicates that the Internet is not available. */
+    data object NotAvailable : InternetState()
 }

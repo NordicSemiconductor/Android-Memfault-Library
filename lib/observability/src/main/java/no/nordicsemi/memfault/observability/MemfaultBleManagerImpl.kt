@@ -46,7 +46,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.ble.ktx.state.ConnectionState
 import no.nordicsemi.android.ble.ktx.stateAsFlow
-import no.nordicsemi.memfault.common.internet.InternetPermissionState
+import no.nordicsemi.memfault.common.internet.InternetState
 import no.nordicsemi.memfault.observability.bluetooth.ChunksBleManager
 import no.nordicsemi.memfault.observability.bluetooth.DeviceState
 import no.nordicsemi.memfault.observability.bluetooth.toDeviceState
@@ -126,10 +126,10 @@ class MemfaultBleManagerImpl : MemfaultBleManager {
         }
     }
 
-    private fun UploadingStatus.mapWithInternet(internetState: InternetPermissionState): UploadingStatus =
+    private fun UploadingStatus.mapWithInternet(internetState: InternetState): UploadingStatus =
         when (internetState) {
-            InternetPermissionState.Available -> this
-            is InternetPermissionState.NotAvailable -> UploadingStatus.Offline
+            InternetState.Available -> this
+            is InternetState.NotAvailable -> UploadingStatus.Offline
         }
 
     override suspend fun disconnect() {

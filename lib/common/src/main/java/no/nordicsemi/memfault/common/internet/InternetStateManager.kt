@@ -56,31 +56,23 @@ class InternetStateManager(
 
             val networkCallback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
-                    super.onAvailable(network)
-                    trySend(InternetPermissionState.Available)
+                    trySend(InternetState.Available)
                 }
 
                 override fun onCapabilitiesChanged(
                     network: Network,
                     networkCapabilities: NetworkCapabilities
                 ) {
-                    super.onCapabilitiesChanged(network, networkCapabilities)
                     val isAvailable =
                         networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
                     trySend(
-                        if (isAvailable) InternetPermissionState.Available
-                        else InternetPermissionState.NotAvailable(
-                            InternetPermissionNotAvailableReason.DISABLED
-                        )
+                        if (isAvailable) InternetState.Available else InternetState.NotAvailable
                     )
                 }
 
                 override fun onLost(network: Network) {
-                    super.onLost(network)
                     trySend(
-                        InternetPermissionState.NotAvailable(
-                            InternetPermissionNotAvailableReason.DISABLED
-                        )
+                        InternetState.NotAvailable
                     )
                 }
             }
