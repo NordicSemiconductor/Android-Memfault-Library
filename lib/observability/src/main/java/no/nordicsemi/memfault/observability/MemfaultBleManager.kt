@@ -38,13 +38,15 @@ import kotlinx.coroutines.flow.StateFlow
 import no.nordicsemi.android.ble.BleManager
 
 /**
- * Class responsible for managing connection with the remote IoT device which supports Memfault GATT characteristics.
- * [MemfaultBleManager] connects to the device and uploads all downloaded chunks to the cloud.
+ * Class responsible for managing connection with the remote IoT device which supports
+ * Memfault Diagnostic Service.
+ *
+ * The manager connects to the device and uploads all downloaded chunks to the cloud.
  *
  * Data can be emitted any time so the connection should be maintained as long as needed.
  *
  * @see <a href="https://app.memfault.com">Memfault console</a>
- * @see <a href="https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b">Memfault GATT characteristics</a>
+ * @see <a href="https://docs.nordicsemi.com/bundle/ncs-latest/page/nrf/libraries/bluetooth/services/mds.html">Memfault Diagnostic GATT Service</a>
  */
 interface MemfaultBleManager {
 
