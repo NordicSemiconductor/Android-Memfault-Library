@@ -93,7 +93,7 @@ fun ChunkItem(
             Icon(
                 imageVector = Icons.Outlined.CheckCircleOutline,
                 contentDescription = null,
-                tint = colorResource(no.nordicsemi.android.common.theme.R.color.nordicGreen)
+                tint = MaterialTheme.colorScheme.primary,
             )
         } else {
             CircularProgressIndicator(
