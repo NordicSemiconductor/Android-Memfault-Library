@@ -40,6 +40,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.native
+import javax.inject.Named
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -48,7 +49,7 @@ object CentralManagerModule {
     @Provides
     fun provideCentralManager(
         @ApplicationContext context: Context,
-        scope: CoroutineScope
+        @Named("io") scope: CoroutineScope
     ): CentralManager {
         return CentralManager.Factory.native(context, scope)
     }

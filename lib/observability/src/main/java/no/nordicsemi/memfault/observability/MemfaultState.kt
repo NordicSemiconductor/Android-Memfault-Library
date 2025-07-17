@@ -29,19 +29,32 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault.observability.db
+@file:Suppress("unused")
 
+package no.nordicsemi.memfault.observability
+
+import no.nordicsemi.memfault.observability.bluetooth.DeviceState
 import no.nordicsemi.memfault.observability.data.Chunk
+import no.nordicsemi.memfault.observability.data.MemfaultConfig
+import no.nordicsemi.memfault.observability.internet.UploadingStatus
 
-internal fun ChunkEntity.toChunk(): Chunk {
-    return Chunk(chunkNumber, data, deviceId, isUploaded)
+/**
+ * The state of the Memfault Observability feature.
+ *
+ * @property bleStatus The current status of the Bluetooth LE connection.
+ * @property uploadingStatus The current status of the uploading process.
+ * @property config The configuration obtained from the device using GATT.
+ * @property chunks A list of chunks that were received in this session.
+ */
+data class MemfaultState(
+    val bleStatus: DeviceState = DeviceState.Disconnected(),
+    val uploadingStatus: UploadingStatus = UploadingStatus.Idle,
+    val config: MemfaultConfig? = null,
+    val chunks: List<Chunk> = emptyList()
+) {
+    /** Number of chunks that are ready to be uploaded. */
+    val pendingChunks: Int = chunks.filter { !it.isUploaded }.size
+    /** Total number of bytes uploaded. */
+    val bytesUploaded: Int = chunks.filter { it.isUploaded }.sumOf { it.data.size }
 }
 
-internal fun Chunk.toEntity(): ChunkEntity {
-    return ChunkEntity(
-        chunkNumber = chunkNumber,
-        data = data,
-        isUploaded = isUploaded,
-        deviceId = deviceId
-    )
-}

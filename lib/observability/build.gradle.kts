@@ -35,7 +35,7 @@ plugins {
     alias(libs.plugins.nordic.nexus.android)
 }
 
-group = "no.nordicsemi.memfault"
+group = "no.nordicsemi.android"
 
 nordicNexusPublishing {
     POM_ARTIFACT_ID = "memfault-observability"
@@ -53,9 +53,14 @@ android {
 }
 
 dependencies {
-    implementation(project(":lib:common"))
+    // The MemfaultCloud library provides convenience APIs for mobile applications that
+    // Interact with Memfault's web services.
+    // https://github.com/memfault/memfault-cloud-android
+    api(libs.memfault.cloud)
 
-    implementation(libs.nordic.ble.ktx)
+    // By default, the native Central Manager is used, but user may set mock implementation
+    // from "no.nordicsemi.kotlin.ble:client-android-mock" package to "MemfaultBleManager" if needed.
+    implementation(libs.nordic.blek.client.android)
 
     implementation(libs.kotlinx.coroutines.android)
 

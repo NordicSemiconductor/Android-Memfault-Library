@@ -35,46 +35,52 @@
     <string name="cd_memfault">Memfault Logo.</string>
 
     <string name="filter_mds">Memfault</string>
-    <string name="disconnect">Disconnect</string>
-    <string name="connect">Connect</string>
 
-    <string name="configuration">Configuration</string>
-    <string name="app_bar_title">Memfault</string>
+    <string name="title_home">Memfault</string>
+    <string name="title_connection">Diagnostics</string>
 
+    <string name="error_title">Error</string>
+    <string name="error">Error: </string>
+
+    <string name="config_title">Configuration</string>
     <string name="config_device_id">Device ID</string>
     <string name="config_authorisation">Authorisation Key</string>
     <string name="config_url">Upload URL</string>
 
     <string name="status">Status</string>
     <string name="bluetooth_status">Bluetooth</string>
-    <string name="upload_status">Cloud</string>
-    <string name="pending_chunks">Pending</string>
+    <string name="upload_status">Sent</string>
+    <string name="bytes_sent">%.1f KB</string>
+    <string name="uptime_title">Uptime</string>
 
-    <string name="chunks_received">Chunks received</string>
-    <string name="chunks_sent">Chunks sent</string>
-    <string name="upload_status_working">WORKING</string>
-    <string name="upload_status_suspended">SUSPENDED</string>
+    <string name="diagnostics_title">Reports</string>
+    <string name="no_chunks_received">Waiting for diagnostics data…</string>
 
     <string name="start">Start</string>
 
+    <string name="ble_connecting">Connecting…</string>
+    <string name="ble_initializing">Initializing…</string>
+    <string name="ble_connected">Connected</string>
+    <string name="ble_disconnecting">Disconnecting…</string>
+    <string name="ble_disconnected">Disconnected</string>
+
+    <string name="status_idle">Idle</string>
+    <string name="status_in_progress">Uploading…</string>
+    <string name="status_suspended">Retrying in %d sec…</string>
+
     <string name="error_connection">Failed to connect to the device.</string>
     <string name="error_not_supported">The device is not supported.</string>
+    <string name="error_bonding_failed">Bonding failed.</string>
     <string name="error_timeout">The connection timed out unexpectedly.</string>
     <string name="error_connection_lost">The device has disconnected.</string>
 
-    <string name="connecting">Connecting…</string>
-    <string name="first_item">Waiting for first item…</string>
-    <string name="next_item">Chunk number: %d</string>
-    <string name="bytes">Bytes sent: %d</string>
-
-    <string name="status_offline">Offline</string>
-    <string name="status_in_progress">In progress</string>
-    <string name="status_suspended">Suspended:\n %d sec.</string>
+    <string name="chunk_number">#%d</string>
+    <string name="bytes_count">%d bytes</string>
 
     <string name="app_info">nRF Memfault forwards diagnostic data collected by firmware through a
         Bluetooth LE gateway to the</string>
     <string name="app_info_memfault_console">Memfault console</string>
     <string name="app_info_2">.\n\nThe device should support</string>
     <string name="app_info_gatt">Memfault Diagnostics Service (MDS)</string>
-    <string name="app_info_3">.\n\nThe app maintains connection as long until disconnected.</string>
+    <string name="app_info_3">.</string>
 </resources>

@@ -34,8 +34,6 @@ plugins {
     alias(libs.plugins.nordic.hilt)
 }
 
-group = "no.nordicsemi.memfault"
-
 android {
     namespace = "no.nordicsemi.memfault"
 }
@@ -43,9 +41,7 @@ android {
 dependencies {
     implementation(project(":lib:observability"))
 
-    implementation(libs.accompanist.placeholder)
     implementation(libs.androidx.compose.material.iconsExtended)
-
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.nordic.ui)

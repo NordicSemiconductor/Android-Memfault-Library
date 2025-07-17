@@ -31,7 +31,8 @@
 
 package no.nordicsemi.memfault.dumping
 
-import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,91 +43,115 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.DeveloperBoard
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import no.nordicsemi.android.common.ui.view.NordicAppBar
 import no.nordicsemi.android.common.ui.view.SectionTitle
 import no.nordicsemi.memfault.R
+import no.nordicsemi.memfault.observability.MemfaultState
 import no.nordicsemi.memfault.observability.bluetooth.DeviceState
 import no.nordicsemi.memfault.observability.data.Chunk
 import no.nordicsemi.memfault.observability.data.MemfaultConfig
-import no.nordicsemi.memfault.observability.data.MemfaultState
 import no.nordicsemi.memfault.observability.internet.UploadingStatus
+import no.nordicsemi.memfault.util.placeholder
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DumpingScreen() {
     val viewModel: DumpingViewModel = hiltViewModel()
-    val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             NordicAppBar(
-                title = { Text(stringResource(id = R.string.app_bar_title)) },
-                actions = { ConnectButton(state = state) }
+                title = { Text(stringResource(id = R.string.title_connection)) },
+                onNavigationButtonClick = { viewModel.navigateUp() },
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.displayCutout
+            .union(WindowInsets.navigationBars)
+            .union(WindowInsets(left = 16.dp, right = 16.dp))
+            .only(WindowInsetsSides.Horizontal),
     ) { innerPadding ->
         // We want the padding to be at least 16.dp on the sides and 16.dp on the top,
         // but if the side insets are larger, we want to use them.
-        val insets = WindowInsets.displayCutout
-            .union(WindowInsets.navigationBars)
-            .union(WindowInsets(left = 16.dp, right = 16.dp))
-            .only(WindowInsetsSides.Horizontal)
-            .union(WindowInsets(top = 16.dp))
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(insets),
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 16.dp),
             contentAlignment = Alignment.TopCenter,
         ) {
-            LazyColumn(
+            val state by viewModel.state.collectAsStateWithLifecycle()
+
+            Column(
                 modifier = Modifier
                     .widthIn(max = 600.dp),
-                contentPadding = innerPadding,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                item { StatsView(data = state) }
+                StatsView(state = state)
 
-                state.config?.let {
-                    item { ConfigView(config = it) }
+                (state.bleStatus as? DeviceState.Disconnected)?.reason?.let { reason ->
+                    ErrorView(reason = reason)
                 }
 
-                val status = state.bleStatus
-                if (status is DeviceState.Disconnected) {
-                    item { ErrorItem(status.reason) }
-                } else if (state.chunks.isNotEmpty()) {
-                    ChunksItem(chunks = state.chunks)
-                } else if (status == DeviceState.Connecting || state.bleStatus == DeviceState.Connected) {
-                    if (state.chunks.isEmpty()) {
-                        LoadingView()
-                    } else {
-                        ChunksItem(chunks = state.chunks)
+                AnimatedVisibility(
+                    visible = state.config != null ||
+                              state.bleStatus == DeviceState.Connected ||
+                              state.bleStatus == DeviceState.Initializing
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        ConfigView(config = state.config)
+
+                        ChunksView(state)
                     }
                 }
             }
@@ -135,88 +160,104 @@ fun DumpingScreen() {
 }
 
 @Composable
-private fun ConnectButton(state: MemfaultState) {
-    val viewModel: DumpingViewModel = hiltViewModel()
-
-    if (state.bleStatus == DeviceState.Connected) {
-        TextButton(onClick = { viewModel.disconnect() }) {
-            Text(
-                stringResource(id = R.string.disconnect),
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-    } else if (state.bleStatus.canConnect()) {
-        TextButton(onClick = { viewModel.connect() }) {
-            Text(
-                stringResource(id = R.string.connect),
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-    } else {
-        CircularProgressIndicator(
-            color = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .size(32.dp),
-        )
-    }
-}
-
-private fun LazyListScope.ChunksItem(chunks: List<Chunk>) {
-    item {
-        Text(
-            text = stringResource(id = R.string.chunks_received),
-            style = MaterialTheme.typography.labelSmall
-        )
-    }
-    items(chunks.size) {
-        ChunkItem(chunk = chunks[it])
-    }
-}
-
-@Composable
-private fun ErrorItem(reason: DeviceState.Disconnected.Reason) {
-    Text(
-        text = stringResource(id = reason.toStringRes()),
-        color = MaterialTheme.colorScheme.error,
-        style = MaterialTheme.typography.labelLarge,
-    )
-}
-
-private fun DeviceState.Disconnected.Reason.toStringRes(): Int {
-    return when (this) {
-        DeviceState.Disconnected.Reason.TIMEOUT -> R.string.error_timeout
-        DeviceState.Disconnected.Reason.FAILED_TO_CONNECT -> R.string.error_connection
-        DeviceState.Disconnected.Reason.NOT_SUPPORTED -> R.string.error_not_supported
-        DeviceState.Disconnected.Reason.CONNECTION_LOST -> R.string.error_connection_lost
-    }
-}
-
-@Composable
-private fun ConfigView(config: MemfaultConfig) {
+private fun StatsView(state: MemfaultState) {
     OutlinedCard {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionTitle(
-                painter = painterResource(R.drawable.ic_board),
-                title = stringResource(id = R.string.configuration)
+                icon = Icons.Default.BarChart,
+                title = stringResource(id = R.string.status)
             )
 
-            Spacer(modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val isConnected = state.bleStatus == DeviceState.Connected
+                val isOnline = state.uploadingStatus !is UploadingStatus.Suspended
+                val startTime by rememberSaveable(inputs = arrayOf(isConnected, isOnline)) {
+                    mutableLongStateOf(System.currentTimeMillis())
+                }
+                var uptime by remember { mutableIntStateOf(0) }
+                LaunchedEffect(isConnected, isOnline) {
+                    while (isConnected && isOnline) {
+                        delay(1000)
+                        uptime = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+                    }
+                }
+                StatsItem(
+                    imageVector = Icons.Default.Bluetooth,
+                    title = stringResource(id = R.string.bluetooth_status),
+                    description = state.bleStatus.name(),
+                    enabled = true,
+                )
+                StatsItem(
+                    imageVector = Icons.Outlined.CloudDone,
+                    title = stringResource(id = R.string.upload_status),
+                    description = state.uploadingStatus.name(state.bytesUploaded),
+                    enabled = isConnected,
+                )
+                StatsItem(
+                    imageVector = Icons.Default.AccessTime,
+                    title = stringResource(id = R.string.uptime_title),
+                    description = uptime.seconds.toString(),// stringResource(R.string.uptime, uptime),
+                    enabled = isConnected,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ErrorView(reason: DeviceState.Disconnected.Reason) {
+    OutlinedCard {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                imageVector = Icons.Default.Error,
+                contentDescription = "",
+                modifier = Modifier.size(24.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.error)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = reason.name())
+        }
+    }
+}
+
+@Composable
+private fun ConfigView(config: MemfaultConfig?) {
+    OutlinedCard {
+        Column(modifier = Modifier.padding(16.dp)) {
+            SectionTitle(
+                icon = Icons.Default.DeveloperBoard,
+                title = stringResource(id = R.string.config_title)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Column {
                 TitleItem(
                     title = stringResource(id = R.string.config_device_id),
-                    description = config.deviceId
+                    description = config?.deviceId ?: "",
+                    modifier = Modifier.fillMaxWidth().placeholder(config == null),
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 TitleItem(
                     title = stringResource(id = R.string.config_authorisation),
-                    description = config.authorisationHeader.value
+                    description = config?.authorisationToken ?: "",
+                    modifier = Modifier.fillMaxWidth().placeholder(config == null),
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 TitleItem(
                     title = stringResource(id = R.string.config_url),
-                    description = config.url
+                    description = config?.url ?: "",
+                    modifier = Modifier.fillMaxWidth().placeholder(config == null),
                 )
             }
         }
@@ -224,75 +265,193 @@ private fun ConfigView(config: MemfaultConfig) {
 }
 
 @Composable
-private fun StatsView(data: MemfaultState) {
-    OutlinedCard {
-        Column(modifier = Modifier.padding(16.dp)) {
+private fun ChunksView(state: MemfaultState) {
+    OutlinedCard(
+        modifier = Modifier
+            .padding(bottom = 16.dp)
+            .heightIn(max = 400.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp)
+        ) {
             SectionTitle(
-                painter = painterResource(R.drawable.ic_chart),
-                title = stringResource(id = R.string.status)
+                icon = Icons.Default.Medication,
+                title = stringResource(id = R.string.diagnostics_title)
             )
 
-            Spacer(modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                StatsItem(
-                    iconRes = R.drawable.ic_bluetooth,
-                    title = stringResource(id = R.string.bluetooth_status),
-                    description = data.bleStatus.toString()
+            if (state.chunks.isEmpty()) {
+                Text(
+                    text = stringResource(id = R.string.no_chunks_received),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                        .placeholder(visible = state.config == null),
                 )
-                StatsItem(
-                    iconRes = R.drawable.ic_wifi,
-                    title = stringResource(id = R.string.upload_status),
-                    description = getUploadingStatus(data.uploadingStatus)
-                )
-                StatsItem(
-                    iconRes = R.drawable.ic_chunk,
-                    title = stringResource(id = R.string.pending_chunks),
-                    description = data.pendingChunksSize.toString()
-                )
+            } else {
+                LazyColumn {
+                    items(state.chunks) { chunk ->
+                        ChunkItem(
+                            chunk = chunk,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun getUploadingStatus(status: UploadingStatus): String {
-    return when (status) {
-        UploadingStatus.InProgress -> stringResource(id = R.string.status_in_progress)
-        UploadingStatus.Offline -> stringResource(id = R.string.status_offline)
-        is UploadingStatus.Suspended -> stringResource(
-            id = R.string.status_suspended,
-            status.delayInSeconds
-        )
-    }
+private fun DeviceState.name(): String = when (this) {
+    DeviceState.Connecting -> stringResource(R.string.ble_connecting)
+    DeviceState.Initializing -> stringResource(R.string.ble_initializing)
+    DeviceState.Connected -> stringResource(R.string.ble_connected)
+    DeviceState.Disconnecting -> stringResource(R.string.ble_disconnecting)
+    is DeviceState.Disconnected -> stringResource(R.string.ble_disconnected)
+}
+
+@Composable
+private fun DeviceState.Disconnected.Reason.name(): String = when (this) {
+    DeviceState.Disconnected.Reason.TIMEOUT -> stringResource(R.string.error_timeout)
+    DeviceState.Disconnected.Reason.FAILED_TO_CONNECT -> stringResource(R.string.error_connection)
+    DeviceState.Disconnected.Reason.BONDING_FAILED -> stringResource(R.string.error_bonding_failed)
+    DeviceState.Disconnected.Reason.NOT_SUPPORTED -> stringResource(R.string.error_not_supported)
+    DeviceState.Disconnected.Reason.CONNECTION_LOST -> stringResource(R.string.error_connection_lost)
+}
+
+@Composable
+private fun UploadingStatus.name(bytesUploaded: Int): String = when (this) {
+    UploadingStatus.Idle -> stringResource(R.string.bytes_sent, bytesUploaded / 1024f)
+    UploadingStatus.InProgress -> stringResource(id = R.string.status_in_progress)
+    is UploadingStatus.Suspended -> stringResource(id = R.string.status_suspended,delayInSeconds)
 }
 
 @Composable
 private fun StatsItem(
-    @DrawableRes iconRes: Int,
+    imageVector: ImageVector,
     title: String,
-    description: String
+    description: String,
+    enabled: Boolean,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+    CompositionLocalProvider(LocalContentColor provides
+            if (enabled)
+                MaterialTheme.colorScheme.onSurface
+            else
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
     ) {
-        Row {
-            Icon(painter = painterResource(id = iconRes), contentDescription = title)
+        Column(
+            modifier = Modifier.widthIn(100.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(imageVector = imageVector, contentDescription = title)
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
-
-        Spacer(modifier = Modifier.size(8.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-        )
-        Spacer(modifier = Modifier.size(8.dp))
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodySmall,
-        )
     }
+}
+
+@Preview
+@Composable
+private fun PreviewStatsView() {
+    StatsView(
+        state = MemfaultState(
+            bleStatus = DeviceState.Connected,
+            uploadingStatus = UploadingStatus.Idle,
+            config = MemfaultConfig(
+                deviceId = "nRF54L",
+                authorisationToken = "0102030405060708090A0B0C0D0E0F",
+                url = "https://chunks.memfault.com/api/v0/chunks/nRF54L",
+            ),
+            chunks = listOf(
+                Chunk(
+                    deviceId = "nRF54",
+                    chunkNumber = 0,
+                    data = byteArrayOf(0,1,2,3,4,5,6,7,8,9),
+                    isUploaded = false,
+                ),
+                Chunk(
+                    deviceId = "nRF54",
+                    chunkNumber = 0,
+                    data = byteArrayOf(0,1,2,3,4,5,6,7,8,9),
+                    isUploaded = true,
+                ),
+            ),
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun PreviewStatsView_NotSupported() {
+    StatsView(
+        state = MemfaultState(
+            bleStatus = DeviceState.Disconnected(DeviceState.Disconnected.Reason.NOT_SUPPORTED),
+            uploadingStatus = UploadingStatus.Idle,
+            config = null,
+            chunks = emptyList(),
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun PreviewConfigView() {
+    ConfigView(
+        config = MemfaultConfig(
+            deviceId = "nRF54L",
+            authorisationToken = "0102030405060708090A0B0C0D0E0F",
+            url = "https://chunks.memfault.com/api/v0/chunks/nRF54L",
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun PreviewChunksView() {
+    ChunksView(
+        state = MemfaultState(
+            bleStatus = DeviceState.Connected,
+            uploadingStatus = UploadingStatus.Idle,
+            config = MemfaultConfig(
+                deviceId = "nRF54L",
+                authorisationToken = "0102030405060708090A0B0C0D0E0F",
+                url = "https://chunks.memfault.com/api/v0/chunks/nRF54L",
+            ),
+            chunks = listOf(
+                Chunk(
+                    deviceId = "nRF54",
+                    chunkNumber = 0,
+                    data = byteArrayOf(0,1,2,3,4,5,6,7,8,9),
+                    isUploaded = false,
+                ),
+                Chunk(
+                    deviceId = "nRF54",
+                    chunkNumber = 0,
+                    data = byteArrayOf(0,1,2,3,4,5,6,7,8,9),
+                    isUploaded = true,
+                ),
+            ),
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun PreviewErrorView() {
+    ErrorView(
+        reason = DeviceState.Disconnected.Reason.TIMEOUT
+    )
 }

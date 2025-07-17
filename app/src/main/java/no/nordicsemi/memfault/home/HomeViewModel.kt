@@ -32,13 +32,8 @@
 package no.nordicsemi.memfault.home
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.navigation.Navigator
-import no.nordicsemi.android.common.navigation.onlySuccess
-import no.nordicsemi.memfault.DumpingDestinationId
 import no.nordicsemi.memfault.scanner.ScannerDestinationId
 import javax.inject.Inject
 
@@ -47,18 +42,7 @@ class HomeViewModel @Inject constructor(
     private val navigationManager: Navigator
 ) : ViewModel() {
 
-    init {
-        navigationManager.resultFrom(ScannerDestinationId)
-            .onlySuccess()
-            .onEach { navigateToDumpingScreen(it.value) }
-            .launchIn(viewModelScope)
-    }
-
     fun navigateToScanner() {
         navigationManager.navigateTo(ScannerDestinationId)
-    }
-
-    private fun navigateToDumpingScreen(deviceAddress: String) {
-        navigationManager.navigateTo(DumpingDestinationId, deviceAddress)
     }
 }

@@ -2,7 +2,7 @@
 
 An Android library that can connect to a Bluetooth LE device, download dump logs and upload them to [the Memfault console](https://docs.memfault.com).
 
-The device should contain characteristics defined in [the Memfault documentation](https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b).
+The device should contain characteristics defined in [the Memfault documentation](https://docs.memfault.com/docs/mcu/mds).
 
 ## Example usage
 

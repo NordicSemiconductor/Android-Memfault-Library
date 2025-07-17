@@ -44,6 +44,7 @@ import no.nordicsemi.android.common.scanner.data.OnlyNearby
 import no.nordicsemi.android.common.scanner.data.OnlyWithNames
 import no.nordicsemi.android.common.scanner.data.WithServiceUuid
 import no.nordicsemi.android.common.scanner.rememberFilterState
+import no.nordicsemi.memfault.DumpingDestinationId
 import no.nordicsemi.memfault.R
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -74,7 +75,7 @@ val ScannerDestination = defineDestination(ScannerDestinationId) {
         onResultSelected = { result ->
             when (result) {
                 ScanningCancelled -> navigationViewModel.navigateUp()
-                is DeviceSelected -> navigationViewModel.navigateUpWithResult(ScannerDestinationId, result.scanResult.peripheral.address)
+                is DeviceSelected -> navigationViewModel.navigateTo(DumpingDestinationId, result.scanResult.peripheral.address)
             }
         },
     )

@@ -31,5 +31,8 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Internet permission is required to upload received observability data to the cloud. -->
     <uses-permission android:name="android.permission.INTERNET" />
+
 </manifest>

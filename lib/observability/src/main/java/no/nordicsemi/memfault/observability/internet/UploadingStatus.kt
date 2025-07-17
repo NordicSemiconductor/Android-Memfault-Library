@@ -32,15 +32,22 @@
 package no.nordicsemi.memfault.observability.internet
 
 /**
- * The status of the data uploading.
+ * Status of chunks uploading process.
  */
 sealed interface UploadingStatus {
-    /** The device is offline. */
-    data object Offline : UploadingStatus
+    /** The chunks are not uploaded at the moment. */
+    data object Idle : UploadingStatus
 
-    /** The data is currently being uploaded. */
+    /** The chunks are currently being uploaded. */
     data object InProgress : UploadingStatus
 
-    /** The data upload has been suspended. */
+    /**
+     * Uploading chunks has been suspended.
+     *
+     * This status may be used when the Internet connection is lost or when the server
+     * is not reachable.
+     *
+     * @property delayInSeconds The delay in seconds before the next attempt to upload chunks.
+     */
     data class Suspended(val delayInSeconds: Long) : UploadingStatus
 }

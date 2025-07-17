@@ -29,13 +29,17 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@file:Suppress("unused")
+
 package no.nordicsemi.memfault.observability
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import no.nordicsemi.memfault.observability.data.MemfaultState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import no.nordicsemi.android.ble.BleManager
+import no.nordicsemi.kotlin.ble.client.android.CentralManager
+import no.nordicsemi.kotlin.ble.client.android.Peripheral
+import no.nordicsemi.kotlin.ble.client.android.native
 
 /**
  * Class responsible for managing connection with the remote IoT device which supports
@@ -46,50 +50,68 @@ import no.nordicsemi.android.ble.BleManager
  * Data can be emitted any time so the connection should be maintained as long as needed.
  *
  * @see <a href="https://app.memfault.com">Memfault console</a>
- * @see <a href="https://docs.nordicsemi.com/bundle/ncs-latest/page/nrf/libraries/bluetooth/services/mds.html">Memfault Diagnostic GATT Service</a>
+ * @see <a href="https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b">Memfault Diagnostic GATT Service</a>
  */
 interface MemfaultBleManager {
 
     /**
+     * The state of the manager.
+     *
      * Contains all the information exposed by the library like:
      *  - Bluetooth connection status with the selected IoT device.
-     *  - Uploading status which may be suspended due to server overload.
-     *  - Received chunks information.
+     *  - Uploading status which may be suspended due to lack of Internet connection or server overload.
+     *  - Chunks information.
      */
     val state: StateFlow<MemfaultState>
 
     /**
-     * Function used to connect the phone to a selected [BluetoothDevice].
-     * Chunks upload will start immediately.
+     * Function used to connect to the selected Bluetooth LE peripheral.
      *
-     * @param context applicationContext needed to set up [BleManager]
-     * @param device [BluetoothDevice] to which manager should connect
+     * The peripheral must support Memfault Diagnostic Service.
+     *
+     * Chunks upload will start immediately after establishing the connection.
+     *
+     * This method allows using mock central manager, which is useful for testing purposes.
+     *
+     * Calling this method with an already connected peripheral will throw an exception.
+     *
+     * @param peripheral [Peripheral] to which the manager should connect.
+     * @param centralManager [CentralManager] to use to connect to the peripheral.
+     * @throws IllegalStateException if the manager is already connected to a peripheral.
      */
-    suspend fun connect(context: Context, device: BluetoothDevice)
-    //suspend fun connect(deviceAddress: String)
+    fun connect(peripheral: Peripheral, centralManager: CentralManager)
 
     /**
-     * Disconnects a previously connected BLE device.
+     * Function used to connect to the selected Bluetooth LE peripheral.
+     *
+     * The peripheral must support Memfault Diagnostic Service.
+     *
+     * Chunks upload will start immediately after establishing the connection.
+     * @param context Android [Context] need to initialize the chunks database.
+     * @param device [BluetoothDevice] to which the manager should connect.
+     * @throws IllegalStateException if the manager is already connected to a peripheral.
      */
-    suspend fun disconnect()
+    fun connect(context: Context, device: BluetoothDevice) {
+        val centralManager = CentralManager.Factory.native(context, MemfaultScope)
+        val peripheral = centralManager.getPeripheralById(device.address)!!
+        connect(peripheral, centralManager)
+    }
+
+    /**
+     * Disconnects the connected peripheral.
+     */
+    fun disconnect()
 
     companion object {
 
         /**
-         * This function creates a new instance of [MemfaultBleManager] each time it's called.
+         * This function creates a new instance of [MemfaultBleManager].
          *
+         * @param context Android [Context] need to initialize the chunks database.
          * @return new [MemfaultBleManager] instance
          */
-        fun create(): MemfaultBleManager {
-            return MemfaultBleManagerImpl()
+        fun create(context: Context): MemfaultBleManager {
+            return MemfaultBleManagerImpl(context)
         }
     }
-
-//    @Deprecated(
-//        message = "Replaced with the method taking device address instead of BluetoothDevice",
-//        replaceWith = ReplaceWith("connect(device.address)")
-//    )
-//    suspend fun connect(context: Context, device: BluetoothDevice) {
-//        connect(device.address)
-//    }
 }

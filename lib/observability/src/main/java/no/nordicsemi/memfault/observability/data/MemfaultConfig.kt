@@ -31,16 +31,14 @@
 
 package no.nordicsemi.memfault.observability.data
 
-import no.nordicsemi.memfault.observability.bluetooth.AuthorisationHeader
-
 /**
  * The configuration data obtained from the device using GATT.
  */
 data class MemfaultConfig(
     /** The authorisation header to be used for the request. */
-    val authorisationHeader: AuthorisationHeader,
-    /** The URL to Memfault cloud. */
+    val authorisationToken: String,
+    /** The URL to Memfault Cloud Chunks API. */
     val url: String,
-    /** The device ID. */
+    /** The device ID, also known as device Serial Number. */
     val deviceId: String,
 )

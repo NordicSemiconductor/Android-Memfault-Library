@@ -31,109 +31,153 @@
 
 package no.nordicsemi.memfault.observability
 
-import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.buffer
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.dropWhile
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import no.nordicsemi.android.ble.ktx.state.ConnectionState
-import no.nordicsemi.android.ble.ktx.stateAsFlow
-import no.nordicsemi.memfault.common.internet.InternetState
+import kotlinx.coroutines.withContext
+import no.nordicsemi.kotlin.ble.client.android.CentralManager
+import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.memfault.observability.bluetooth.ChunksBleManager
-import no.nordicsemi.memfault.observability.bluetooth.DeviceState
-import no.nordicsemi.memfault.observability.bluetooth.toDeviceState
-import no.nordicsemi.memfault.observability.data.MemfaultState
-import no.nordicsemi.memfault.observability.db.toChunk
-import no.nordicsemi.memfault.observability.db.toEntity
+import no.nordicsemi.memfault.observability.data.PersistentChunkQueue
 import no.nordicsemi.memfault.observability.internet.ChunkUploadManager
-import no.nordicsemi.memfault.observability.internet.UploadingStatus
+import kotlin.time.Duration.Companion.milliseconds
 
-class MemfaultBleManagerImpl : MemfaultBleManager {
-    private var manager: ChunksBleManager? = null
+class MemfaultBleManagerImpl(
+    context: Context,
+) : MemfaultBleManager {
+    /** The Application Context. */
+    private val context = context.applicationContext
 
     private val _state = MutableStateFlow(MemfaultState())
     override val state: StateFlow<MemfaultState> = _state.asStateFlow()
 
+    private var bleManager: ChunksBleManager? = null
+    private var chunkQueue: PersistentChunkQueue? = null
+    private var uploadManager: ChunkUploadManager? = null
+    private var job: Job? = null
+
     @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
-    override suspend fun connect(context: Context, device: BluetoothDevice) {
-        val factory = MemfaultFactory(context.applicationContext)
-        val bleManager = factory.getMemfaultManager()
-        val database = factory.getDatabase()
-        val scope = factory.getScope()
-        var uploadManager: ChunkUploadManager? = null
-        this.manager = bleManager
-        val internetStateManager = factory.getInternetStateManager(context)
+    override fun connect(peripheral: Peripheral, centralManager: CentralManager) {
+        check(job == null) { "Already connected to a peripheral" }
 
-        // Collect bluetooth connection status and upload exposed StateFlow.
-        scope.launch {
-            bleManager.stateAsFlow()
-                .dropWhile { it is ConnectionState.Disconnected }
-                .collect {
-                    _state.value = _state.value.copy(bleStatus = it.toDeviceState())
-                }
-        }
+        // Start the manager in a new scope.
+        job = MemfaultScope.launch {
+            val scope = this
 
-        try {
-            bleManager.start(device)
-        } catch (e: Exception) {
-            _state.value = _state.value.copy(bleStatus = DeviceState.Disconnected(DeviceState.Disconnected.Reason.FAILED_TO_CONNECT))
-            return
-        }
+            // Set up the manager that will collect diagnostic chunks from the device.
+            bleManager = ChunksBleManager(centralManager, peripheral, scope)
+                .apply {
+                    // Collect the state of the BLE manager and update the state flow.
+                    state
+                        .onEach {
+                            _state.value = _state.value.copy(bleStatus = it)
+                        }
+                        .launchIn(scope)
 
-        // Store chunks in database and schedule update with some delay to aggregate requests.
-        scope.launch {
-            bleManager.receivedChunk
-                .buffer()
-                .onEach { database.chunksDao().insert(it.toEntity()) }
-                .debounce(300)
-                .collect { uploadManager?.uploadChunks() }
-        }
+                    // Collect the Memfault Config and set up the Chunk Uploader.
+                    var connection: Job? = null
+                    config
+                        .onEach { config ->
+                            // The config is null when the device is disconnected.
+                            if (config != null) {
+                                _state.value = _state.value.copy(config = config)
 
-        // Collect config and initialise UploadManager.
-        scope.launch {
-            bleManager.config.collect { config ->
-                config?.let {
-                    _state.value = _state.value.copy(config = it)
-                    uploadManager = factory.getUploadManager(config = it)
+                                assert(connection?.isCancelled ?: true) {
+                                    "Connection scope should be null or cancelled when the config is received"
+                                }
 
-                    launch {
-                        uploadManager!!.status
-                            .combine(internetStateManager.networkState()) { status, internetState ->
-                                status.mapWithInternet(internetState)
+                                connection = scope.launch {
+                                    chunkQueue = PersistentChunkQueue(
+                                        context = context,
+                                        deviceId = config.deviceId
+                                    ).also { queue ->
+                                        queue.chunks
+                                            .onEach {
+                                                _state.value = _state.value.copy(chunks = it)
+                                            }
+                                            .launchIn(this)
+                                    }
+                                    uploadManager = ChunkUploadManager(
+                                        config = config,
+                                        chunkQueue = chunkQueue
+                                    ).also { manager ->
+                                        manager.status
+                                            .onEach {
+                                                _state.value = _state.value.copy(uploadingStatus = it)
+                                            }
+                                            .launchIn(this)
+                                        // Upload any chunks that were already in the queue.
+                                        manager.uploadChunks()
+                                    }
+
+                                    try { awaitCancellation()}
+                                    finally {
+                                        uploadManager?.uploadChunks()
+                                        uploadManager?.close()
+                                        uploadManager = null
+                                        chunkQueue = null
+                                    }
+                                }
+                            } else {
+                                // Otherwise, the device must have been disconnected.
+                                connection?.cancel()
+                                connection = null
                             }
-                            .collect { _state.value = _state.value.copy(uploadingStatus = it) }
-                    }
+                        }
+                        .onCompletion {
+                            // Manager is closing. Clean up and remove all uploaded chunks from the queue.
+                            MemfaultScope.launch {
+                                chunkQueue?.deleteUploaded()
+                            }
 
-                    launch {
-                        uploadManager?.uploadChunks()
-                    }
+                            // Cancel the connection job if it is still active.
+                            connection?.cancel()
+                            connection = null
+                        }
+                        .launchIn(scope)
 
-                    scope.launch {
-                        database.chunksDao().getAll(config.deviceId)
-                            .map { it.map { it.toChunk() } }
-                            .collect { _state.value = _state.value.copy(chunks = it) }
-                    }
+                    // Collect the chunks received from the BLE manager and upload them.
+                    chunks
+                        .onEach {
+                            // Mind, that that has to be called from a non-main Dispatcher
+                            withContext(NonCancellable) {
+                                chunkQueue?.addChunks(listOf(it))
+                            }
+                        }
+                        // Don't upload chunks immediately, but debounce the flow to avoid
+                        // multiple uploads in a short time.
+                        .debounce(300.milliseconds)
+                        .onEach {
+                            uploadManager?.uploadChunks()
+                        }
+                        .launchIn(scope)
                 }
+
+            // Start the Bluetooth LE manager to connect to the device and start receiving data.
+            bleManager?.start()
+
+            // Wait for disconnection.
+            try { awaitCancellation() }
+            finally {
+                // Clean up the BLE manager when the scope is cancelled.
+                bleManager?.close()
+                bleManager = null
             }
         }
     }
 
-    private fun UploadingStatus.mapWithInternet(internetState: InternetState): UploadingStatus =
-        when (internetState) {
-            InternetState.Available -> this
-            is InternetState.NotAvailable -> UploadingStatus.Offline
-        }
-
-    override suspend fun disconnect() {
-        manager?.disconnectWithCatch()
-        manager = null
+    override fun disconnect() {
+        job?.cancel()
+        job = null
     }
 }

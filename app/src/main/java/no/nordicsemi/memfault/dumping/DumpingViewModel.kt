@@ -31,46 +31,35 @@
 
 package no.nordicsemi.memfault.dumping
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.content.Context
-import android.os.Build
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
+import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.memfault.DumpingDestinationId
 import no.nordicsemi.memfault.observability.MemfaultBleManager
 import javax.inject.Inject
 
 @HiltViewModel
 class DumpingViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
-    navigationManager: Navigator,
     private val memfaultManager: MemfaultBleManager,
+    centralManager: CentralManager,
+    navigationManager: Navigator,
     savedStateHandle: SavedStateHandle,
 ) : SimpleNavigationViewModel(navigationManager, savedStateHandle) {
     val state = memfaultManager.state
-    private val bluetoothAddress: String = parameterOf(DumpingDestinationId)
 
-    fun disconnect() {
-        viewModelScope.launch {
-            memfaultManager.disconnect()
-        }
+    init {
+        val bluetoothAddress: String = parameterOf(DumpingDestinationId)
+        val peripheral = centralManager.getPeripheralById(bluetoothAddress)!!
+
+        memfaultManager.connect(peripheral, centralManager)
     }
 
-    fun connect() {
-        viewModelScope.launch {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val ba = BluetoothAdapter.getDefaultAdapter()
-                val device = ba.getRemoteLeDevice(bluetoothAddress, BluetoothDevice.ADDRESS_TYPE_RANDOM)
-                memfaultManager.connect(context, device)
-            } else {
-                TODO("VERSION.SDK_INT < TIRAMISU")
-            }
-        }
+    override fun onCleared() {
+        super.onCleared()
+
+        // Close the manager to disconnect from the device and release resources.
+        memfaultManager.disconnect()
     }
 }

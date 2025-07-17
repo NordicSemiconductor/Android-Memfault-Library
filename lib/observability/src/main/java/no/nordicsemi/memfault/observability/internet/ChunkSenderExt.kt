@@ -37,17 +37,60 @@ import kotlinx.coroutines.delay
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+/**
+ * Sends the chunk to the Memfault Cloud.
+ *
+ * This is suspended version of [ChunkSender.send].
+ *
+ * See [PostChunksTask](https://github.com/memfault/memfault-cloud-android/blob/4c7aae35bf013071977f618d512165c8e91739d4/sdk/src/main/java/com/memfault/cloud/sdk/internal/PostChunksTask.kt#L8).
+ */
 internal suspend fun ChunkSender.send() = suspendCoroutine {
     send(object : SendChunksCallback {
-        override fun onQueueEmpty(sent: Int) { it.resume(ChunkUploadSuccess(sent)) }
+        /**
+         * All chunks were successfully sent.
+         */
+        override fun onQueueEmpty(sent: Int) {
+            it.resume(ChunkSenderResult.Success(sent))
+        }
 
+        /**
+         * The server was busy or an error occurred, please re-try after a minimum delay.
+         *
+         * @param delay The delay after which the [ChunkSender] should try to the chunks again, in
+         * seconds. This number increases with each retry.
+         * @param sent The number of chunks successfully sent prior to the error.
+         * @param exception The error that occurred.
+         */
         override fun onRetryAfterDelay(delay: Long, sent: Int, exception: Exception) {
-            it.resume(ChunkUploadError(delay, sent, exception))
+            it.resume(ChunkSenderResult.Error(delay, sent, exception))
         }
     })
 }
 
-internal suspend fun ChunkSender.retrySend(delayMillis: Long): ChunkUploadResult {
-    delay(delayMillis)
-    return send()
+/**
+ * Result of the chunk upload operation.
+ *
+ * This is used to report the result of sending chunks to the server.
+ */
+internal sealed interface ChunkSenderResult {
+    /**
+     * All chunks were successfully sent.
+     *
+     * @property sent the number of chunks that were sent.
+     */
+    data class Success(val sent: Int) : ChunkSenderResult
+
+    /**
+     * The server was busy or an error occurred, please re-try after a minimum delay.
+     *
+     * @property delayInSeconds The delay after which the [ChunkSender] should try to the
+     * chunks again, in seconds. This number increases with each retry.
+     * @property sent The number of chunks successfully sent prior to the error.
+     * @property exception The error that occurred.
+     */
+    data class Error(
+        val delayInSeconds: Long,
+        val sent: Int,
+        val exception: Exception
+    ) : ChunkSenderResult
 }
