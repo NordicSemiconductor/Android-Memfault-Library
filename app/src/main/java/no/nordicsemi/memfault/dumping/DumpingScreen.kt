@@ -142,8 +142,7 @@ fun DumpingScreen() {
                 }
 
                 AnimatedVisibility(
-                    visible = state.config != null ||
-                              state.bleStatus == DeviceState.Connected ||
+                    visible = state.bleStatus is DeviceState.Connected ||
                               state.bleStatus == DeviceState.Initializing
                 ) {
                     Column(
@@ -174,7 +173,7 @@ private fun StatsView(state: MemfaultState) {
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val isConnected = state.bleStatus == DeviceState.Connected
+                val isConnected = state.bleStatus is DeviceState.Connected
                 val isOnline = state.uploadingStatus !is UploadingStatus.Suspended
                 val startTime by rememberSaveable(inputs = arrayOf(isConnected, isOnline)) {
                     mutableLongStateOf(System.currentTimeMillis())
@@ -310,7 +309,7 @@ private fun ChunksView(state: MemfaultState) {
 private fun DeviceState.name(): String = when (this) {
     DeviceState.Connecting -> stringResource(R.string.ble_connecting)
     DeviceState.Initializing -> stringResource(R.string.ble_initializing)
-    DeviceState.Connected -> stringResource(R.string.ble_connected)
+    is DeviceState.Connected -> stringResource(R.string.ble_connected)
     DeviceState.Disconnecting -> stringResource(R.string.ble_disconnecting)
     is DeviceState.Disconnected -> stringResource(R.string.ble_disconnected)
 }
@@ -368,13 +367,14 @@ private fun StatsItem(
 private fun PreviewStatsView() {
     StatsView(
         state = MemfaultState(
-            bleStatus = DeviceState.Connected,
-            uploadingStatus = UploadingStatus.Idle,
-            config = MemfaultConfig(
-                deviceId = "nRF54L",
-                authorisationToken = "0102030405060708090A0B0C0D0E0F",
-                url = "https://chunks.memfault.com/api/v0/chunks/nRF54L",
+            bleStatus = DeviceState.Connected(
+                config = MemfaultConfig(
+                    deviceId = "nRF54L",
+                    authorisationToken = "0102030405060708090A0B0C0D0E0F",
+                    url = "https://chunks.memfault.com/api/v0/chunks/nRF54L",
+                ),
             ),
+            uploadingStatus = UploadingStatus.Idle,
             chunks = listOf(
                 Chunk(
                     deviceId = "nRF54",
@@ -400,7 +400,6 @@ private fun PreviewStatsView_NotSupported() {
         state = MemfaultState(
             bleStatus = DeviceState.Disconnected(DeviceState.Disconnected.Reason.NOT_SUPPORTED),
             uploadingStatus = UploadingStatus.Idle,
-            config = null,
             chunks = emptyList(),
         )
     )
@@ -423,13 +422,14 @@ private fun PreviewConfigView() {
 private fun PreviewChunksView() {
     ChunksView(
         state = MemfaultState(
-            bleStatus = DeviceState.Connected,
-            uploadingStatus = UploadingStatus.Idle,
-            config = MemfaultConfig(
-                deviceId = "nRF54L",
-                authorisationToken = "0102030405060708090A0B0C0D0E0F",
-                url = "https://chunks.memfault.com/api/v0/chunks/nRF54L",
+            bleStatus = DeviceState.Connected(
+                config = MemfaultConfig(
+                    deviceId = "nRF54L",
+                    authorisationToken = "0102030405060708090A0B0C0D0E0F",
+                    url = "https://chunks.memfault.com/api/v0/chunks/nRF54L",
+                ),
             ),
+            uploadingStatus = UploadingStatus.Idle,
             chunks = listOf(
                 Chunk(
                     deviceId = "nRF54",

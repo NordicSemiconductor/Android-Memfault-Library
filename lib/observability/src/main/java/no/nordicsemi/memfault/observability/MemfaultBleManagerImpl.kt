@@ -48,6 +48,7 @@ import kotlinx.coroutines.withContext
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.memfault.observability.bluetooth.ChunksBleManager
+import no.nordicsemi.memfault.observability.bluetooth.DeviceState
 import no.nordicsemi.memfault.observability.data.PersistentChunkQueue
 import no.nordicsemi.memfault.observability.internet.ChunkUploadManager
 import kotlin.time.Duration.Companion.milliseconds
@@ -78,20 +79,12 @@ class MemfaultBleManagerImpl(
             bleManager = ChunksBleManager(centralManager, peripheral, scope)
                 .apply {
                     // Collect the state of the BLE manager and update the state flow.
-                    state
-                        .onEach {
-                            _state.value = _state.value.copy(bleStatus = it)
-                        }
-                        .launchIn(scope)
-
-                    // Collect the Memfault Config and set up the Chunk Uploader.
                     var connection: Job? = null
-                    config
-                        .onEach { config ->
-                            // The config is null when the device is disconnected.
-                            if (config != null) {
-                                _state.value = _state.value.copy(config = config)
+                    state
+                        .onEach { state ->
+                            _state.value = _state.value.copy(bleStatus = state)
 
+                            if (state is DeviceState.Connected) {
                                 assert(connection?.isCancelled ?: true) {
                                     "Connection scope should be null or cancelled when the config is received"
                                 }
@@ -99,7 +92,7 @@ class MemfaultBleManagerImpl(
                                 connection = scope.launch {
                                     chunkQueue = PersistentChunkQueue(
                                         context = context,
-                                        deviceId = config.deviceId
+                                        deviceId = state.config.deviceId
                                     ).also { queue ->
                                         queue.chunks
                                             .onEach {
@@ -108,7 +101,7 @@ class MemfaultBleManagerImpl(
                                             .launchIn(this)
                                     }
                                     uploadManager = ChunkUploadManager(
-                                        config = config,
+                                        config = state.config,
                                         chunkQueue = chunkQueue
                                     ).also { manager ->
                                         manager.status

@@ -35,7 +35,6 @@ package no.nordicsemi.memfault.observability
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -87,6 +86,7 @@ interface MemfaultBleManager {
      * The peripheral must support Memfault Diagnostic Service.
      *
      * Chunks upload will start immediately after establishing the connection.
+     *
      * @param context Android [Context] need to initialize the chunks database.
      * @param device [BluetoothDevice] to which the manager should connect.
      * @throws IllegalStateException if the manager is already connected to a peripheral.

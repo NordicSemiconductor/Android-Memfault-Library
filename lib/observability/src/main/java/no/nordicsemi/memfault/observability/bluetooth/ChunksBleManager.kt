@@ -137,7 +137,6 @@ class ChunksBleManager {
 	private var bondingFailed = false
 
 	private val _state = MutableStateFlow<DeviceState>(DeviceState.Disconnected())
-	private val _config = MutableStateFlow<MemfaultConfig?>(null)
 	private val _chunks = MutableSharedFlow<ByteArray>(
 		extraBufferCapacity = 25,
 		onBufferOverflow = BufferOverflow.SUSPEND
@@ -145,8 +144,6 @@ class ChunksBleManager {
 
 	/** The current state of the device. */
 	val state = _state.asStateFlow()
-	/** Memfault configuration read from the Memfault Diagnostics Service. */
-	val config = _config.asStateFlow()
 	/** A flow of streamed data received from the device. */
 	val chunks = _chunks.asSharedFlow()
 
@@ -241,7 +238,6 @@ class ChunksBleManager {
 					// by the user.
 					is ConnectionState.Disconnected -> {
 						_state.emit(state.toDeviceState(notSupported, bondingFailed))
-						_config.update { null }
 						if (state.reason.isUserInitiated /* or not supported */) {
 							// If the disconnection was initiated using disconnect() method,
 							// it might have been cancelled, or the device is not supported.
@@ -283,9 +279,12 @@ class ChunksBleManager {
 				_state.emit(value = DeviceState.Initializing)
 
 				// This method will throw if any of required characteristic is not supported.
-				initialize(mds)
+				val config = initialize(mds)
 
-				_state.emit(value = DeviceState.Connected)
+				_state.emit(value = DeviceState.Connected(config))
+
+				// Make sure the chunks are enabled only after the state changed to Connected.
+				start(mds)
 			}
 			.catch { throwable ->
 				notSupported = throwable is IllegalStateException
@@ -324,7 +323,7 @@ class ChunksBleManager {
 	}
 
 	@OptIn(ExperimentalStdlibApi::class)
-	private suspend fun CoroutineScope.initialize(mds: RemoteService) {
+	private suspend fun CoroutineScope.initialize(mds: RemoteService): MemfaultConfig {
 		// Read and emit device configuration.
 		val deviceId = mds.deviceIdCharacteristic.read()
 			.let { String(it) }
@@ -332,15 +331,17 @@ class ChunksBleManager {
 			.let { String(it) }
 		val authorisationToken = mds.authorisationCharacteristic.read()
 			.let { AuthorisationHeader.parse(it) }
-		val config = MemfaultConfig(authorisationToken, url, deviceId)
-		_config.update { config }
 
 		// Start listening to data collected by the device.
 		mds.dataExportCharacteristic.subscribe()
 			.buffer()
-			.onEach {  _chunks.emit(it) }
+			.onEach { _chunks.emit(it) }
 			.launchIn(this)
 
+		return MemfaultConfig(authorisationToken, url, deviceId)
+	}
+
+	private suspend fun CoroutineScope.start(mds: RemoteService) {
 		// Enable notifications for data export characteristic.
 		val enableStreamingCommand = byteArrayOf(0x01)
 		mds.dataExportCharacteristic.write(enableStreamingCommand, WriteType.WITH_RESPONSE)

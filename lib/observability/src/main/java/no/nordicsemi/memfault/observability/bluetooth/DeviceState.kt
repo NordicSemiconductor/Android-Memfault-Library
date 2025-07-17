@@ -3,6 +3,8 @@
 package no.nordicsemi.memfault.observability.bluetooth
 
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.memfault.observability.bluetooth.DeviceState.Disconnected.Reason
+import no.nordicsemi.memfault.observability.data.MemfaultConfig
 
 /**
  * Represents the state of the device Bluetooth LE connection.
@@ -12,8 +14,12 @@ sealed class DeviceState {
 	data object Connecting : DeviceState()
 	/** The device is being initialized. */
 	data object Initializing : DeviceState()
-	/** The device is connected and ready */
-	data object Connected : DeviceState()
+	/**
+	 * The device is connected and set up to receive Diagnostic data.
+	 *
+	 * @property config The configuration obtained from the device using GATT.
+	 */
+	data class Connected(val config: MemfaultConfig) : DeviceState()
 	/** The device is currently disconnecting. */
 	data object Disconnecting : DeviceState()
 	/** The device is disconnected. */
@@ -53,20 +59,20 @@ internal fun ConnectionState.toDeviceState(
 		when (reason) {
 			ConnectionState.Disconnected.Reason.Success,
             ConnectionState.Disconnected.Reason.Cancelled ->
-				DeviceState.Disconnected(if (notSupported) DeviceState.Disconnected.Reason.NOT_SUPPORTED else null)
+				DeviceState.Disconnected(if (notSupported) Reason.NOT_SUPPORTED else null)
 			is ConnectionState.Disconnected.Reason.Timeout ->
-				DeviceState.Disconnected(DeviceState.Disconnected.Reason.TIMEOUT)
+				DeviceState.Disconnected(Reason.TIMEOUT)
 
 			ConnectionState.Disconnected.Reason.TerminateLocalHost -> if (bondingFailed)
-				DeviceState.Disconnected(DeviceState.Disconnected.Reason.BONDING_FAILED)
-				else DeviceState.Disconnected(DeviceState.Disconnected.Reason.CONNECTION_LOST)
+				DeviceState.Disconnected(Reason.BONDING_FAILED)
+				else DeviceState.Disconnected(Reason.CONNECTION_LOST)
 			ConnectionState.Disconnected.Reason.TerminatePeerUser,
 			ConnectionState.Disconnected.Reason.LinkLoss ->
-				DeviceState.Disconnected(DeviceState.Disconnected.Reason.CONNECTION_LOST)
+				DeviceState.Disconnected(Reason.CONNECTION_LOST)
 			ConnectionState.Disconnected.Reason.UnsupportedAddress,
 			ConnectionState.Disconnected.Reason.InsufficientAuthentication,
 			is ConnectionState.Disconnected.Reason.Unknown ->
-				DeviceState.Disconnected(DeviceState.Disconnected.Reason.FAILED_TO_CONNECT)
+				DeviceState.Disconnected(Reason.FAILED_TO_CONNECT)
 		}
-	ConnectionState.Closed -> DeviceState.Disconnected(null)
+	ConnectionState.Closed -> DeviceState.Disconnected()
 }

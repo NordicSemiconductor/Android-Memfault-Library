@@ -43,18 +43,19 @@ import no.nordicsemi.memfault.observability.internet.UploadingStatus
  *
  * @property bleStatus The current status of the Bluetooth LE connection.
  * @property uploadingStatus The current status of the uploading process.
- * @property config The configuration obtained from the device using GATT.
  * @property chunks A list of chunks that were received in this session.
  */
 data class MemfaultState(
     val bleStatus: DeviceState = DeviceState.Disconnected(),
     val uploadingStatus: UploadingStatus = UploadingStatus.Idle,
-    val config: MemfaultConfig? = null,
     val chunks: List<Chunk> = emptyList()
 ) {
     /** Number of chunks that are ready to be uploaded. */
     val pendingChunks: Int = chunks.filter { !it.isUploaded }.size
     /** Total number of bytes uploaded. */
     val bytesUploaded: Int = chunks.filter { it.isUploaded }.sumOf { it.data.size }
+    /** The configuration obtained from the device using GATT. */
+    val config: MemfaultConfig?
+        get() = (bleStatus as? DeviceState.Connected)?.config
 }
 
