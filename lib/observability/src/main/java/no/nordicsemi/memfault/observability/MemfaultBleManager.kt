@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.StateFlow
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.native
+import no.nordicsemi.memfault.observability.internal.MemfaultScope
 
 /**
  * Class responsible for managing connection with the remote IoT device which supports

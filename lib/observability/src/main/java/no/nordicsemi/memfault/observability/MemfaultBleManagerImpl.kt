@@ -50,6 +50,7 @@ import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.memfault.observability.bluetooth.ChunksBleManager
 import no.nordicsemi.memfault.observability.bluetooth.DeviceState
 import no.nordicsemi.memfault.observability.data.PersistentChunkQueue
+import no.nordicsemi.memfault.observability.internal.MemfaultScope
 import no.nordicsemi.memfault.observability.internet.ChunkUploadManager
 import kotlin.time.Duration.Companion.milliseconds
 
