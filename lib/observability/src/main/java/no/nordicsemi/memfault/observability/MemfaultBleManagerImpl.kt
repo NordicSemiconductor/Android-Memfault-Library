@@ -53,7 +53,7 @@ import no.nordicsemi.memfault.observability.data.PersistentChunkQueue
 import no.nordicsemi.memfault.observability.internet.ChunkUploadManager
 import kotlin.time.Duration.Companion.milliseconds
 
-class MemfaultBleManagerImpl(
+internal class MemfaultBleManagerImpl(
     context: Context,
 ) : MemfaultBleManager {
     /** The Application Context. */
