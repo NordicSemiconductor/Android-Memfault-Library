@@ -53,4 +53,6 @@ dependencies {
 
     // Use Native Android BLE Client.
     implementation(libs.nordic.blek.client.android)
+    // Forward SLF4J logs to Timber.
+    implementation(libs.slf4j.timber)
 }

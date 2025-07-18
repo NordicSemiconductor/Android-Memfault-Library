@@ -67,4 +67,7 @@ dependencies {
     kapt(libs.room.compiler)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+
+    // Use SLF4J for logging.
+    implementation(libs.slf4j)
 }

@@ -66,6 +66,7 @@ import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.memfault.observability.data.MemfaultConfig
+import org.slf4j.LoggerFactory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
@@ -91,6 +92,8 @@ private val MDS_DATA_EXPORT_CHARACTERISTIC_UUID        = Uuid.parse("54220005-f6
  * and streams data chunks from the device.
  */
 class ChunksBleManager {
+	private val logger = LoggerFactory.getLogger(ChunksBleManager::class.java)
+
 	/**
 	 * Creates a new instance of [ChunksBleManager] with the given [CentralManager] and [Peripheral].
 	 *
@@ -172,6 +175,7 @@ class ChunksBleManager {
 							// Central Manager is ready, connect or reconnect to the peripheral.
 							assert(connection == null) { "Connection already started" }
 							val handler = CoroutineExceptionHandler { _, throwable ->
+								logger.error(throwable.message)
 								_state.update { DeviceState.Disconnected(DeviceState.Disconnected.Reason.FAILED_TO_CONNECT) }
 								cancel()
 							}
@@ -226,6 +230,7 @@ class ChunksBleManager {
 					// ... to NONE, it means that the bonding failed.
 					BondState.NONE -> {
 						if (wasBonding) {
+							logger.warn("Bonding failed")
 							// This will be reported as bond failure on disconnection.
 							bondingFailed = true
 							wasBonding = false
@@ -322,6 +327,8 @@ class ChunksBleManager {
 
 				// Make sure the chunks are enabled only after the state changed to Connected.
 				start(mds)
+
+				logger.info("Memfault Diagnostics Service started successfully")
 			}
 			.catch { throwable ->
 				logger.error(throwable.message)
