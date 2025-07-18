@@ -56,7 +56,7 @@ import kotlin.time.Duration.Companion.seconds
  * @param chunkQueue A queue for storing chunks to be uploaded. If `null`, a default in-memory
  * queue will be used. Use [PersistentChunkQueue] for persistent storage.
  */
-class ChunkUploadManager(
+class MemfaultCloudManager(
     config: MemfaultConfig,
     chunkQueue: ChunkQueue? = null,
 ) {

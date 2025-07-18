@@ -51,7 +51,7 @@ import no.nordicsemi.memfault.observability.bluetooth.MemfaultDiagnosticsService
 import no.nordicsemi.memfault.observability.bluetooth.DeviceState
 import no.nordicsemi.memfault.observability.data.PersistentChunkQueue
 import no.nordicsemi.memfault.observability.internal.MemfaultScope
-import no.nordicsemi.memfault.observability.internet.ChunkUploadManager
+import no.nordicsemi.memfault.observability.internet.MemfaultCloudManager
 import kotlin.time.Duration.Companion.milliseconds
 
 internal class MemfaultDiagnosticsManagerImpl(
@@ -65,7 +65,7 @@ internal class MemfaultDiagnosticsManagerImpl(
 
     private var bleManager: MemfaultDiagnosticsService? = null
     private var chunkQueue: PersistentChunkQueue? = null
-    private var uploadManager: ChunkUploadManager? = null
+    private var uploadManager: MemfaultCloudManager? = null
     private var job: Job? = null
 
     @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
@@ -101,7 +101,7 @@ internal class MemfaultDiagnosticsManagerImpl(
                                             }
                                             .launchIn(this)
                                     }
-                                    uploadManager = ChunkUploadManager(
+                                    uploadManager = MemfaultCloudManager(
                                         config = state.config,
                                         chunkQueue = chunkQueue
                                     ).also { manager ->
