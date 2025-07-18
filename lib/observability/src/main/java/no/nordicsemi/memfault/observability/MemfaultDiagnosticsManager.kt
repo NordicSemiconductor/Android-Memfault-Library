@@ -52,7 +52,7 @@ import no.nordicsemi.memfault.observability.internal.MemfaultScope
  * @see <a href="https://app.memfault.com">Memfault console</a>
  * @see <a href="https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b">Memfault Diagnostic GATT Service</a>
  */
-interface MemfaultBleManager {
+interface MemfaultDiagnosticsManager {
 
     /**
      * The state of the manager.
@@ -106,13 +106,13 @@ interface MemfaultBleManager {
     companion object {
 
         /**
-         * This function creates a new instance of [MemfaultBleManager].
+         * This function creates a new instance of [MemfaultDiagnosticsManager].
          *
          * @param context Android [Context] need to initialize the chunks database.
-         * @return new [MemfaultBleManager] instance
+         * @return new [MemfaultDiagnosticsManager] instance
          */
-        fun create(context: Context): MemfaultBleManager {
-            return MemfaultBleManagerImpl(context)
+        fun create(context: Context): MemfaultDiagnosticsManager {
+            return MemfaultDiagnosticsManagerImpl(context)
         }
     }
 }

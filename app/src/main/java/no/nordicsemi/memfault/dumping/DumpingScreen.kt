@@ -137,13 +137,13 @@ fun DumpingScreen() {
             ) {
                 StatsView(state = state)
 
-                (state.bleStatus as? DeviceState.Disconnected)?.reason?.let { reason ->
+                (state.deviceStatus as? DeviceState.Disconnected)?.reason?.let { reason ->
                     ErrorView(reason = reason)
                 }
 
                 AnimatedVisibility(
-                    visible = state.bleStatus is DeviceState.Connected ||
-                              state.bleStatus == DeviceState.Initializing
+                    visible = state.deviceStatus is DeviceState.Connected ||
+                              state.deviceStatus == DeviceState.Initializing
                 ) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -173,7 +173,7 @@ private fun StatsView(state: MemfaultState) {
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val isConnected = state.bleStatus is DeviceState.Connected
+                val isConnected = state.deviceStatus is DeviceState.Connected
                 val isOnline = state.uploadingStatus !is UploadingStatus.Suspended
                 val startTime by rememberSaveable(inputs = arrayOf(isConnected, isOnline)) {
                     mutableLongStateOf(System.currentTimeMillis())
@@ -188,7 +188,7 @@ private fun StatsView(state: MemfaultState) {
                 StatsItem(
                     imageVector = Icons.Default.Bluetooth,
                     title = stringResource(id = R.string.bluetooth_status),
-                    description = state.bleStatus.name(),
+                    description = state.deviceStatus.name(),
                     enabled = true,
                 )
                 StatsItem(
@@ -367,7 +367,7 @@ private fun StatsItem(
 private fun PreviewStatsView() {
     StatsView(
         state = MemfaultState(
-            bleStatus = DeviceState.Connected(
+            deviceStatus = DeviceState.Connected(
                 config = MemfaultConfig(
                     deviceId = "nRF54L",
                     authorisationToken = "0102030405060708090A0B0C0D0E0F",
@@ -398,7 +398,7 @@ private fun PreviewStatsView() {
 private fun PreviewStatsView_NotSupported() {
     StatsView(
         state = MemfaultState(
-            bleStatus = DeviceState.Disconnected(DeviceState.Disconnected.Reason.NOT_SUPPORTED),
+            deviceStatus = DeviceState.Disconnected(DeviceState.Disconnected.Reason.NOT_SUPPORTED),
             uploadingStatus = UploadingStatus.Idle,
             chunks = emptyList(),
         )
@@ -422,7 +422,7 @@ private fun PreviewConfigView() {
 private fun PreviewChunksView() {
     ChunksView(
         state = MemfaultState(
-            bleStatus = DeviceState.Connected(
+            deviceStatus = DeviceState.Connected(
                 config = MemfaultConfig(
                     deviceId = "nRF54L",
                     authorisationToken = "0102030405060708090A0B0C0D0E0F",

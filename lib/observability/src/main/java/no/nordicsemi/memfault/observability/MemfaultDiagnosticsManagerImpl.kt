@@ -47,23 +47,23 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
-import no.nordicsemi.memfault.observability.bluetooth.ChunksBleManager
+import no.nordicsemi.memfault.observability.bluetooth.MemfaultDiagnosticsService
 import no.nordicsemi.memfault.observability.bluetooth.DeviceState
 import no.nordicsemi.memfault.observability.data.PersistentChunkQueue
 import no.nordicsemi.memfault.observability.internal.MemfaultScope
 import no.nordicsemi.memfault.observability.internet.ChunkUploadManager
 import kotlin.time.Duration.Companion.milliseconds
 
-internal class MemfaultBleManagerImpl(
+internal class MemfaultDiagnosticsManagerImpl(
     context: Context,
-) : MemfaultBleManager {
+) : MemfaultDiagnosticsManager {
     /** The Application Context. */
     private val context = context.applicationContext
 
     private val _state = MutableStateFlow(MemfaultState())
     override val state: StateFlow<MemfaultState> = _state.asStateFlow()
 
-    private var bleManager: ChunksBleManager? = null
+    private var bleManager: MemfaultDiagnosticsService? = null
     private var chunkQueue: PersistentChunkQueue? = null
     private var uploadManager: ChunkUploadManager? = null
     private var job: Job? = null
@@ -77,13 +77,13 @@ internal class MemfaultBleManagerImpl(
             val scope = this
 
             // Set up the manager that will collect diagnostic chunks from the device.
-            bleManager = ChunksBleManager(centralManager, peripheral, scope)
+            bleManager = MemfaultDiagnosticsService(centralManager, peripheral, scope)
                 .apply {
                     // Collect the state of the BLE manager and update the state flow.
                     var connection: Job? = null
                     state
                         .onEach { state ->
-                            _state.value = _state.value.copy(bleStatus = state)
+                            _state.value = _state.value.copy(deviceStatus = state)
 
                             if (state is DeviceState.Connected) {
                                 assert(connection?.isCancelled ?: true) {

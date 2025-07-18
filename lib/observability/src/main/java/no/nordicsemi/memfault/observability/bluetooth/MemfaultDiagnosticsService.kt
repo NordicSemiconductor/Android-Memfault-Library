@@ -86,16 +86,16 @@ private val MDS_AUTHORISATION_CHARACTERISTIC_UUID      = Uuid.parse("54220004-f6
 private val MDS_DATA_EXPORT_CHARACTERISTIC_UUID        = Uuid.parse("54220005-f6a5-4007-a371-722f4ebd8436")
 
 /**
- * A manager for the Memfault Diagnostics Service (MDS) that streams data from the device.
+ * A client implementation of Memfault Diagnostics Service (MDS) that streams data from the device.
  *
  * This class connects to the device, discovers the MDS service, reads the configuration,
- * and streams data chunks from the device.
+ * and streams diagnostics [chunks] from the device.
  */
-class ChunksBleManager {
-	private val logger = LoggerFactory.getLogger(ChunksBleManager::class.java)
+class MemfaultDiagnosticsService {
+	private val logger = LoggerFactory.getLogger(MemfaultDiagnosticsService::class.java)
 
 	/**
-	 * Creates a new instance of [ChunksBleManager] with the given [CentralManager] and [Peripheral].
+	 * Creates a new instance of [MemfaultDiagnosticsService] with the given [CentralManager] and [Peripheral].
 	 *
 	 * This constructor can be user with a 'native' or 'mock' [CentralManager].
 	 *
@@ -114,7 +114,7 @@ class ChunksBleManager {
 	}
 
 	/**
-	 * Creates a new instance of [ChunksBleManager] with the given [Context] and [BluetoothDevice].
+	 * Creates a new instance of [MemfaultDiagnosticsService] with the given [Context] and [BluetoothDevice].
 	 *
 	 * This constructor is for legacy applications that use the Android Bluetooth API.
 	 *

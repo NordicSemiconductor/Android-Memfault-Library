@@ -37,12 +37,12 @@ import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.memfault.DumpingDestinationId
-import no.nordicsemi.memfault.observability.MemfaultBleManager
+import no.nordicsemi.memfault.observability.MemfaultDiagnosticsManager
 import javax.inject.Inject
 
 @HiltViewModel
 class DumpingViewModel @Inject constructor(
-    private val memfaultManager: MemfaultBleManager,
+    private val memfaultManager: MemfaultDiagnosticsManager,
     centralManager: CentralManager,
     navigationManager: Navigator,
     savedStateHandle: SavedStateHandle,

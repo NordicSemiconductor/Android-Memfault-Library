@@ -32,19 +32,20 @@
 package no.nordicsemi.memfault.di
 
 import android.content.Context
-import no.nordicsemi.memfault.observability.MemfaultBleManager
+import no.nordicsemi.memfault.observability.MemfaultDiagnosticsManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 
 @Module
-@InstallIn(SingletonComponent::class)
+@InstallIn(ViewModelComponent::class)
 internal class MemfaultModule {
 
     @Provides
     fun providesMemfaultManager(
         @ApplicationContext context: Context
-    ) = MemfaultBleManager.create(context)
+    ) = MemfaultDiagnosticsManager.create(context)
 }
