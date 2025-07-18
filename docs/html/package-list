@@ -1,0 +1,8 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+module:observability
+no.nordicsemi.memfault.observability
+no.nordicsemi.memfault.observability.bluetooth
+no.nordicsemi.memfault.observability.data
+no.nordicsemi.memfault.observability.internet

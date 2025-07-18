@@ -9,19 +9,23 @@ The device should contain characteristics defined in [the Memfault documentation
 ```kotlin
 val manager = MemfaultDiagnosticsManager.create(context)
 
-//Receive status and data
+// Receive status and data:
 manager.state.collect {
-
+    // [...]
 }
 
-//To start
-viewModelScope.launch {
-    manager.connect(context, device)
-}
+// Connect and start observing diagnostics data:
+manager.connect(peripheral, centralManager) // Using Kotlin BLE Library
+// or
+manager.connect(context, device) // Using the legacy code
 
-//When finished
+// When finished:
 manager.disconnect()
 ```
+
+## Documentation
+
+Dokka documentation can be found [here](https://nordicsemiconductor.github.io/Android-Memfault-Library/html/index.html).
 
 ## Application
 
