@@ -53,11 +53,3 @@ dependencyResolutionManagement {
 rootProject.name = "Android-Memfault-Library"
 include ':app'
 include ':lib:observability'
-
-if (file('../Android-Common-Libraries').exists()) {
-    includeBuild('../Android-Common-Libraries')
-}
-
-if (file('../Kotlin-BLE-Library').exists()) {
-    includeBuild('../Kotlin-BLE-Library')
-}
