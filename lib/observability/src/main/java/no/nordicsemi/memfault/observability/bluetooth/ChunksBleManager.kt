@@ -346,7 +346,6 @@ class ChunksBleManager {
 		}
 	}
 
-	@OptIn(ExperimentalStdlibApi::class)
 	private suspend fun CoroutineScope.initialize(mds: RemoteService): MemfaultConfig {
 		// Read and emit device configuration.
 		val deviceId = mds.deviceIdCharacteristic.read()
@@ -365,7 +364,7 @@ class ChunksBleManager {
 		return MemfaultConfig(authorisationToken, url, deviceId)
 	}
 
-	private suspend fun CoroutineScope.start(mds: RemoteService) {
+	private suspend fun start(mds: RemoteService) {
 		// Enable notifications for data export characteristic.
 		val enableStreamingCommand = byteArrayOf(0x01)
 		mds.dataExportCharacteristic.write(enableStreamingCommand, WriteType.WITH_RESPONSE)
