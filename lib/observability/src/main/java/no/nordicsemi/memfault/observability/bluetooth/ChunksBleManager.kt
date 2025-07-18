@@ -36,6 +36,7 @@ package no.nordicsemi.memfault.observability.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -52,17 +53,21 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.native
-import no.nordicsemi.kotlin.ble.client.exception.ConnectionFailedException
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Manager
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.memfault.observability.data.MemfaultConfig
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -166,7 +171,13 @@ class ChunksBleManager {
 						Manager.State.POWERED_ON -> {
 							// Central Manager is ready, connect or reconnect to the peripheral.
 							assert(connection == null) { "Connection already started" }
-							connection = connect(centralManager, peripheral)
+							val handler = CoroutineExceptionHandler { _, throwable ->
+								_state.update { DeviceState.Disconnected(DeviceState.Disconnected.Reason.FAILED_TO_CONNECT) }
+								cancel()
+							}
+							connection = launch(handler) {
+								connect(centralManager, peripheral)
+							}
 						}
 						Manager.State.UNKNOWN -> {
 							// Central Manager was closed, cancel the scope.
@@ -200,16 +211,19 @@ class ChunksBleManager {
 		job = null
 	}
 
-	private fun CoroutineScope.connect(
+	private suspend fun CoroutineScope.connect(
 		centralManager: CentralManager,
 		peripheral: Peripheral,
-	) = launch {
+	) {
 		// Observe the peripheral bond state to catch bonding failures.
 		var wasBonding = false
 		peripheral.bondState
 			.onEach { bondState ->
 				when (bondState) {
+					// If bond state transitions from any of these...
+					BondState.BONDED,
 					BondState.BONDING -> wasBonding = true
+					// ... to NONE, it means that the bonding failed.
 					BondState.NONE -> {
 						if (wasBonding) {
 							// This will be reported as bond failure on disconnection.
@@ -217,7 +231,6 @@ class ChunksBleManager {
 							wasBonding = false
 						}
 					}
-					else -> {}
 				}
 
 			}
@@ -238,7 +251,7 @@ class ChunksBleManager {
 					// by the user.
 					is ConnectionState.Disconnected -> {
 						_state.emit(state.toDeviceState(notSupported, bondingFailed))
-						if (state.reason.isUserInitiated /* or not supported */) {
+						if (state.reason.isUserInitiated /* (includes not supported) */) {
 							// If the disconnection was initiated using disconnect() method,
 							// it might have been cancelled, or the device is not supported.
 							// Either way, cancel auto-reconnection by cancelling the scope.
@@ -259,10 +272,34 @@ class ChunksBleManager {
 			}
 			.launchIn(this)
 
+		// Connect to the peripheral automatically when the manager is created.
+		try {
+			// If a device is not bonded, but is advertising with resolvable private address (RPA),
+			// the AutoConnect option will fail throwing ConnectionFailedException.
+			// On older phones it may just hang forever, hence the timeout.
+			val isBonded = peripheral.hasBondInformation
+			val timeout = if (isBonded) Duration.INFINITE else 5.seconds
+			withTimeout(timeout) {
+				centralManager.connect(
+					peripheral,
+					options = CentralManager.ConnectionOptions.AutoConnect(
+						automaticallyRequestHighestValueLength = true
+					)
+				)
+			}
+		} catch (e: Exception) {
+			logger.warn("Connection attempt failed: ${e.message}")
+
+			// Try to connect directly. This should work with RPA.
+			centralManager.connect(
+				peripheral,
+				options = CentralManager.ConnectionOptions.Direct(
+					automaticallyRequestHighestValueLength = true
+				)
+			)
+		}
+
 		// Observe the MDS service.
-		// This method can be called before the connection is established. It returns a StateFlow
-		// that will emit the discovered services once the connection is established.
-		// The initial value is null, indicating that the services are not yet discovered.
 		peripheral.services(listOf(MDS_SERVICE_UUID))
 			// services() returns a StateFlow which is initialized with null,
 			// indicating that the services are not yet discovered. Filter that out.
@@ -287,30 +324,17 @@ class ChunksBleManager {
 				start(mds)
 			}
 			.catch { throwable ->
+				logger.error(throwable.message)
+				// onEach above will throw IllegalStateException if the MDS service is not supported.
 				notSupported = throwable is IllegalStateException
+				// Some devices return OperationFailedException when bonding fails.
+				// This flag is also set by the bond state observer.
+				if (throwable is OperationFailedException && throwable.reason == OperationStatus.INSUFFICIENT_AUTHENTICATION) {
+					bondingFailed = true
+				}
 				peripheral.disconnect()
 			}
 			.launchIn(this)
-
-		// Connect to the peripheral automatically when the manager is created.
-		try {
-			// If a device is not bonded, but is advertising with private resolvable address
-			// the AutoConnect option will fail throwing ConnectionFailedException.
-			centralManager.connect(
-				peripheral,
-				options = CentralManager.ConnectionOptions.AutoConnect(
-					automaticallyRequestHighestValueLength = true
-				)
-			)
-		} catch (e: ConnectionFailedException) {
-			// In that case, we try to connect directly. This should initiate boding.
-			centralManager.connect(
-				peripheral,
-				options = CentralManager.ConnectionOptions.Direct(
-					automaticallyRequestHighestValueLength = true
-				)
-			)
-		}
 
 		try { awaitCancellation() }
 		finally {
