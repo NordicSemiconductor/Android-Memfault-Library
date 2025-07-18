@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Nordic Semiconductor
+ * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,18 +29,30 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault
+package no.nordicsemi.memfault.di
 
-import no.nordicsemi.android.common.navigation.createDestination
-import no.nordicsemi.android.common.navigation.createSimpleDestination
-import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.memfault.dumping.DumpingScreen
-import no.nordicsemi.memfault.home.HomeScreen
+import android.content.Context
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import no.nordicsemi.kotlin.ble.client.android.CentralManager
+import no.nordicsemi.kotlin.ble.client.android.native
+import javax.inject.Named
+import javax.inject.Singleton
 
-val HomeDestinationId = createSimpleDestination("home-destination")
-val DumpingDestinationId = createDestination<String, Unit>("dumping-destination")
+@Module
+@InstallIn(SingletonComponent::class)
+object CentralManagerModule {
 
-val HomeDestinations = listOf(
-    defineDestination(HomeDestinationId) { HomeScreen() },
-    defineDestination(DumpingDestinationId) { DumpingScreen() }
-)
+    @Provides
+    @Singleton
+    fun provideCentralManager(
+        @ApplicationContext context: Context,
+        @Named("io") scope: CoroutineScope
+    ): CentralManager {
+        return CentralManager.Factory.native(context, scope)
+    }
+}

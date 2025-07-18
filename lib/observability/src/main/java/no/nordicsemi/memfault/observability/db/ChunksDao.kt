@@ -29,18 +29,28 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault
+package no.nordicsemi.memfault.observability.db
 
-import no.nordicsemi.android.common.navigation.createDestination
-import no.nordicsemi.android.common.navigation.createSimpleDestination
-import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.memfault.dumping.DumpingScreen
-import no.nordicsemi.memfault.home.HomeScreen
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
-val HomeDestinationId = createSimpleDestination("home-destination")
-val DumpingDestinationId = createDestination<String, Unit>("dumping-destination")
+@Dao
+internal interface ChunksDao {
 
-val HomeDestinations = listOf(
-    defineDestination(HomeDestinationId) { HomeScreen() },
-    defineDestination(DumpingDestinationId) { DumpingScreen() }
-)
+    @Query("SELECT * FROM chunks WHERE device_id = :deviceId ORDER BY id DESC")
+    fun getAll(deviceId: String): Flow<List<ChunkEntity>>
+
+    @Query("SELECT * FROM chunks WHERE is_uploaded = 0 AND device_id = :deviceId ORDER BY id ASC LIMIT :limit")
+    fun getNotUploaded(limit: Int, deviceId: String): List<ChunkEntity>
+
+    @Query("UPDATE chunks SET is_uploaded = 1 WHERE is_uploaded IN (SELECT is_uploaded FROM chunks WHERE is_uploaded = 0 AND device_id = :deviceId ORDER BY id ASC LIMIT :limit)")
+    fun markUploaded(limit: Int, deviceId: String)
+
+    @Insert
+    fun insert(chunk: ChunkEntity)
+
+    @Query("DELETE FROM chunks WHERE is_uploaded = 1")
+    fun clearUploaded()
+}

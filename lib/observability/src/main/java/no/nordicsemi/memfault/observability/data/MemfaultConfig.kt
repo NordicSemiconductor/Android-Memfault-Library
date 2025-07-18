@@ -29,18 +29,16 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault
+package no.nordicsemi.memfault.observability.data
 
-import no.nordicsemi.android.common.navigation.createDestination
-import no.nordicsemi.android.common.navigation.createSimpleDestination
-import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.memfault.dumping.DumpingScreen
-import no.nordicsemi.memfault.home.HomeScreen
-
-val HomeDestinationId = createSimpleDestination("home-destination")
-val DumpingDestinationId = createDestination<String, Unit>("dumping-destination")
-
-val HomeDestinations = listOf(
-    defineDestination(HomeDestinationId) { HomeScreen() },
-    defineDestination(DumpingDestinationId) { DumpingScreen() }
+/**
+ * The configuration data obtained from the device using GATT.
+ */
+data class MemfaultConfig(
+    /** The authorisation header to be used for the request. */
+    val authorisationToken: String,
+    /** The URL to Memfault Cloud Chunks API. */
+    val url: String,
+    /** The device ID, also known as device Serial Number. */
+    val deviceId: String,
 )

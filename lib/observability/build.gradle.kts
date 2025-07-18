@@ -29,18 +29,45 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault
+plugins {
+    alias(libs.plugins.nordic.library)
+    alias(libs.plugins.nordic.hilt)
+    alias(libs.plugins.nordic.nexus.android)
+}
 
-import no.nordicsemi.android.common.navigation.createDestination
-import no.nordicsemi.android.common.navigation.createSimpleDestination
-import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.memfault.dumping.DumpingScreen
-import no.nordicsemi.memfault.home.HomeScreen
+group = "no.nordicsemi.android"
 
-val HomeDestinationId = createSimpleDestination("home-destination")
-val DumpingDestinationId = createDestination<String, Unit>("dumping-destination")
+nordicNexusPublishing {
+    POM_ARTIFACT_ID = "memfault-observability"
+    POM_NAME = "Android Memfault Observability Library"
 
-val HomeDestinations = listOf(
-    defineDestination(HomeDestinationId) { HomeScreen() },
-    defineDestination(DumpingDestinationId) { DumpingScreen() }
-)
+    POM_DESCRIPTION = "A library for observing and interacting with Memfault-enabled devices over Bluetooth LE."
+    POM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
+    POM_SCM_URL = "https://github.com/NordicSemiconductor/Android-Memfault-Library.git"
+    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Android-Memfault-Library.git"
+}
+
+android {
+    namespace = "no.nordicsemi.memfault.observability"
+}
+
+dependencies {
+    // The MemfaultCloud library provides convenience APIs for mobile applications that
+    // Interact with Memfault's web services.
+    // https://github.com/memfault/memfault-cloud-android
+    api(libs.memfault.cloud)
+
+    // By default, the native Central Manager is used, but user may set mock implementation
+    // from "no.nordicsemi.kotlin.ble:client-android-mock" package to "MemfaultBleManager" if needed.
+    implementation(libs.nordic.blek.client.android)
+
+    implementation(libs.kotlinx.coroutines.android)
+
+    kapt(libs.room.compiler)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+
+    // Use SLF4J for logging.
+    implementation(libs.slf4j)
+}

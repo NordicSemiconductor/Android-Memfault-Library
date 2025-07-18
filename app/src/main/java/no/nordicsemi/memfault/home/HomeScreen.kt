@@ -66,6 +66,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withLink
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import no.nordicsemi.android.common.ui.view.NordicAppBar
@@ -79,7 +80,7 @@ fun HomeScreen() {
     Scaffold(
         topBar = {
             NordicAppBar(
-                title = { Text(text = stringResource(id = R.string.app_bar_title)) }
+                title = { Text(text = stringResource(id = R.string.title_home)) }
             )
         }
     ) { innerPadding ->
@@ -196,7 +197,7 @@ private fun Content(
                 append(" ")
                 withLink(
                     LinkAnnotation.Url(
-                        url = "https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b",
+                        url = "https://docs.nordicsemi.com/bundle/ncs-latest/page/nrf/libraries/bluetooth/services/mds.html",
                         styles = TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)),
                     )
                 ) {
@@ -216,4 +217,22 @@ private fun Content(
             Text(text = stringResource(id = R.string.start))
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OnePanePreview() {
+    OnePane(
+        modifier = Modifier.fillMaxSize(),
+        onStart = {  }
+    )
+}
+
+@Preview(widthDp = 800, heightDp = 600, showBackground = true)
+@Composable
+private fun TwoPanePreview() {
+    TwoPane(
+        modifier = Modifier.fillMaxSize(),
+        onStart = {  }
+    )
 }

@@ -29,18 +29,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault
+package no.nordicsemi.memfault.observability.internal
 
-import no.nordicsemi.android.common.navigation.createDestination
-import no.nordicsemi.android.common.navigation.createSimpleDestination
-import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.memfault.dumping.DumpingScreen
-import no.nordicsemi.memfault.home.HomeScreen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
-val HomeDestinationId = createSimpleDestination("home-destination")
-val DumpingDestinationId = createDestination<String, Unit>("dumping-destination")
-
-val HomeDestinations = listOf(
-    defineDestination(HomeDestinationId) { HomeScreen() },
-    defineDestination(DumpingDestinationId) { DumpingScreen() }
-)
+internal val MemfaultScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

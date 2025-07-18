@@ -31,30 +31,52 @@
 
 package no.nordicsemi.memfault.scanner
 
-import android.os.ParcelUuid
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import no.nordicsemi.android.common.navigation.createDestination
 import no.nordicsemi.android.common.navigation.defineDestination
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
-import no.nordicsemi.android.scanner.DeviceSelected
-import no.nordicsemi.android.scanner.ScannerScreen
-import no.nordicsemi.android.scanner.ScanningCancelled
-import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
+import no.nordicsemi.android.common.scanner.DeviceSelected
+import no.nordicsemi.android.common.scanner.ScannerScreen
+import no.nordicsemi.android.common.scanner.ScanningCancelled
+import no.nordicsemi.android.common.scanner.data.OnlyNearby
+import no.nordicsemi.android.common.scanner.data.OnlyWithNames
+import no.nordicsemi.android.common.scanner.data.WithServiceUuid
+import no.nordicsemi.android.common.scanner.rememberFilterState
+import no.nordicsemi.memfault.DumpingDestinationId
+import no.nordicsemi.memfault.R
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-val ScannerDestinationId = createDestination<ParcelUuid, DiscoveredBluetoothDevice>("uiscanner-destination")
+@OptIn(ExperimentalUuidApi::class)
+val MDS_SERVICE_UUID = Uuid.parse("54220000-f6a5-4007-a371-722f4ebd8436")
 
+val ScannerDestinationId = createDestination<Unit, String>("uiscanner-destination")
+
+@OptIn(ExperimentalUuidApi::class)
 val ScannerDestination = defineDestination(ScannerDestinationId) {
     val navigationViewModel = hiltViewModel<SimpleNavigationViewModel>()
 
-    val arg = navigationViewModel.parameterOf(ScannerDestinationId)
-
     ScannerScreen(
-        uuid = arg,
-        onResult = {
-            when (it) {
-                is DeviceSelected -> navigationViewModel.navigateUpWithResult(ScannerDestinationId, it.device)
+        cancellable = true,
+        state = rememberFilterState(
+            dynamicFilters = listOf(
+                OnlyNearby(),
+                OnlyWithNames(),
+                WithServiceUuid(
+                    uuid = MDS_SERVICE_UUID,
+                    title = R.string.filter_mds,
+                    icon = ImageVector.vectorResource(R.drawable.ic_memfault_app_logo),
+                    isInitiallySelected = true,
+                )
+            )
+        ),
+        onResultSelected = { result ->
+            when (result) {
                 ScanningCancelled -> navigationViewModel.navigateUp()
+                is DeviceSelected -> navigationViewModel.navigateTo(DumpingDestinationId, result.scanResult.peripheral.address)
             }
-        }
+        },
     )
 }

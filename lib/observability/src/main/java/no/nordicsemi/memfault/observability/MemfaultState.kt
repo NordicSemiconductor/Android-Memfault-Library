@@ -29,18 +29,33 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault
+@file:Suppress("unused")
 
-import no.nordicsemi.android.common.navigation.createDestination
-import no.nordicsemi.android.common.navigation.createSimpleDestination
-import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.memfault.dumping.DumpingScreen
-import no.nordicsemi.memfault.home.HomeScreen
+package no.nordicsemi.memfault.observability
 
-val HomeDestinationId = createSimpleDestination("home-destination")
-val DumpingDestinationId = createDestination<String, Unit>("dumping-destination")
+import no.nordicsemi.memfault.observability.bluetooth.DeviceState
+import no.nordicsemi.memfault.observability.data.Chunk
+import no.nordicsemi.memfault.observability.data.MemfaultConfig
+import no.nordicsemi.memfault.observability.internet.UploadingStatus
 
-val HomeDestinations = listOf(
-    defineDestination(HomeDestinationId) { HomeScreen() },
-    defineDestination(DumpingDestinationId) { DumpingScreen() }
-)
+/**
+ * The state of the Memfault Observability feature.
+ *
+ * @property deviceStatus The current status of the Bluetooth LE connection.
+ * @property uploadingStatus The current status of the uploading process.
+ * @property chunks A list of chunks that were received in this session.
+ */
+data class MemfaultState(
+    val deviceStatus: DeviceState = DeviceState.Disconnected(),
+    val uploadingStatus: UploadingStatus = UploadingStatus.Idle,
+    val chunks: List<Chunk> = emptyList()
+) {
+    /** Number of chunks that are ready to be uploaded. */
+    val pendingChunks: Int = chunks.filter { !it.isUploaded }.size
+    /** Total number of bytes uploaded. */
+    val bytesUploaded: Int = chunks.filter { it.isUploaded }.sumOf { it.data.size }
+    /** The configuration obtained from the device using GATT. */
+    val config: MemfaultConfig?
+        get() = (deviceStatus as? DeviceState.Connected)?.config
+}
+

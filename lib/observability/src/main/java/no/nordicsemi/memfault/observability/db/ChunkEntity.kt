@@ -29,18 +29,46 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault
+package no.nordicsemi.memfault.observability.db
 
-import no.nordicsemi.android.common.navigation.createDestination
-import no.nordicsemi.android.common.navigation.createSimpleDestination
-import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.memfault.dumping.DumpingScreen
-import no.nordicsemi.memfault.home.HomeScreen
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import no.nordicsemi.memfault.observability.data.Chunk
 
-val HomeDestinationId = createSimpleDestination("home-destination")
-val DumpingDestinationId = createDestination<String, Unit>("dumping-destination")
-
-val HomeDestinations = listOf(
-    defineDestination(HomeDestinationId) { HomeScreen() },
-    defineDestination(DumpingDestinationId) { DumpingScreen() }
+/**
+ * Represents a chunk of data that is stored in the database.
+ */
+@Entity(tableName = "chunks")
+internal data class ChunkEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    @ColumnInfo(name = "chunk_number")
+    val chunkNumber: Int,
+    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB)
+    val data: ByteArray,
+    @ColumnInfo(name = "device_id")
+    val deviceId: String,
+    @ColumnInfo(name = "is_uploaded")
+    val isUploaded: Boolean
 )
+
+/**
+ * Converts the received byte array to a [ChunkEntity].
+ *
+ * @param deviceId The device ID associated with the chunk.
+ * @return A [ChunkEntity] object that can be stored in the database.
+ */
+internal fun ByteArray.toEntity(deviceId: String) = ChunkEntity(
+    chunkNumber = this[0].toInt(),
+    data = this.copyOfRange(1, this.size),
+    isUploaded = false,
+    deviceId = deviceId,
+)
+
+/**
+ * Converts a [ChunkEntity] to a [Chunk].
+ *
+ * @return A [Chunk] object that is exposed to the application.
+ */
+internal fun ChunkEntity.toChunk(): Chunk = Chunk(chunkNumber, data, deviceId, isUploaded)

@@ -31,17 +31,9 @@
 
 package no.nordicsemi.memfault.home
 
-import android.os.ParcelUuid
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.navigation.Navigator
-import no.nordicsemi.android.common.navigation.onlySuccess
-import no.nordicsemi.android.scanner.model.DiscoveredBluetoothDevice
-import no.nordicsemi.memfault.DumpingDestinationId
-import no.nordicsemi.memfault.lib.bluetooth.MDS_SERVICE_UUID
 import no.nordicsemi.memfault.scanner.ScannerDestinationId
 import javax.inject.Inject
 
@@ -50,18 +42,7 @@ class HomeViewModel @Inject constructor(
     private val navigationManager: Navigator
 ) : ViewModel() {
 
-    init {
-        navigationManager.resultFrom(ScannerDestinationId)
-            .onlySuccess()
-            .onEach { navigateToDumpingScreen(it.value) }
-            .launchIn(viewModelScope)
-    }
-
     fun navigateToScanner() {
-        navigationManager.navigateTo(ScannerDestinationId, ParcelUuid(MDS_SERVICE_UUID))
-    }
-
-    private fun navigateToDumpingScreen(device: DiscoveredBluetoothDevice) {
-        navigationManager.navigateTo(DumpingDestinationId, device)
+        navigationManager.navigateTo(ScannerDestinationId)
     }
 }

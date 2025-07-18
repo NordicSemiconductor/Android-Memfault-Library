@@ -1,26 +1,26 @@
 # Android Memfault Library
 
-An Android library that can connect to a Bluetooth LE device, download dump logs and upload them to [the Memfault console](https://docs.memfault.com).
+An Android library that can connect to a Bluetooth LE device, download diagnostics data and upload them to [the Memfault console](https://docs.memfault.com).
 
-The device should contain characteristics defined in [the Memfault documentation](https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b).
+The device should contain characteristics defined in [the Memfault documentation](https://docs.memfault.com/docs/mcu/mds).
 
 ## Example usage
 
 ```kotlin
-val memfaultBleManager = MemfaultBleManager()
+val manager = MemfaultDiagnosticsManager.create(context)
 
 //Receive status and data
-memfaultBleManager.state.collect {
+manager.state.collect {
 
 }
 
 //To start
 viewModelScope.launch {
-    memfaultBleManager.connect(context, device)
+    manager.connect(context, device)
 }
 
 //When finished
-memfaultBleManager.disconnect()
+manager.disconnect()
 ```
 
 ## Application
@@ -34,10 +34,10 @@ memfaultBleManager.disconnect()
 The library is available on Maven Central repository. Add it to your project by adding the following dependency:
 
 ```Groovy
-implementation 'no.nordicsemi.android:memfault:1.1.0'
+implementation 'no.nordicsemi.android:memfault-observability:1.1.0'
 ```
 
 ## Dependencies
 Application under the hood uses:
-1. [BLE Library](https://github.com/NordicSemiconductor/Android-BLE-Library) - for managing BLE connection and reading data from the remote device.
+1. [Kotlin BLE Library](https://github.com/NordicSemiconductor/Kotlin-BLE-Library) - for managing BLE connection and reading data from the remote device.
 2. [MemfaultCloud Android](https://github.com/memfault/memfault-cloud-android) - for uploading chunks to the cloud.

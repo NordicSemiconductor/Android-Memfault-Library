@@ -29,18 +29,25 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault
+package no.nordicsemi.memfault.observability.internet
 
-import no.nordicsemi.android.common.navigation.createDestination
-import no.nordicsemi.android.common.navigation.createSimpleDestination
-import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.memfault.dumping.DumpingScreen
-import no.nordicsemi.memfault.home.HomeScreen
+/**
+ * Status of chunks uploading process.
+ */
+sealed interface UploadingStatus {
+    /** The chunks are not uploaded at the moment. */
+    data object Idle : UploadingStatus
 
-val HomeDestinationId = createSimpleDestination("home-destination")
-val DumpingDestinationId = createDestination<String, Unit>("dumping-destination")
+    /** The chunks are currently being uploaded. */
+    data object InProgress : UploadingStatus
 
-val HomeDestinations = listOf(
-    defineDestination(HomeDestinationId) { HomeScreen() },
-    defineDestination(DumpingDestinationId) { DumpingScreen() }
-)
+    /**
+     * Uploading chunks has been suspended.
+     *
+     * This status may be used when the Internet connection is lost or when the server
+     * is not reachable.
+     *
+     * @property delayInSeconds The delay in seconds before the next attempt to upload chunks.
+     */
+    data class Suspended(val delayInSeconds: Long) : UploadingStatus
+}
