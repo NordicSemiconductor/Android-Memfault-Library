@@ -31,7 +31,7 @@ Dokka documentation can be found [here](https://nordicsemiconductor.github.io/An
 
 <a href='https://play.google.com/store/apps/details?id=no.nordicsemi.memfault'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width='250'/></a>
 
-<img src="https://play-lh.googleusercontent.com/Mu4RHwGVpQtvkgq5ExluQNw3ZemvGZlCnrpNnEHfTznx4-7wBYWD48ZM6R0iPbiopw=w2560-h1440" width="200"> <img src="https://play-lh.googleusercontent.com/H4zNJPS3Wa6XfWYpEC-1_WZ7i2KGI4HkiymornuR3cqOS94cb6grrbqI49D2b-AdckM=w2560-h1440" width="200"> <img src="https://play-lh.googleusercontent.com/uH9jN5JnRq3s796j3IE0Ab28z_POuiy3_FSIXbjZASqQUGMuz49CR665FER9HpBqO-w=w2560-h1440" width="200">
+![Welcome screen](imgs/home.png) ![Scanner](imgs/scanner.png) ![Diagnostics](imgs/diagnostics.png)
 
 ## Library
 
