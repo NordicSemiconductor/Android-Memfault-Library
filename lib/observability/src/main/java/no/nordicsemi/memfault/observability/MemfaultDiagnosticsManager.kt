@@ -43,14 +43,14 @@ import no.nordicsemi.memfault.observability.internal.MemfaultScope
 
 /**
  * Class responsible for managing connection with the remote IoT device which supports
- * Memfault Diagnostic Service.
+ * Memfault Monitoring & Diagnostic Service.
  *
  * The manager connects to the device and uploads all downloaded chunks to the cloud.
  *
  * Data can be emitted any time so the connection should be maintained as long as needed.
  *
  * @see <a href="https://app.memfault.com">Memfault console</a>
- * @see <a href="https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b">Memfault Diagnostic GATT Service</a>
+ * @see <a href="https://docs.memfault.com/docs/mcu/mds">Memfault Monitoring & Diagnostic GATT Service</a>
  */
 interface MemfaultDiagnosticsManager {
 

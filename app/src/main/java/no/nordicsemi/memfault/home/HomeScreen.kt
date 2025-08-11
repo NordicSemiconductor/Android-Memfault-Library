@@ -65,6 +65,7 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -127,6 +128,9 @@ private fun OnePane(
         Spacer(modifier = Modifier.weight(0.3f))
 
         Content(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .widthIn(max = 600.dp),
             onStart = onStart
         )
 
@@ -153,7 +157,9 @@ private fun TwoPane(
             modifier = Modifier
                 .weight(0.7f)
                 .verticalScroll(rememberScrollState())
-                .padding(vertical = 16.dp),
+                .padding(vertical = 16.dp)
+                .padding(end = 16.dp)
+                .widthIn(max = 600.dp),
             onStart = onStart
         )
     }
@@ -182,6 +188,14 @@ private fun Content(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
+            text = stringResource(R.string.app_info_header),
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(modifier = Modifier.size(32.dp))
+
+        Text(
             text = buildAnnotatedString {
                 append(stringResource(id = R.string.app_info))
                 append(" ")
@@ -197,7 +211,7 @@ private fun Content(
                 append(" ")
                 withLink(
                     LinkAnnotation.Url(
-                        url = "https://docs.nordicsemi.com/bundle/ncs-latest/page/nrf/libraries/bluetooth/services/mds.html",
+                        url = "https://docs.memfault.com/docs/mcu/mds",
                         styles = TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)),
                     )
                 ) {
@@ -206,9 +220,6 @@ private fun Content(
                 append(stringResource(id = R.string.app_info_3))
             },
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier
-                .widthIn(max = 600.dp)
-                .padding(horizontal = 16.dp)
         )
 
         Spacer(modifier = Modifier.size(32.dp))
@@ -223,7 +234,10 @@ private fun Content(
 @Composable
 private fun OnePanePreview() {
     OnePane(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 16.dp)
+            .widthIn(max = 600.dp),
         onStart = {  }
     )
 }
@@ -232,7 +246,10 @@ private fun OnePanePreview() {
 @Composable
 private fun TwoPanePreview() {
     TwoPane(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 16.dp)
+            .widthIn(max = 600.dp),
         onStart = {  }
     )
 }

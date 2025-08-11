@@ -73,7 +73,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
- * Memfault Diagnostics Service UUID.
+ * Memfault Monitoring & Diagnostics Service UUID.
  *
  * Find specification ih the [Documentation](https://docs.memfault.com/docs/mcu/mds).
  */
@@ -86,7 +86,8 @@ private val MDS_AUTHORISATION_CHARACTERISTIC_UUID      = Uuid.parse("54220004-f6
 private val MDS_DATA_EXPORT_CHARACTERISTIC_UUID        = Uuid.parse("54220005-f6a5-4007-a371-722f4ebd8436")
 
 /**
- * A client implementation of Memfault Diagnostics Service (MDS) that streams data from the device.
+ * A client implementation of Memfault Monitoring & Diagnostics Service (MDS) that streams data
+ * from the device.
  *
  * This class connects to the device, discovers the MDS service, reads the configuration,
  * and streams diagnostics [chunks] from the device.
@@ -251,7 +252,7 @@ class MemfaultDiagnosticsService {
 					// We may ignore it, as the observer already notified about the disconnection.
 					is ConnectionState.Closed -> return@onEach
 
-					// Disconnected state is emitted when the connection is lost when the device
+					// Disconnected state is emitted when the connection is lost, when the device
 					// is not supported (disconnect() method called), or the connection was cancelled
 					// by the user.
 					is ConnectionState.Disconnected -> {
@@ -316,7 +317,7 @@ class MemfaultDiagnosticsService {
 
 				// Check if the MDS service is supported.
 				// The exception will be caught in the catch block below.
-				checkNotNull(mds) { "Memfault Diagnostics Service not supported" }
+				checkNotNull(mds) { "Monitoring & Diagnostics Service not supported" }
 
 				_state.emit(value = DeviceState.Initializing)
 
@@ -328,7 +329,7 @@ class MemfaultDiagnosticsService {
 				// Make sure the chunks are enabled only after the state changed to Connected.
 				start(mds)
 
-				logger.info("Memfault Diagnostics Service started successfully")
+				logger.info("Monitoring & Diagnostics Service started successfully")
 			}
 			.catch { throwable ->
 				logger.error(throwable.message)
