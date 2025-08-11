@@ -77,10 +77,10 @@
     <string name="chunk_number">#%d</string>
     <string name="bytes_count">%d bytes</string>
 
-    <string name="app_info">nRF Memfault forwards diagnostic data collected by firmware through a
-        Bluetooth LE gateway to the</string>
+    <string name="app_info_header">Fix defects before your customers find them.</string>
+    <string name="app_info">nRF Memfault app forwards diagnostic data collected from embedded device using Bluetooth LE to</string>
     <string name="app_info_memfault_console">Memfault console</string>
     <string name="app_info_2">.\n\nThe device should support</string>
-    <string name="app_info_gatt">Memfault Diagnostics Service (MDS)</string>
+    <string name="app_info_gatt">Memfault Monitoring &amp; Diagnostics Service (MDS)</string>
     <string name="app_info_3">.</string>
 </resources>
