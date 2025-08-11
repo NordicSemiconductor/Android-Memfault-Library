@@ -252,7 +252,7 @@ class MemfaultDiagnosticsService {
 					// We may ignore it, as the observer already notified about the disconnection.
 					is ConnectionState.Closed -> return@onEach
 
-					// Disconnected state is emitted when the connection is lost when the device
+					// Disconnected state is emitted when the connection is lost, when the device
 					// is not supported (disconnect() method called), or the connection was cancelled
 					// by the user.
 					is ConnectionState.Disconnected -> {
