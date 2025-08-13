@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -123,7 +124,10 @@ private fun OnePane(
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
-        MemfaultLogo()
+        MemfaultLogo(
+            modifier = Modifier
+                .fillMaxWidth(0.4f)
+        )
 
         Spacer(modifier = Modifier.weight(0.3f))
 
@@ -148,10 +152,10 @@ private fun TwoPane(
         verticalAlignment = Alignment.CenterVertically
     ) {
         MemfaultLogo(
-            modifier = Modifier.weight(0.3f),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .weight(0.3f),
         )
-
-        Spacer(modifier = Modifier.size(16.dp))
 
         Content(
             modifier = Modifier
@@ -174,7 +178,7 @@ private fun MemfaultLogo(
         painter = painterResource(id = R.drawable.ic_memfault),
         contentDescription = stringResource(id = R.string.cd_memfault),
         contentScale = ContentScale.Fit,
-        alignment = Alignment.TopEnd
+        alignment = Alignment.Center
     )
 }
 
