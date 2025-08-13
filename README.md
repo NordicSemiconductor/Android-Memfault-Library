@@ -38,7 +38,7 @@ Dokka documentation can be found [here](https://nordicsemiconductor.github.io/An
 The library is available on Maven Central repository. Add it to your project by adding the following dependency:
 
 ```Groovy
-implementation 'no.nordicsemi.android:memfault-observability:2.0.0'
+implementation 'no.nordicsemi.android:memfault-observability:2.0.1'
 ```
 
 ## Dependencies
