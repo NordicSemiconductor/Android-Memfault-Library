@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -244,20 +245,17 @@ class MemfaultDiagnosticsService {
 
 		// Start observing the peripheral state.
 		peripheral.state
-			// Buffering, as the state Disconnected -> Closed is emitted immediately.
-			.buffer()
+			// Skip the initial state.
+			.drop(1)
 			.onEach { state ->
 				when (state) {
-					// State Closes is emitted immediately after Disconnected.
-					// We may ignore it, as the observer already notified about the disconnection.
-					is ConnectionState.Closed -> return@onEach
-
 					// Disconnected state is emitted when the connection is lost, when the device
 					// is not supported (disconnect() method called), or the connection was cancelled
 					// by the user.
 					is ConnectionState.Disconnected -> {
 						_state.emit(state.toDeviceState(notSupported, bondingFailed))
-						if (state.reason.isUserInitiated /* (includes not supported) */) {
+						if (state.isUserInitiated /* (includes not supported) */ ||
+							state.reason is ConnectionState.Disconnected.Reason.UnsupportedConfiguration) {
 							// If the disconnection was initiated using disconnect() method,
 							// it might have been cancelled, or the device is not supported.
 							// Either way, cancel auto-reconnection by cancelling the scope.

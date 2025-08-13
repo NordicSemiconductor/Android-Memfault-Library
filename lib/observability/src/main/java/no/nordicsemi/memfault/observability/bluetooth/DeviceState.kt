@@ -57,6 +57,7 @@ internal fun ConnectionState.toDeviceState(
 	ConnectionState.Disconnecting -> DeviceState.Disconnecting
 	is ConnectionState.Disconnected ->
 		when (reason) {
+			null,
 			ConnectionState.Disconnected.Reason.Success,
             ConnectionState.Disconnected.Reason.Cancelled ->
 				DeviceState.Disconnected(
@@ -77,8 +78,8 @@ internal fun ConnectionState.toDeviceState(
 			ConnectionState.Disconnected.Reason.UnsupportedAddress,
 			ConnectionState.Disconnected.Reason.InsufficientAuthentication ->
 				DeviceState.Disconnected(Reason.BONDING_FAILED)
-			is ConnectionState.Disconnected.Reason.Unknown ->
+			is ConnectionState.Disconnected.Reason.Unknown,
+			ConnectionState.Disconnected.Reason.UnsupportedConfiguration ->
 				DeviceState.Disconnected(Reason.FAILED_TO_CONNECT)
 		}
-	ConnectionState.Closed -> DeviceState.Disconnected()
 }
