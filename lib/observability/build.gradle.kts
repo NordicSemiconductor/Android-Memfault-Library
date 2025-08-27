@@ -31,8 +31,9 @@
 
 plugins {
     alias(libs.plugins.nordic.library)
-    alias(libs.plugins.nordic.hilt)
+    alias(libs.plugins.nordic.kotlin.android)
     alias(libs.plugins.nordic.nexus.android)
+    alias(libs.plugins.ksp)
 }
 
 group = "no.nordicsemi.android"
@@ -64,7 +65,7 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
 
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
 
