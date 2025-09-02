@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault.observability.db
+package no.nordicsemi.memfault.observability.internal.db
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
