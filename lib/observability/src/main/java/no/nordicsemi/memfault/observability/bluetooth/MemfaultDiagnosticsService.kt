@@ -261,6 +261,12 @@ class MemfaultDiagnosticsService {
 					// is not supported (disconnect() method called), or the connection was cancelled
 					// by the user.
 					is ConnectionState.Disconnected -> {
+						if (state.reason is ConnectionState.Disconnected.Reason.UnsupportedAddress) {
+							// This error is thrown in AutoConnect connection when there is no
+							// bonding. The library will transition to Direct connection automatically.
+							// Don't report this state.
+							return@onEach
+						}
 						_state.emit(state.toDeviceState(notSupported, bondingFailed))
 						if (state.isUserInitiated /* (includes not supported) */ ||
 							state.reason is ConnectionState.Disconnected.Reason.UnsupportedConfiguration) {
