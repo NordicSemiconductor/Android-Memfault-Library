@@ -31,24 +31,26 @@
 
 package no.nordicsemi.memfault.observability
 
+import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
-import no.nordicsemi.memfault.observability.bluetooth.MemfaultDiagnosticsService
 import no.nordicsemi.memfault.observability.bluetooth.DeviceState
+import no.nordicsemi.memfault.observability.bluetooth.MemfaultDiagnosticsService
 import no.nordicsemi.memfault.observability.data.PersistentChunkQueue
 import no.nordicsemi.memfault.observability.internal.MemfaultScope
 import no.nordicsemi.memfault.observability.internet.MemfaultCloudManager
@@ -63,25 +65,22 @@ internal class MemfaultDiagnosticsManagerImpl(
     private val _state = MutableStateFlow(MemfaultState())
     override val state: StateFlow<MemfaultState> = _state.asStateFlow()
 
-    private var bleManager: MemfaultDiagnosticsService? = null
+    private var service: MemfaultDiagnosticsService? = null
     private var chunkQueue: PersistentChunkQueue? = null
     private var uploadManager: MemfaultCloudManager? = null
-    private var job: Job? = null
 
-    @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     override fun connect(peripheral: Peripheral, centralManager: CentralManager) {
-        check(job == null) { "Already connected to a peripheral" }
+        check(service == null) { "Already connected to a peripheral" }
 
-        // Start the manager in a new scope.
-        job = MemfaultScope.launch {
-            val scope = this
-
-            // Set up the manager that will collect diagnostic chunks from the device.
-            bleManager = MemfaultDiagnosticsService(centralManager, peripheral, scope)
+        // Set up the collector for observable chunks from the device.
+        MemfaultScope.launch {
+            service = MemfaultDiagnosticsService(centralManager, peripheral, this)
                 .apply {
-                    // Collect the state of the BLE manager and update the state flow.
                     var connection: Job? = null
+                    // Collect the state of the device and update the state flow.
                     state
+                        .drop(1)
                         .onEach { state ->
                             _state.value = _state.value.copy(deviceStatus = state)
 
@@ -90,7 +89,7 @@ internal class MemfaultDiagnosticsManagerImpl(
                                     "Connection scope should be null or cancelled when the config is received"
                                 }
 
-                                connection = scope.launch {
+                                connection = launch {
                                     chunkQueue = PersistentChunkQueue(
                                         context = context,
                                         deviceId = state.config.deviceId
@@ -114,33 +113,34 @@ internal class MemfaultDiagnosticsManagerImpl(
                                         manager.uploadChunks()
                                     }
 
-                                    try { awaitCancellation()}
-                                    finally {
-                                        uploadManager?.uploadChunks()
-                                        uploadManager?.close()
-                                        uploadManager = null
+                                    try {
+                                        awaitCancellation()
+                                    } finally {
+                                        // Manager is closing. Flush any remaining chunks.
+                                        withContext(NonCancellable) {
+                                            uploadManager?.uploadChunks()
+                                            uploadManager?.close()
+                                            uploadManager = null
+                                        }
+
+                                        // Remove all uploaded chunks from the queue.
+                                        chunkQueue?.deleteUploaded()
                                         chunkQueue = null
                                     }
                                 }
-                            } else {
+                            }
+                            if (state is DeviceState.Connecting) {
                                 // Otherwise, the device must have been disconnected.
                                 connection?.cancel()
                                 connection = null
                             }
-                        }
-                        .onCompletion {
-                            // Manager is closing. Clean up and remove all uploaded chunks from the queue.
-                            MemfaultScope.launch {
-                                chunkQueue?.deleteUploaded()
+                            if (state is DeviceState.Disconnected) {
+                                cancel()
                             }
-
-                            // Cancel the connection job if it is still active.
-                            connection?.cancel()
-                            connection = null
                         }
-                        .launchIn(scope)
+                        .launchIn(this@launch)
 
-                    // Collect the chunks received from the BLE manager and upload them.
+                    // Collect the chunks received from the device and upload them to the cloud.
                     chunks
                         .onEach {
                             // Mind, that that has to be called from a non-main Dispatcher
@@ -154,24 +154,24 @@ internal class MemfaultDiagnosticsManagerImpl(
                         .onEach {
                             uploadManager?.uploadChunks()
                         }
-                        .launchIn(scope)
+                        .launchIn(this@launch)
                 }
 
-            // Start the Bluetooth LE manager to connect to the device and start receiving data.
-            bleManager?.start()
+            // Start the MDS service handler to connect to the device and start receiving data.
+            service?.start()
 
             // Wait for disconnection.
             try { awaitCancellation() }
             finally {
                 // Clean up the BLE manager when the scope is cancelled.
-                bleManager?.close()
-                bleManager = null
+                service?.close()
+                service = null
             }
         }
     }
 
     override fun disconnect() {
-        job?.cancel()
-        job = null
+        service?.close()
+        service = null
     }
 }
