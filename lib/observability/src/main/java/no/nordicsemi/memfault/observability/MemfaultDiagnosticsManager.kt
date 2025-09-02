@@ -111,6 +111,7 @@ interface MemfaultDiagnosticsManager {
          * @param context Android [Context] need to initialize the chunks database.
          * @return new [MemfaultDiagnosticsManager] instance
          */
+        @JvmStatic
         fun create(context: Context): MemfaultDiagnosticsManager {
             return MemfaultDiagnosticsManagerImpl(context)
         }
