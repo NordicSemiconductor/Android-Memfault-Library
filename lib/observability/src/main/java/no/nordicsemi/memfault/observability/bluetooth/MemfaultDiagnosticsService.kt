@@ -217,6 +217,11 @@ class MemfaultDiagnosticsService {
 		job = null
 	}
 
+	/**
+	 * This method connects the the peripheral and starts observing its state.
+	 *
+	 * It suspends until the scope is cancelled.
+	 */
 	private suspend fun CoroutineScope.connect(
 		centralManager: CentralManager,
 		peripheral: Peripheral,

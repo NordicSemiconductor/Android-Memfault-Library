@@ -67,7 +67,7 @@ interface MemfaultDiagnosticsManager {
     /**
      * Function used to connect to the selected Bluetooth LE peripheral.
      *
-     * The peripheral must support Memfault Diagnostic Service.
+     * The peripheral must support Monitoring & Diagnostic Service.
      *
      * Chunks upload will start immediately after establishing the connection.
      *
@@ -84,7 +84,7 @@ interface MemfaultDiagnosticsManager {
     /**
      * Function used to connect to the selected Bluetooth LE peripheral.
      *
-     * The peripheral must support Memfault Diagnostic Service.
+     * The peripheral must support Monitoring & Diagnostic Service.
      *
      * Chunks upload will start immediately after establishing the connection.
      *
