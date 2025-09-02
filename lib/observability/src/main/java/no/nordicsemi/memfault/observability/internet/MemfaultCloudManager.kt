@@ -40,6 +40,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.memfault.observability.data.MemfaultConfig
 import no.nordicsemi.memfault.observability.data.PersistentChunkQueue
+import no.nordicsemi.memfault.observability.internal.ChunkSenderResult
+import no.nordicsemi.memfault.observability.internal.send
 import java.net.URL
 import kotlin.time.Duration.Companion.seconds
 

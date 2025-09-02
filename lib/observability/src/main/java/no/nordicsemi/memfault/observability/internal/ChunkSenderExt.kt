@@ -29,11 +29,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault.observability.internet
+package no.nordicsemi.memfault.observability.internal
 
 import com.memfault.cloud.sdk.ChunkSender
 import com.memfault.cloud.sdk.SendChunksCallback
-import kotlinx.coroutines.delay
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 

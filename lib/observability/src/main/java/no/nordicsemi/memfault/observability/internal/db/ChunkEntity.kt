@@ -29,10 +29,46 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.memfault.observability.internal
+package no.nordicsemi.memfault.observability.internal.db
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import no.nordicsemi.memfault.observability.data.Chunk
 
-internal val MemfaultScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+/**
+ * Represents a chunk of data that is stored in the database.
+ */
+@Entity(tableName = "chunks")
+internal data class ChunkEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    @ColumnInfo(name = "chunk_number")
+    val chunkNumber: Int,
+    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB)
+    val data: ByteArray,
+    @ColumnInfo(name = "device_id")
+    val deviceId: String,
+    @ColumnInfo(name = "is_uploaded")
+    val isUploaded: Boolean
+)
+
+/**
+ * Converts the received byte array to a [ChunkEntity].
+ *
+ * @param deviceId The device ID associated with the chunk.
+ * @return A [ChunkEntity] object that can be stored in the database.
+ */
+internal fun ByteArray.toEntity(deviceId: String) = ChunkEntity(
+    chunkNumber = this[0].toInt(),
+    data = this.copyOfRange(1, this.size),
+    isUploaded = false,
+    deviceId = deviceId,
+)
+
+/**
+ * Converts a [ChunkEntity] to a [Chunk].
+ *
+ * @return A [Chunk] object that is exposed to the application.
+ */
+internal fun ChunkEntity.toChunk(): Chunk = Chunk(chunkNumber, data, deviceId, isUploaded)

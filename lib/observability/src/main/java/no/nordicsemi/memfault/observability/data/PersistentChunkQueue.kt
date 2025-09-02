@@ -5,9 +5,9 @@ import androidx.room.Room
 import com.memfault.cloud.sdk.ChunkQueue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import no.nordicsemi.memfault.observability.db.ChunksDatabase
-import no.nordicsemi.memfault.observability.db.toChunk
-import no.nordicsemi.memfault.observability.db.toEntity
+import no.nordicsemi.memfault.observability.internal.db.ChunksDatabase
+import no.nordicsemi.memfault.observability.internal.db.toChunk
+import no.nordicsemi.memfault.observability.internal.db.toEntity
 
 /**
  * An implementation of [ChunkQueue] that stores chunks in a persistent database.

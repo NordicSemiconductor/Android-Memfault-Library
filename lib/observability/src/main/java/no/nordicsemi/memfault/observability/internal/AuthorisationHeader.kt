@@ -1,4 +1,4 @@
-package no.nordicsemi.memfault.observability.bluetooth
+package no.nordicsemi.memfault.observability.internal
 
 /**
  * This class parses the Authorization Header read from a characteristic.
