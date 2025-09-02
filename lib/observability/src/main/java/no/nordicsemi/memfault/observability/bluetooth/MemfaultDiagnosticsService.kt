@@ -39,6 +39,7 @@ import android.content.Context
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
@@ -54,6 +55,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
@@ -352,9 +354,12 @@ class MemfaultDiagnosticsService {
 		finally {
 			// Make sure the device is disconnected when the scope is cancelled.
 			// When it was already disconnected, this is a no-op.
-			peripheral.disconnect()
-			// The state collection was cancelled together with the scope. Emit the state manually.
-			_state.emit(DeviceState.Disconnected())
+			withContext(NonCancellable) {
+				peripheral.disconnect()
+
+				// The state collection was cancelled together with the scope. Emit the state manually.
+				_state.emit(peripheral.state.value.toDeviceState(notSupported, bondingFailed))
+			}
 		}
 	}
 
