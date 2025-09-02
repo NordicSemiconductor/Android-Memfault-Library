@@ -52,7 +52,7 @@ import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.memfault.observability.bluetooth.DeviceState
 import no.nordicsemi.memfault.observability.bluetooth.MemfaultDiagnosticsService
 import no.nordicsemi.memfault.observability.data.PersistentChunkQueue
-import no.nordicsemi.memfault.observability.internal.MemfaultScope
+import no.nordicsemi.memfault.observability.internal.Scope
 import no.nordicsemi.memfault.observability.internet.MemfaultCloudManager
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -74,7 +74,7 @@ internal class MemfaultDiagnosticsManagerImpl(
         check(service == null) { "Already connected to a peripheral" }
 
         // Set up the collector for observable chunks from the device.
-        MemfaultScope.launch {
+        Scope.launch {
             service = MemfaultDiagnosticsService(centralManager, peripheral, this)
                 .apply {
                     var connection: Job? = null

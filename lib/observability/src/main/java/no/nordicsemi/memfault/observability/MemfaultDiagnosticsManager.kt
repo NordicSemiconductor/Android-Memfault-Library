@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.StateFlow
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.native
-import no.nordicsemi.memfault.observability.internal.MemfaultScope
+import no.nordicsemi.memfault.observability.internal.Scope
 
 /**
  * Class responsible for managing connection with the remote IoT device which supports
@@ -93,7 +93,7 @@ interface MemfaultDiagnosticsManager {
      * @throws IllegalStateException if the manager is already connected to a peripheral.
      */
     fun connect(context: Context, device: BluetoothDevice) {
-        val centralManager = CentralManager.Factory.native(context, MemfaultScope)
+        val centralManager = CentralManager.Factory.native(context, Scope)
         val peripheral = centralManager.getPeripheralById(device.address)!!
         connect(peripheral, centralManager)
     }
