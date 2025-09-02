@@ -226,7 +226,7 @@ class MemfaultDiagnosticsService {
 	private suspend fun CoroutineScope.connect(
 		centralManager: CentralManager,
 		peripheral: Peripheral,
-	) {
+	): Nothing {
 		// Observe the peripheral bond state to catch bonding failures.
 		var wasBonding = false
 		peripheral.bondState
